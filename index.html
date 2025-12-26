@@ -5,10 +5,38 @@ import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken }
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
 
 // --- Firebase Configuration & Initialization ---
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// 修正：移除 import.meta.env 以相容預覽環境
+// 在預覽環境中，__firebase_config 會自動注入
+// 若您要部署到 Vercel/Vite，請將下方 try-catch 區塊替換為標準的環境變數讀取方式
+let firebaseConfig;
+try {
+  // @ts-ignore
+  if (typeof __firebase_config !== 'undefined') {
+    firebaseConfig = JSON.parse(__firebase_config);
+  } else {
+    // 本地開發或未注入時的 fallback
+    firebaseConfig = { apiKey: "DEMO_KEY" };
+  }
+} catch (e) {
+  console.error("Firebase config parsing error", e);
+  firebaseConfig = { apiKey: "DEMO_KEY" };
+}
+
+// 只有在 Config 有效時才初始化 Firebase
+let app, auth, db;
+const isFirebaseConfigured = firebaseConfig && firebaseConfig.apiKey !== "DEMO_KEY";
+
+if (isFirebaseConfigured) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (e) {
+    console.error("Firebase init error", e);
+  }
+}
+
+// @ts-ignore
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 // --- Improved Audio Context (Singleton Pattern) ---
@@ -16,9 +44,10 @@ let audioCtx = null;
 
 const playBeep = (freq = 440, type = 'sine', duration = 0.1) => {
   try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    
     if (!audioCtx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
       audioCtx = new AudioContext();
     }
     
@@ -99,7 +128,7 @@ const ROAST_LEVELS = [
 
 // --- Dripper Icons Helper ---
 const getDripperIcon = (id, isActive) => {
-  const strokeColor = isActive ? "#FFFFFF" : "#a8a29e"; // white : stone-400
+  const strokeColor = isActive ? "#FFFFFF" : "#a8a29e";
   const strokeWidth = 1.5;
 
   switch (id) {
@@ -198,11 +227,17 @@ export default function BaristaFlow() {
   
   // --- Auth & Data Effects ---
   useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
     const initAuth = async () => {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        await signInWithCustomToken(auth, __initial_auth_token);
-      } else {
-        await signInAnonymously(auth);
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (error) {
+        console.error("Auth error:", error);
       }
     };
     initAuth();
@@ -211,7 +246,7 @@ export default function BaristaFlow() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isFirebaseConfigured) return;
     const q = query(
       collection(db, 'artifacts', appId, 'users', user.uid, 'brew_logs'),
       orderBy('createdAt', 'desc')
@@ -287,7 +322,34 @@ export default function BaristaFlow() {
   };
 
   const saveLog = async () => {
-    if (!user) return;
+    if (!user || !isFirebaseConfigured) {
+        // Fallback for demo/no-firebase mode
+        setLogs(prev => [{
+            id: Date.now().toString(),
+            recipeName: recipe.name,
+            dripperName: selectedDripper.fullName,
+            coffeeGrams,
+            waterTotal,
+            ratio,
+            time: Math.round(currentTime),
+            rating,
+            sensory,
+            beanName: beanName || '未命名咖啡豆',
+            roastLevel,
+            notes,
+            createdAt: { seconds: Date.now() / 1000 }
+        }, ...prev]);
+        setShowSaveModal(false);
+        handleReset();
+        setNotes('');
+        setBeanName(''); 
+        setRoastLevel('light');
+        setRating(5);
+        setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
+        setActiveTab('journal');
+        return;
+    }
+
     try {
       await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'brew_logs'), {
         createdAt: serverTimestamp(),
@@ -317,7 +379,10 @@ export default function BaristaFlow() {
   };
 
   const deleteLog = async (id) => {
-    if (!user) return;
+    if (!user || !isFirebaseConfigured) {
+        setLogs(prev => prev.filter(l => l.id !== id));
+        return;
+    }
     try {
       await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'brew_logs', id));
     } catch (e) {
@@ -352,7 +417,13 @@ export default function BaristaFlow() {
 
   const CalculatorView = () => (
     <div className="space-y-4 pb-24 select-none">
-      {/* 1. Bean Info Card - Compact */}
+      {!isFirebaseConfigured && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-lg mb-4">
+            ⚠️ 尚未設定 Firebase，日誌將僅儲存於本地記憶體（重整後消失）。
+        </div>
+      )}
+      
+      {/* 1. Bean Info Card */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
          <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-stone-700 flex items-center gap-2">
@@ -386,7 +457,7 @@ export default function BaristaFlow() {
          />
       </div>
 
-      {/* 2. Gear & Recipe - Compact Grid */}
+      {/* 2. Gear & Recipe */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
          <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-stone-700 flex items-center gap-2">
@@ -394,7 +465,6 @@ export default function BaristaFlow() {
             </h2>
          </div>
          
-         {/* Dripper Scroll - Needs onClick for scrolling, but styled carefully */}
          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-2 px-2 mb-3 border-b border-stone-100">
             {DRIPPERS.map(d => {
                const isActive = selectedDripperId === d.id;
@@ -420,7 +490,6 @@ export default function BaristaFlow() {
             })}
          </div>
 
-         {/* Recipe & Ratio - Compact */}
          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
               {Object.values(RECIPES).map(r => (
@@ -444,7 +513,6 @@ export default function BaristaFlow() {
               ))}
             </div>
 
-            {/* Sliders - Combined Visuals */}
             <div className="grid grid-cols-2 gap-4">
                <div>
                   <div className="flex justify-between text-xs mb-1">
@@ -480,9 +548,8 @@ export default function BaristaFlow() {
          </div>
       </div>
 
-      {/* 3. Summary & Steps - Accordion Style (Optimized Colors) */}
+      {/* 3. Summary */}
       <div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
-          {/* Always Visible Summary */}
           <div className="p-4 flex justify-between items-center">
              <div>
                 <p className="text-[10px] text-stone-400 uppercase tracking-wider font-bold">預計結果</p>
@@ -497,7 +564,6 @@ export default function BaristaFlow() {
                 </div>
              </div>
              
-             {/* Accordion Toggle - Minimalist */}
              <button 
                onPointerDown={(e) => {
                  e.preventDefault();
@@ -510,7 +576,6 @@ export default function BaristaFlow() {
              </button>
           </div>
 
-          {/* Collapsible Content */}
           {showSteps && (
              <div className="p-3 pt-0 space-y-1 animate-in slide-in-from-top-2 duration-200">
                 <div className="h-px bg-stone-100 mb-3 mx-1" />
@@ -536,7 +601,7 @@ export default function BaristaFlow() {
           )}
       </div>
 
-      {/* Floating Action Button (Sticky Bottom) */}
+      {/* Floating Action Button */}
       <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent pointer-events-none z-10 flex justify-center">
          <button 
            onPointerDown={() => setTimerStatus('paused')} 
@@ -549,12 +614,12 @@ export default function BaristaFlow() {
   );
 
   const TimerView = () => {
+    // ... (Keep existing TimerView code)
     const isFinished = timerStatus === 'finished';
     const totalTime = recipe.steps[recipe.steps.length-1].endTime;
     const progress = Math.min((currentTime / totalTime) * 100, 100);
     const { step, index, duration, timeInStep, targetWater } = currentStepInfo;
 
-    // SVG Config - Maxed out Size
     const radius = 150; 
     const stroke = 6; 
     const normalizedRadius = radius - stroke * 2;
@@ -563,7 +628,6 @@ export default function BaristaFlow() {
 
     return (
       <div className="flex flex-col h-full items-center py-4 relative select-none">
-        {/* Header Info - Minimal */}
         <div className="text-center space-y-1 mb-2 z-10 w-full px-8">
           <h2 className="text-stone-500 font-bold text-sm tracking-wider uppercase">{recipe.name}</h2>
           <div className="flex items-center justify-center gap-2 text-stone-400 text-[10px] font-mono">
@@ -573,64 +637,26 @@ export default function BaristaFlow() {
           </div>
         </div>
 
-        {/* Main Visual */}
         <div className="flex-1 flex items-center justify-center relative w-full z-0">
           <div className="relative">
-             <svg
-               height={radius * 2}
-               width={radius * 2}
-               className="rotate-[-90deg]"
-             >
-               <circle
-                 stroke="#e7e5e4"
-                 strokeWidth={stroke}
-                 fill="transparent"
-                 r={normalizedRadius}
-                 cx={radius}
-                 cy={radius}
-               />
-               <circle
-                 stroke="#d97706"
-                 strokeWidth={stroke}
-                 strokeDasharray={circumference + ' ' + circumference}
-                 style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
-                 strokeLinecap="round"
-                 fill="transparent"
-                 r={normalizedRadius}
-                 cx={radius}
-                 cy={radius}
-               />
+             <svg height={radius * 2} width={radius * 2} className="rotate-[-90deg]">
+               <circle stroke="#e7e5e4" strokeWidth={stroke} fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
+               <circle stroke="#d97706" strokeWidth={stroke} strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }} strokeLinecap="round" fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
              </svg>
              
-             {/* Inner Content - Flex Layout */}
              <div className="absolute inset-0 flex flex-col items-center text-center py-10 px-4 pointer-events-none">
-                
-                {/* 1. Total Time - Small & Top */}
                 <div className="flex flex-col items-center opacity-50 mb-auto">
                     <span className="text-[10px] tracking-widest uppercase">Total</span>
-                    <span className="text-sm font-mono font-bold tabular-nums">
-                        {Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}
-                    </span>
+                    <span className="text-sm font-mono font-bold tabular-nums">{Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}</span>
                 </div>
                 
                 {!isFinished ? (
                   <div className="flex flex-col items-center justify-center w-full mb-auto space-y-1">
-                     {/* 2. Step Name */}
-                     <div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px]">
-                        {step.name.split('(')[0]}
-                     </div>
-                     
-                     {/* 3. Main Countdown */}
+                     <div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px]">{step.name.split('(')[0]}</div>
                      <div className="flex items-end leading-none">
-                        <span className="text-6xl font-bold text-stone-800 tabular-nums tracking-tighter">
-                            {Math.floor(timeInStep)}
-                        </span>
-                        <span className="text-lg text-stone-400 font-medium mb-1 ml-1 w-8 text-left">
-                            / {duration}
-                        </span>
+                        <span className="text-6xl font-bold text-stone-800 tabular-nums tracking-tighter">{Math.floor(timeInStep)}</span>
+                        <span className="text-lg text-stone-400 font-medium mb-1 ml-1 w-8 text-left">/ {duration}</span>
                      </div>
-                     
-                     {/* 4. Target Water */}
                      <div className="mt-2 px-4 py-1.5 bg-amber-50 rounded-2xl text-base font-bold text-amber-700 border border-amber-100 flex items-center gap-2 shadow-sm">
                         <Droplets className="w-4 h-4 fill-amber-700" />
                         <span>目標: {targetWater}</span>
@@ -638,57 +664,25 @@ export default function BaristaFlow() {
                   </div>
                 ) : (
                    <div className="flex flex-col items-center justify-center mb-auto">
-                     <div className="text-amber-600 font-bold text-3xl animate-bounce">
-                       ✨ 完成
-                     </div>
+                     <div className="text-amber-600 font-bold text-3xl animate-bounce">✨ 完成</div>
                      <p className="text-stone-400 text-xs mt-2">享受您的咖啡</p>
                    </div>
                 )}
-
                 <div className="h-4"></div>
              </div>
           </div>
         </div>
 
-        {/* Controls */}
         <div className="w-full grid grid-cols-3 gap-8 items-center justify-items-center mt-auto pb-4 relative z-[999]">
-           {/* Reset */}
-           <button 
-            onPointerDown={handleReset}
-            disabled={timerStatus === 'idle'}
-            className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm">
-              <RotateCcw className="w-5 h-5" />
-            </div>
+           <button onPointerDown={handleReset} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
+            <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"><RotateCcw className="w-5 h-5" /></div>
             <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">Reset</span>
           </button>
-
-          {/* Play/Pause */}
-          <button 
-            onPointerDown={handleStartStop}
-            className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none ${
-              timerStatus === 'running' 
-              ? 'bg-amber-100 text-amber-600 border-2 border-amber-200' 
-              : 'bg-amber-600 text-white'
-            }`}
-          >
-            {timerStatus === 'running' ? (
-                <Pause className="w-10 h-10 fill-current" />
-            ) : (
-                <Play className="w-10 h-10 fill-current ml-1" />
-            )}
+          <button onPointerDown={handleStartStop} className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none ${timerStatus === 'running' ? 'bg-amber-100 text-amber-600 border-2 border-amber-200' : 'bg-amber-600 text-white'}`}>
+            {timerStatus === 'running' ? <Pause className="w-10 h-10 fill-current" /> : <Play className="w-10 h-10 fill-current ml-1" />}
           </button>
-
-          {/* Finish */}
-          <button 
-            onPointerDown={handleFinish}
-             disabled={timerStatus === 'idle'}
-            className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm">
-              <Save className="w-5 h-5" />
-            </div>
+          <button onPointerDown={handleFinish} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
+            <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"><Save className="w-5 h-5" /></div>
             <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">Save</span>
           </button>
         </div>
@@ -698,6 +692,7 @@ export default function BaristaFlow() {
 
   const JournalView = () => (
     <div className="space-y-4">
+      {/* ... (Keep existing JournalView code) ... */}
       <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
         <BookOpen className="w-6 h-6 text-amber-600" /> 沖煮日誌
       </h2>
@@ -840,8 +835,6 @@ export default function BaristaFlow() {
           <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 h-[85vh] overflow-y-auto">
             <h3 className="text-xl font-bold mb-4 text-center">紀錄這杯咖啡</h3>
             
-            {/* Note: Bean Info section removed from here as per user request */}
-
             <div className="flex justify-center gap-2 mb-6">
               {[1, 2, 3, 4, 5].map(star => (
                 <button 
