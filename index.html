@@ -1,0 +1,928 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2299.77">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
+    span.s1 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">import React, { useState, useEffect, useRef, useMemo } from 'react';</span></p>
+<p class="p1"><span class="s1">import { Play, Pause, RotateCcw, Coffee, Droplets, History, Settings, ChevronRight, Save, Plus, Trash2, BookOpen, Star, Bean, Timer, List, Info, Filter, ChevronDown, ChevronUp } from 'lucide-react';</span></p>
+<p class="p1"><span class="s1">import { initializeApp } from 'firebase/app';</span></p>
+<p class="p1"><span class="s1">import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';</span></p>
+<p class="p1"><span class="s1">import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- Firebase Configuration &amp; Initialization ---</span></p>
+<p class="p1"><span class="s1">const firebaseConfig = JSON.parse(__firebase_config);</span></p>
+<p class="p1"><span class="s1">const app = initializeApp(firebaseConfig);</span></p>
+<p class="p1"><span class="s1">const auth = getAuth(app);</span></p>
+<p class="p1"><span class="s1">const db = getFirestore(app);</span></p>
+<p class="p1"><span class="s1">const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- Improved Audio Context (Singleton Pattern) ---</span></p>
+<p class="p1"><span class="s1">let audioCtx = null;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const playBeep = (freq = 440, type = 'sine', duration = 0.1) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (!audioCtx) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const AudioContext = window.AudioContext || window.webkitAudioContext;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!AudioContext) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>audioCtx = new AudioContext();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (audioCtx.state === 'suspended') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>audioCtx.resume();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const osc = audioCtx.createOscillator();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const gain = audioCtx.createGain();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>osc.type = type;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>osc.frequency.setValueAtTime(freq, audioCtx.currentTime);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>gain.gain.setValueAtTime(0.1, audioCtx.currentTime);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>osc.connect(gain);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>gain.connect(audioCtx.destination);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>osc.start();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>osc.stop(audioCtx.currentTime + duration);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>} catch (e) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>console.error("Audio play failed", e);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- Data Constants ---</span></p>
+<p class="p1"><span class="s1">const DRIPPERS = [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'v60', name: 'V60', fullName: 'Hario V60', type: 'Cone' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'kalita', name: 'Kalita', fullName: 'Kalita Wave', type: 'Flat' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'origami', name: 'Origami', fullName: 'Origami Dripper', type: 'Cone' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'chemex', name: 'Chemex', fullName: 'Chemex', type: 'Cone' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'switch', name: 'Switch', fullName: 'Hario Switch', type: 'Hybrid' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'bluebottle', name: 'BB', fullName: 'Blue Bottle', type: 'Flat' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'other', name: 'Other', fullName: '其他濾杯', type: 'Other' },</span></p>
+<p class="p1"><span class="s1">];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const RECIPES = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>v60: {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>id: 'v60',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>name: '究極 V60 (James Hoffmann)',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>description: '強調高萃取率與乾淨度，適合淺焙豆。',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>ratio: 16.7, // 60g/L standard</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>steps: [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '悶蒸 (Bloom)', desc: '濕潤粉層', endTime: 45, waterTargetPercentage: 0.2 },<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '第一段注水 (60%)', desc: '建立水位與高溫', endTime: 75, waterTargetPercentage: 0.6 },<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '第二段注水 (100%)', desc: '維持流速', endTime: 105, waterTargetPercentage: 1.0 },<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '攪拌與濾乾 (Draw)', desc: '輕輕搖晃濾杯', endTime: 210, waterTargetPercentage: 1.0 }<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>]</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>},</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>fourSix: {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>id: 'fourSix',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>name: '4:6 法 (Tetsu Kasuya)',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>description: '前40%決定風味，後60%決定醇厚度。',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>ratio: 15, // Standard 1:15</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>steps: [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '第1注 (酸值)', desc: '決定酸質明亮度', endTime: 45, waterTargetPercentage: 0.2 },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '第2注 (甜感)', desc: '決定甜感與平衡', endTime: 90, waterTargetPercentage: 0.4 },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '第3注 (層次)', desc: '堆疊濃度', endTime: 135, waterTargetPercentage: 0.6 },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '第4注 (強度)', desc: '強化醇厚度', endTime: 180, waterTargetPercentage: 0.8 },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{ name: '第5注 (結尾)', desc: '最後調整與濾乾', endTime: 210, waterTargetPercentage: 1.0 }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>]</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const SENSORY_ATTRIBUTES = [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ key: 'acidity', label: '酸值', color: 'bg-yellow-400' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ key: 'sweetness', label: '甜感', color: 'bg-orange-400' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ key: 'bitterness', label: '苦味', color: 'bg-stone-600' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ key: 'body', label: '醇厚', color: 'bg-amber-700' },</span></p>
+<p class="p1"><span class="s1">];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const ROAST_LEVELS = [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'light', label: '淺焙', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'medium', label: '中焙', color: 'bg-orange-100 text-orange-700 border-orange-200' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>{ id: 'dark', label: '深焙', color: 'bg-stone-200 text-stone-700 border-stone-300' },</span></p>
+<p class="p1"><span class="s1">];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- Dripper Icons Helper ---</span></p>
+<p class="p1"><span class="s1">const getDripperIcon = (id, isActive) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const strokeColor = isActive ? "#FFFFFF" : "#a8a29e"; // white : stone-400</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const strokeWidth = 1.5;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>switch (id) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>case 'v60':<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M3 5h18l-9 16L3 5z" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M2 5h20" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M12 21v-4" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>case 'kalita':</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M4 5h16l-3 12H7L4 5z" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M2 5h20" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M7 17v-4" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M17 17v-4" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M12 17v2" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>case 'origami':</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M3 5h18l-9 16L3 5z" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M12 5v16" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M7.5 5l2.5 11.5" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M16.5 5l-2.5 11.5" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M2 5h20" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>case 'chemex':</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M7 3h10l-3 8 4 10H6l4-10-3-8z" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M10 11h4" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>case 'switch':</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M3 5h18l-9 16L3 5z" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M2 5h20" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M16 18l2 2" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;rect x="11" y="19" width="2" height="3" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>case 'bluebottle':</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M5 5h14l-2 10H7L5 5z" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M3 5h18" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;path d="M12 15v4" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>default:</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return &lt;Coffee className="w-6 h-6" color={strokeColor} strokeWidth={strokeWidth} /&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">export default function BaristaFlow() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [user, setUser] = useState(null);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [activeTab, setActiveTab] = useState('brew');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Brewing State</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [selectedRecipeId, setSelectedRecipeId] = useState('v60');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [selectedDripperId, setSelectedDripperId] = useState('v60');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [coffeeGrams, setCoffeeGrams] = useState(20);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [ratio, setRatio] = useState(16.7);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [timerStatus, setTimerStatus] = useState('idle');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [currentTime, setCurrentTime] = useState(0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [showSaveModal, setShowSaveModal] = useState(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [showSteps, setShowSteps] = useState(false);<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Journal State</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [logs, setLogs] = useState([]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [beanName, setBeanName] = useState('');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [roastLevel, setRoastLevel] = useState('light');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [rating, setRating] = useState(5);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [notes, setNotes] = useState('');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Sensory State</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [sensory, setSensory] = useState({</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>acidity: 3,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>sweetness: 3,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>bitterness: 3,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>body: 3</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const prevTimeRef = useRef(0);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Derived State</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const recipe = RECIPES[selectedRecipeId];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const waterTotal = Math.round(coffeeGrams * ratio);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const selectedDripper = DRIPPERS.find(d =&gt; d.id === selectedDripperId) || DRIPPERS[0];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- Auth &amp; Data Effects ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const initAuth = async () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (typeof __initial_auth_token !== 'undefined' &amp;&amp; __initial_auth_token) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>await signInWithCustomToken(auth, __initial_auth_token);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>await signInAnonymously(auth);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>initAuth();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const unsubscribe = onAuthStateChanged(auth, setUser);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return () =&gt; unsubscribe();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, []);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (!user) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const q = query(</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>collection(db, 'artifacts', appId, 'users', user.uid, 'brew_logs'),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>orderBy('createdAt', 'desc')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const unsubscribe = onSnapshot(q, (snapshot) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const logData = snapshot.docs.map(doc =&gt; ({</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>id: doc.id,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>...doc.data()</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setLogs(logData);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}, (error) =&gt; console.error("Error fetching logs:", error));</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return () =&gt; unsubscribe();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [user]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- Timer Logic ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let interval = null;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (timerStatus === 'running') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>interval = setInterval(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>setCurrentTime(prev =&gt; prev + 0.1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}, 100);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>clearInterval(interval);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return () =&gt; clearInterval(interval);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [timerStatus]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- Beep Logic ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (timerStatus !== 'running') return;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const prev = prevTimeRef.current;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const now = currentTime;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const currentStepIndex = recipe.steps.findIndex(s =&gt; s.endTime &gt; prev);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const nextStepIndex = recipe.steps.findIndex(s =&gt; s.endTime &gt; now);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (currentStepIndex !== -1 &amp;&amp; nextStepIndex !== -1 &amp;&amp; currentStepIndex !== nextStepIndex) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>playBeep(880, 'sine', 0.2);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>prevTimeRef.current = now;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [currentTime, timerStatus, recipe]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- Controls Handlers ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const handleStartStop = (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(e) e.preventDefault();<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (timerStatus === 'idle') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>playBeep(600, 'triangle', 0.1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setTimerStatus('running');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>} else if (timerStatus === 'running') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setTimerStatus('paused');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>} else if (timerStatus === 'paused') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setTimerStatus('running');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const handleReset = (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(e) e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setTimerStatus('idle');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setCurrentTime(0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>prevTimeRef.current = 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const handleFinish = (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(e) e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setTimerStatus('finished');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setShowSaveModal(true);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>playBeep(440, 'sine', 0.1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setTimeout(() =&gt; playBeep(660, 'sine', 0.3), 150);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const saveLog = async () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (!user) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'brew_logs'), {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>createdAt: serverTimestamp(),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>recipeName: recipe.name,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>dripperName: selectedDripper.fullName,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>coffeeGrams,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>waterTotal,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>ratio,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>time: Math.round(currentTime),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>rating,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>sensory,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>beanName: beanName || '未命名咖啡豆',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>roastLevel,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>notes</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setShowSaveModal(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>handleReset();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setNotes('');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setBeanName('');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setRoastLevel('light');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setRating(5);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>setActiveTab('journal');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>} catch (e) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>console.error("Error saving log", e);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const deleteLog = async (id) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (!user) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'brew_logs', id));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>} catch (e) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>console.error("Error deleting log", e);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const updateSensory = (key, value) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setSensory(prev =&gt; ({ ...prev, [key]: value }));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const getStepInfo = (targetTime) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const stepIndex = recipe.steps.findIndex(s =&gt; s.endTime &gt;= targetTime);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const index = stepIndex === -1 ? recipe.steps.length - 1 : stepIndex;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const step = recipe.steps[index];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const prevEndTime = index &gt; 0 ? recipe.steps[index - 1].endTime : 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const duration = step.endTime - prevEndTime;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const timeInStep = targetTime - prevEndTime;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return {<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>step,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>index,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>duration,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>timeInStep: Math.min(Math.max(timeInStep, 0), duration),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>targetWater: Math.round(step.waterTargetPercentage * waterTotal)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const currentStepInfo = getStepInfo(currentTime);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- UI Components ---</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const CalculatorView = () =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="space-y-4 pb-24 select-none"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* 1. Bean Info Card - Compact */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;div className="flex items-center justify-between mb-3"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;h2 className="text-sm font-bold text-stone-700 flex items-center gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;Bean className="w-4 h-4 text-amber-600" /&gt; 咖啡豆</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex bg-stone-100 rounded-lg p-0.5"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{ROAST_LEVELS.map(level =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>key={level.id}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>onPointerDown={(e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setRoastLevel(level.id);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>roastLevel === level.id<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>? 'bg-white text-stone-800 shadow-sm'<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>: 'text-stone-400 hover:text-stone-600'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>{level.label}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;input<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>type="text"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>placeholder="輸入豆名 (例如: 衣索比亞 日曬)"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>value={beanName}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onChange={(e) =&gt; setBeanName(e.target.value)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>className="w-full text-lg font-medium placeholder:text-stone-300 border-none p-0 focus:ring-0"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* 2. Gear &amp; Recipe - Compact Grid */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;div className="flex items-center justify-between mb-3"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;h2 className="text-sm font-bold text-stone-700 flex items-center gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;Settings className="w-4 h-4 text-amber-600" /&gt; 沖煮配置</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">         </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>{/* Dripper Scroll - Needs onClick for scrolling, but styled carefully */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-2 px-2 mb-3 border-b border-stone-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{DRIPPERS.map(d =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>const isActive = selectedDripperId === d.id;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;button</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>key={d.id}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>onClick={() =&gt; setSelectedDripperId(d.id)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>type="button"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-xl border transition-all cursor-pointer ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                       </span>isActive</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                       </span>? 'bg-stone-800 border-stone-800 shadow-sm'<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                       </span>: 'bg-white border-stone-100 hover:bg-stone-50'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="mb-1 scale-90"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>{getDripperIcon(d.id, isActive)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span className={`text-[9px] font-bold ${isActive ? 'text-white' : 'text-stone-400'}`}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>{d.name}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>})}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>{/* Recipe &amp; Ratio - Compact */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;div className="space-y-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="grid grid-cols-2 gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{Object.values(RECIPES).map(r =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>key={r.id}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>onPointerDown={(e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setSelectedRecipeId(r.id);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setRatio(r.ratio);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>type="button"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>className={`p-2 rounded-lg text-left transition-all border cursor-pointer ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>selectedRecipeId === r.id<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>? 'bg-amber-50 border-amber-200 text-amber-900'<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>: 'bg-white border-stone-200 text-stone-400'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;div className="font-bold text-xs"&gt;{r.name.split('(')[0]}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;div className="text-[9px] opacity-70 truncate"&gt;{r.name.split('(')[1]?.replace(')', '')}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{/* Sliders - Combined Visuals */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="grid grid-cols-2 gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;div className="flex justify-between text-xs mb-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;span className="text-stone-400"&gt;粉量&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;span className="font-bold text-stone-700"&gt;{coffeeGrams}g&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;input</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>type="range"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>min="10"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>max="40"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>step="0.5"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>value={coffeeGrams}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>onChange={(e) =&gt; setCoffeeGrams(Number(e.target.value))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-600"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;div className="flex justify-between text-xs mb-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;span className="text-stone-400"&gt;粉水比&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;span className="font-bold text-stone-700"&gt;1:{ratio}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;input</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>type="range"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>min="10"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>max="20"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>step="0.1"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>value={ratio}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>onChange={(e) =&gt; setRatio(Number(e.target.value))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-600"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* 3. Summary &amp; Steps - Accordion Style (Optimized Colors) */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{/* Always Visible Summary */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="p-4 flex justify-between items-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;p className="text-[10px] text-stone-400 uppercase tracking-wider font-bold"&gt;預計結果&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="flex items-baseline gap-1 mt-0.5"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;span className="text-2xl font-bold text-stone-800"&gt;{waterTotal}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;span className="text-xs text-stone-500 font-medium"&gt;ml&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;span className="text-stone-300 mx-3"&gt;|&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;span className="text-xl font-bold text-stone-800"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>{Math.floor(recipe.steps[recipe.steps.length-1].endTime / 60)}:</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>{(recipe.steps[recipe.steps.length-1].endTime % 60).toString().padStart(2, '0')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">             </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>{/* Accordion Toggle - Minimalist */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>onPointerDown={(e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>setShowSteps(!showSteps);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>className="flex items-center gap-1 text-xs font-bold text-stone-500 bg-stone-50 border border-stone-100 px-3 py-1.5 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>{showSteps ? '收合' : '詳細步驟'}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>{showSteps ? &lt;ChevronUp className="w-3 h-3" /&gt; : &lt;ChevronDown className="w-3 h-3" /&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{/* Collapsible Content */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{showSteps &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;div className="p-3 pt-0 space-y-1 animate-in slide-in-from-top-2 duration-200"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="h-px bg-stone-100 mb-3 mx-1" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>{recipe.steps.map((step, idx) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>const prevEndTime = idx &gt; 0 ? recipe.steps[idx - 1].endTime : 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>const duration = step.endTime - prevEndTime;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>const targetWater = Math.round(step.waterTargetPercentage * waterTotal);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                   </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;div key={idx} className="flex items-center justify-between text-xs p-2 rounded hover:bg-stone-50 transition-colors group"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="flex items-center gap-3"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>&lt;span className="w-5 h-5 flex items-center justify-center bg-stone-100 text-stone-500 rounded-full text-[9px] font-bold group-hover:bg-stone-800 group-hover:text-white transition-colors"&gt;{idx + 1}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>&lt;span className="text-stone-600 font-medium"&gt;{step.name}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="flex items-center gap-4 font-mono text-stone-400"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>&lt;span&gt;{targetWater}ml&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>&lt;span&gt;{duration}s&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>})}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* Floating Action Button (Sticky Bottom) */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent pointer-events-none z-10 flex justify-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>onPointerDown={() =&gt; setTimerStatus('paused')}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>className="w-full max-w-sm bg-stone-900 text-white py-3.5 rounded-xl font-bold text-lg shadow-xl shadow-stone-200 hover:bg-stone-800 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none pointer-events-auto transform active:scale-95"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>&lt;Droplets className="w-5 h-5" /&gt; 準備沖煮</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const TimerView = () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const isFinished = timerStatus === 'finished';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const totalTime = recipe.steps[recipe.steps.length-1].endTime;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const progress = Math.min((currentTime / totalTime) * 100, 100);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const { step, index, duration, timeInStep, targetWater } = currentStepInfo;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// SVG Config - Maxed out Size</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const radius = 150;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const stroke = 6;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const normalizedRadius = radius - stroke * 2;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const circumference = normalizedRadius * 2 * Math.PI;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const strokeDashoffset = circumference - (progress / 100) * circumference;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="flex flex-col h-full items-center py-4 relative select-none"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{/* Header Info - Minimal */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="text-center space-y-1 mb-2 z-10 w-full px-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;h2 className="text-stone-500 font-bold text-sm tracking-wider uppercase"&gt;{recipe.name}&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="flex items-center justify-center gap-2 text-stone-400 text-[10px] font-mono"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span&gt;{selectedDripper.name}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span&gt;•&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span&gt;{coffeeGrams}g / {waterTotal}ml&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{/* Main Visual */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="flex-1 flex items-center justify-center relative w-full z-0"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="relative"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;svg</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>height={radius * 2}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>width={radius * 2}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>className="rotate-[-90deg]"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;circle</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>stroke="#e7e5e4"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>strokeWidth={stroke}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>fill="transparent"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>r={normalizedRadius}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>cx={radius}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>cy={radius}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;circle</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>stroke="#d97706"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>strokeWidth={stroke}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>strokeDasharray={circumference + ' ' + circumference}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>strokeLinecap="round"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>fill="transparent"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>r={normalizedRadius}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>cx={radius}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>cy={radius}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;/svg&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">             </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>{/* Inner Content - Flex Layout */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;div className="absolute inset-0 flex flex-col items-center text-center py-10 px-4 pointer-events-none"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>{/* 1. Total Time - Small &amp; Top */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="flex flex-col items-center opacity-50 mb-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span className="text-[10px] tracking-widest uppercase"&gt;Total&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span className="text-sm font-mono font-bold tabular-nums"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>{!isFinished ? (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;div className="flex flex-col items-center justify-center w-full mb-auto space-y-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>{/* 2. Step Name */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{step.name.split('(')[0]}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                     </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>{/* 3. Main Countdown */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;div className="flex items-end leading-none"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;span className="text-6xl font-bold text-stone-800 tabular-nums tracking-tighter"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{Math.floor(timeInStep)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;span className="text-lg text-stone-400 font-medium mb-1 ml-1 w-8 text-left"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>/ {duration}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                     </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>{/* 4. Target Water */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;div className="mt-2 px-4 py-1.5 bg-amber-50 rounded-2xl text-base font-bold text-amber-700 border border-amber-100 flex items-center gap-2 shadow-sm"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;Droplets className="w-4 h-4 fill-amber-700" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;span&gt;目標: {targetWater}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>) : (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;div className="flex flex-col items-center justify-center mb-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;div className="text-amber-600 font-bold text-3xl animate-bounce"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                       </span>✨ 完成</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;p className="text-stone-400 text-xs mt-2"&gt;享受您的咖啡&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="h-4"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{/* Controls */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="w-full grid grid-cols-3 gap-8 items-center justify-items-center mt-auto pb-4 relative z-[999]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>{/* Reset */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onPointerDown={handleReset}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>disabled={timerStatus === 'idle'}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;RotateCcw className="w-5 h-5" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider"&gt;Reset&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{/* Play/Pause */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onPointerDown={handleStartStop}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>timerStatus === 'running'<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>? 'bg-amber-100 text-amber-600 border-2 border-amber-200'<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>: 'bg-amber-600 text-white'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{timerStatus === 'running' ? (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;Pause className="w-10 h-10 fill-current" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>) : (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;Play className="w-10 h-10 fill-current ml-1" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{/* Finish */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onPointerDown={handleFinish}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>disabled={timerStatus === 'idle'}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;Save className="w-5 h-5" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider"&gt;Save&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const JournalView = () =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="space-y-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;BookOpen className="w-6 h-6 text-amber-600" /&gt; 沖煮日誌</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/h2&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{logs.length === 0 ? (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-200"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Coffee className="w-12 h-12 text-stone-300 mx-auto mb-3" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;p className="text-stone-500"&gt;尚無紀錄，快去沖一杯吧！&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>) : (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>logs.map(log =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>const roastInfo = ROAST_LEVELS.find(r =&gt; r.id === log.roastLevel) || ROAST_LEVELS[0];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">           </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col gap-3"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;div className="flex justify-between items-start"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;h3 className="font-bold text-stone-800 text-lg flex items-center gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{log.beanName || '未命名咖啡豆'}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span className={`text-[10px] px-2 py-0.5 rounded-full border font-normal ${roastInfo.color}`}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>{roastInfo.label}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;div className="flex items-center gap-2 text-xs text-stone-400 mt-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span className="flex items-center gap-1 bg-stone-100 px-1.5 py-0.5 rounded text-stone-500"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                       </span>&lt;Filter className="w-3 h-3" /&gt; {log.dripperName || 'V60'}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span&gt;•&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span&gt;{log.recipeName?.split('(')[0]}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span&gt;•&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span&gt;{log.createdAt?.seconds ? new Date(log.createdAt.seconds * 1000).toLocaleDateString() : 'Just now'}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-md"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;Star className="w-4 h-4 text-amber-500 fill-current" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;span className="text-amber-800 font-bold text-sm"&gt;{log.rating}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">              </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;div className="grid grid-cols-3 gap-2 text-center text-xs text-stone-600 bg-stone-50 p-2 rounded-lg"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;span className="block text-stone-400 scale-75 uppercase"&gt;粉重&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>{log.coffeeGrams}g</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;span className="block text-stone-400 scale-75 uppercase"&gt;總水&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>{log.waterTotal}ml</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;span className="block text-stone-400 scale-75 uppercase"&gt;時間&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>{Math.floor(log.time / 60)}:{(log.time % 60).toString().padStart(2, '0')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{log.sensory &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="grid grid-cols-2 gap-2 mt-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>{SENSORY_ATTRIBUTES.map(attr =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;div key={attr.key} className="flex items-center justify-between text-xs"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;span className="text-stone-400"&gt;{attr.label}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="flex gap-[1px]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>{[1,2,3,4,5].map(lvl =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                              </span>&lt;div<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>key={lvl}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>className={`w-2 h-1.5 rounded-sm ${lvl &lt;= log.sensory[attr.key] ? attr.color : 'bg-stone-100'}`}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                              </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{log.notes &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;p className="text-sm text-stone-600 italic border-l-2 border-stone-200 pl-2 mt-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>"{log.notes}"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>onClick={() =&gt; deleteLog(log.id)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>className="self-end text-xs text-red-300 hover:text-red-500 flex items-center gap-1 mt-1 cursor-pointer"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;Trash2 className="w-3 h-3" /&gt; 刪除</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>})</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="max-w-md mx-auto h-screen bg-stone-50 flex flex-col font-sans text-stone-800 overflow-hidden"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* Top Bar */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="bg-white px-6 py-4 shadow-sm z-10 flex justify-between items-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="flex items-center gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white shadow-sm"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;path d="M2 5h20" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;path d="M3 5h18l-9 16L3 5z" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;path d="M12 21v-3" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;span className="font-bold text-lg tracking-tight"&gt;Barista Flow&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="text-xs font-mono text-stone-400"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>{user ? '已連線' : '訪客模式'}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* Main Content */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="flex-1 overflow-y-auto p-6 pb-24 scroll-smooth"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{activeTab === 'brew' &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>timerStatus === 'idle' ? &lt;CalculatorView /&gt; : &lt;TimerView /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{activeTab === 'journal' &amp;&amp; &lt;JournalView /&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* Bottom Nav */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="bg-white border-t border-stone-100 flex justify-around items-center py-3 px-6 fixed bottom-0 w-full max-w-md safe-area-pb z-20"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>onClick={() =&gt; setActiveTab('brew')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-stone-400 hover:text-stone-600'}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Droplets className="w-6 h-6" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;span className="text-[10px] font-medium"&gt;沖煮&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>onClick={() =&gt; setActiveTab('journal')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'journal' ? 'text-amber-600' : 'text-stone-400 hover:text-stone-600'}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;History className="w-6 h-6" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;span className="text-[10px] font-medium"&gt;日誌&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* Save Modal */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{showSaveModal &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="fixed inset-0 bg-black/50 z-[2000] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-in fade-in"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 h-[85vh] overflow-y-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;h3 className="text-xl font-bold mb-4 text-center"&gt;紀錄這杯咖啡&lt;/h3&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{/* Note: Bean Info section removed from here as per user request */}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex justify-center gap-2 mb-6"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{[1, 2, 3, 4, 5].map(star =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>key={star}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>onClick={() =&gt; setRating(star)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>className={`text-3xl transition-transform hover:scale-110 ${rating &gt;= star ? 'text-amber-400' : 'text-stone-200'}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>★</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{/* Sensory Sliders */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="space-y-4 mb-6 bg-stone-50 p-4 rounded-xl"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2"&gt;風味感受&lt;/h4&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>{SENSORY_ATTRIBUTES.map(attr =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;div key={attr.key} className="flex items-center gap-3"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;label className="text-sm font-medium w-10 text-stone-600"&gt;{attr.label}&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="flex-1 flex justify-between items-center bg-white rounded-lg p-1 border border-stone-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{[1, 2, 3, 4, 5].map(lvl =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                          </span>&lt;button</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>key={lvl}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>onClick={() =&gt; updateSensory(attr.key, lvl)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>className={`w-8 h-8 rounded-md text-sm font-bold transition-all ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                              </span>sensory[attr.key] === lvl<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                              </span>? `${attr.color} text-white shadow-sm`<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                              </span>: 'text-stone-300 hover:bg-stone-50'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                          </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{lvl}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                          </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;textarea</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>placeholder="其他筆記 (選填)"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>value={notes}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>onChange={(e) =&gt; setNotes(e.target.value)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>className="w-full p-3 bg-stone-50 rounded-xl border border-stone-200 text-sm mb-6 focus:ring-2 focus:ring-amber-500 outline-none resize-none h-20"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>/&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex gap-3 pb-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>onClick={() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>setShowSaveModal(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>handleReset();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>className="flex-1 py-3 text-stone-500 font-medium hover:bg-stone-50 rounded-xl transition-colors cursor-pointer"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>不儲存</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>onClick={saveLog}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-colors cursor-pointer"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>儲存紀錄</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+</body>
+</html>
