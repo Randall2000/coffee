@@ -8,7 +8,7 @@
     <!-- 1. 引入 Tailwind CSS (樣式庫) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. 設定 Import Maps (定義套件來源) -->
+    <!-- 2. 設定 Import Maps -->
     <script type="importmap">
     {
         "imports": {
@@ -43,7 +43,7 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { Play, Pause, RotateCcw, Coffee, Droplets, History, Settings, ChevronRight, Save, Plus, Trash2, BookOpen, Star, Bean, Timer, List, Info, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+        import { Play, Pause, RotateCcw, Coffee, Droplets, History, Settings, ChevronRight, Save, Plus, Trash2, BookOpen, Star, Bean, Timer, List, Info, Filter, ChevronDown, ChevronUp, Edit, Pencil } from 'lucide-react';
 
         // --- 音效引擎 ---
         let audioCtx = null;
@@ -132,64 +132,23 @@
             { id: 'dark', label: '深焙', color: 'bg-stone-200 text-stone-700 border-stone-300' },
         ];
 
-        // --- 濾杯圖示 ---
         const getDripperIcon = (id, isActive) => {
             const strokeColor = isActive ? "#FFFFFF" : "#a8a29e";
             const strokeWidth = 1.5;
 
             switch (id) {
                 case 'v60': 
-                    return (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M3 5h18l-9 16L3 5z" />
-                            <path d="M2 5h20" />
-                            <path d="M12 21v-4" />
-                        </svg>
-                    );
+                    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M2 5h20" /><path d="M12 21v-4" /></svg>;
                 case 'kalita':
-                    return (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M4 5h16l-3 12H7L4 5z" />
-                            <path d="M2 5h20" />
-                            <path d="M7 17v-4" />
-                            <path d="M17 17v-4" />
-                            <path d="M12 17v2" />
-                        </svg>
-                    );
+                    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-3 12H7L4 5z" /><path d="M2 5h20" /><path d="M7 17v-4" /><path d="M17 17v-4" /><path d="M12 17v2" /></svg>;
                 case 'origami':
-                    return (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M3 5h18l-9 16L3 5z" />
-                            <path d="M12 5v16" />
-                            <path d="M7.5 5l2.5 11.5" />
-                            <path d="M16.5 5l-2.5 11.5" />
-                            <path d="M2 5h20" />
-                        </svg>
-                    );
+                    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M12 5v16" /><path d="M7.5 5l2.5 11.5" /><path d="M16.5 5l-2.5 11.5" /><path d="M2 5h20" /></svg>;
                 case 'chemex':
-                    return (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M7 3h10l-3 8 4 10H6l4-10-3-8z" />
-                            <path d="M10 11h4" />
-                        </svg>
-                    );
+                    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10l-3 8 4 10H6l4-10-3-8z" /><path d="M10 11h4" /></svg>;
                 case 'switch':
-                    return (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M3 5h18l-9 16L3 5z" />
-                            <path d="M2 5h20" />
-                            <path d="M16 18l2 2" />
-                            <rect x="11" y="19" width="2" height="3" />
-                        </svg>
-                    );
+                    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M2 5h20" /><path d="M16 18l2 2" /><rect x="11" y="19" width="2" height="3" /></svg>;
                 case 'bluebottle':
-                    return (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M5 5h14l-2 10H7L5 5z" />
-                            <path d="M3 5h18" />
-                            <path d="M12 15v4" />
-                        </svg>
-                    );
+                    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M5 5h14l-2 10H7L5 5z" /><path d="M3 5h18" /><path d="M12 15v4" /></svg>;
                 default:
                     return <Coffee className="w-6 h-6" color={strokeColor} strokeWidth={strokeWidth} />;
             }
@@ -219,11 +178,12 @@
                 }
             });
 
+            const [editingLogId, setEditingLogId] = useState(null);
+
             const [beanName, setBeanName] = useState('');
             const [roastLevel, setRoastLevel] = useState('light');
             const [rating, setRating] = useState(5);
             const [notes, setNotes] = useState('');
-            
             const [sensory, setSensory] = useState({
                 acidity: 3,
                 sweetness: 3,
@@ -254,14 +214,12 @@
 
                 const prev = prevTimeRef.current;
                 const now = currentTime;
-                
                 const currentStepIndex = recipe.steps.findIndex(s => s.endTime > prev);
                 const nextStepIndex = recipe.steps.findIndex(s => s.endTime > now);
                 
                 if (currentStepIndex !== -1 && nextStepIndex !== -1 && currentStepIndex !== nextStepIndex) {
                     playBeep(880, 'sine', 0.2);
                 }
-
                 prevTimeRef.current = now;
             }, [currentTime, timerStatus, recipe]);
 
@@ -287,54 +245,89 @@
             const handleFinish = (e) => {
                 if(e) e.preventDefault();
                 setTimerStatus('finished');
+                setEditingLogId(null);
                 setShowSaveModal(true);
                 playBeep(440, 'sine', 0.1);
                 setTimeout(() => playBeep(660, 'sine', 0.3), 150);
             };
 
-            const saveLog = async () => {
-                const newLog = {
-                    id: Date.now().toString(),
-                    recipeName: recipe.name,
-                    dripperName: selectedDripper.fullName,
-                    coffeeGrams,
-                    waterTotal,
-                    ratio,
-                    time: Math.round(currentTime),
-                    rating,
-                    sensory,
-                    beanName: beanName || '未命名咖啡豆',
-                    roastLevel,
-                    notes,
-                    createdAt: Date.now()
-                };
+            const handleEditLog = (log) => {
+                setEditingLogId(log.id);
+                setBeanName(log.beanName);
+                setRoastLevel(log.roastLevel);
+                setRating(log.rating);
+                setSensory(log.sensory || { acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
+                setNotes(log.notes);
+                setShowSaveModal(true);
+            };
 
-                const updatedLogs = [newLog, ...logs];
-                setLogs(updatedLogs);
-                
-                try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
-                } catch (e) {
-                    console.error("Failed to save log to local storage", e);
-                }
-
+            const closeModal = () => {
                 setShowSaveModal(false);
+                setEditingLogId(null);
                 handleReset();
                 setNotes('');
                 setBeanName(''); 
                 setRoastLevel('light');
                 setRating(5);
                 setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
-                setActiveTab('journal');
             };
 
-            const deleteLog = async (id) => {
-                const updatedLogs = logs.filter(l => l.id !== id);
+            const saveLog = async () => {
+                let updatedLogs;
+
+                if (editingLogId) {
+                    updatedLogs = logs.map(l => {
+                        if (l.id === editingLogId) {
+                            return {
+                                ...l,
+                                beanName: beanName || '未命名咖啡豆',
+                                roastLevel,
+                                rating,
+                                sensory,
+                                notes
+                            };
+                        }
+                        return l;
+                    });
+                } else {
+                    const newLog = {
+                        id: Date.now().toString(),
+                        recipeName: recipe.name,
+                        dripperName: selectedDripper.fullName,
+                        coffeeGrams,
+                        waterTotal,
+                        ratio,
+                        time: Math.round(currentTime),
+                        rating,
+                        sensory,
+                        beanName: beanName || '未命名咖啡豆',
+                        roastLevel,
+                        notes,
+                        createdAt: Date.now()
+                    };
+                    updatedLogs = [newLog, ...logs];
+                }
+
                 setLogs(updatedLogs);
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
                 } catch (e) {
-                    console.error("Failed to update local storage", e);
+                    console.error("Failed to save log", e);
+                }
+
+                closeModal();
+                setActiveTab('journal');
+            };
+
+            const deleteLog = async (id) => {
+                if (confirm('確定要刪除這筆紀錄嗎？')) {
+                    const updatedLogs = logs.filter(l => l.id !== id);
+                    setLogs(updatedLogs);
+                    try {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+                    } catch (e) {
+                        console.error("Failed to update local storage", e);
+                    }
                 }
             };
 
@@ -361,7 +354,7 @@
 
             const currentStepInfo = getStepInfo(currentTime);
 
-            // --- Views (Render Functions to prevent re-mount/focus loss) ---
+            // --- Views ---
             const renderCalculatorView = () => (
                 <div className="space-y-4 pb-32 select-none">
                     <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
@@ -694,12 +687,22 @@
                                     {log.notes && (
                                         <p className="text-sm text-stone-600 italic border-l-2 border-stone-200 pl-2 mt-2">"{log.notes}"</p>
                                     )}
-                                    <button 
-                                        onClick={() => deleteLog(log.id)}
-                                        className="self-end text-xs text-red-300 hover:text-red-500 flex items-center gap-1 mt-1 cursor-pointer"
-                                    >
-                                        <Trash2 className="w-3 h-3" /> 刪除
-                                    </button>
+                                    
+                                    {/* Updated Action Buttons: Distinct Edit and Delete */}
+                                    <div className="flex justify-end gap-3 mt-3 pt-3 border-t border-stone-50">
+                                        <button 
+                                            onClick={() => handleEditLog(log)}
+                                            className="flex items-center gap-1 text-xs font-medium text-stone-500 hover:text-stone-700 px-2 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
+                                        >
+                                            <Edit className="w-3.5 h-3.5" /> 編輯
+                                        </button>
+                                        <button 
+                                            onClick={() => deleteLog(log.id)}
+                                            className="flex items-center gap-1 text-xs font-medium text-red-400 hover:text-red-600 px-2 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" /> 刪除
+                                        </button>
+                                    </div>
                                 </div>
                             );
                         })
@@ -744,7 +747,37 @@
                     {showSaveModal && (
                         <div className="fixed inset-0 bg-black/50 z-[2000] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
                             <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 h-[85vh] overflow-y-auto">
-                                <h3 className="text-xl font-bold mb-4 text-center">紀錄這杯咖啡</h3>
+                                <h3 className="text-xl font-bold mb-4 text-center">{editingLogId ? '編輯紀錄' : '紀錄這杯咖啡'}</h3>
+                                
+                                {/* Bean Info Inputs (Added to Modal for Editing) */}
+                                <div className="mb-6 space-y-3">
+                                    <div className="relative">
+                                        <Bean className="absolute left-3 top-3 w-5 h-5 text-stone-400" />
+                                        <input 
+                                            type="text" 
+                                            placeholder="咖啡豆名稱" 
+                                            value={beanName}
+                                            onChange={(e) => setBeanName(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-3 bg-stone-50 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                                        />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        {ROAST_LEVELS.map(level => (
+                                            <button
+                                                key={level.id}
+                                                onClick={() => setRoastLevel(level.id)}
+                                                className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-all ${
+                                                    roastLevel === level.id 
+                                                    ? `${level.color} shadow-sm ring-1 ring-offset-1 ring-amber-200` 
+                                                    : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50'
+                                                }`}
+                                            >
+                                                {level.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 <div className="flex justify-center gap-2 mb-6">
                                     {[1, 2, 3, 4, 5].map(star => (
                                         <button 
@@ -783,16 +816,16 @@
                                 />
                                 <div className="flex gap-3 pb-4">
                                     <button 
-                                        onClick={() => { setShowSaveModal(false); handleReset(); }}
+                                        onClick={closeModal}
                                         className="flex-1 py-3 text-stone-500 font-medium hover:bg-stone-50 rounded-xl transition-colors cursor-pointer"
                                     >
-                                        不儲存
+                                        取消
                                     </button>
                                     <button 
                                         onClick={saveLog}
                                         className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-colors cursor-pointer"
                                     >
-                                        儲存紀錄
+                                        {editingLogId ? '更新紀錄' : '儲存紀錄'}
                                     </button>
                                 </div>
                             </div>
