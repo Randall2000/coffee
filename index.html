@@ -1,43 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Coffee, Droplets, History, Settings, ChevronRight, Save, Plus, Trash2, BookOpen, Star, Bean, Timer, List, Info, Filter, ChevronDown, ChevronUp } from 'lucide-react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
-
-// --- Firebase Configuration & Initialization ---
-// 修正：移除 import.meta.env 以相容預覽環境
-// 在預覽環境中，__firebase_config 會自動注入
-// 若您要部署到 Vercel/Vite，請將下方 try-catch 區塊替換為標準的環境變數讀取方式
-let firebaseConfig;
-try {
-  // @ts-ignore
-  if (typeof __firebase_config !== 'undefined') {
-    firebaseConfig = JSON.parse(__firebase_config);
-  } else {
-    // 本地開發或未注入時的 fallback
-    firebaseConfig = { apiKey: "DEMO_KEY" };
-  }
-} catch (e) {
-  console.error("Firebase config parsing error", e);
-  firebaseConfig = { apiKey: "DEMO_KEY" };
-}
-
-// 只有在 Config 有效時才初始化 Firebase
-let app, auth, db;
-const isFirebaseConfigured = firebaseConfig && firebaseConfig.apiKey !== "DEMO_KEY";
-
-if (isFirebaseConfigured) {
-  try {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-  } catch (e) {
-    console.error("Firebase init error", e);
-  }
-}
-
-// @ts-ignore
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 // --- Improved Audio Context (Singleton Pattern) ---
 let audioCtx = null;
@@ -189,8 +151,10 @@ const getDripperIcon = (id, isActive) => {
   }
 };
 
+// --- Storage Key ---
+const STORAGE_KEY = 'barista_flow_logs';
+
 export default function BaristaFlow() {
-  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('brew');
   
   // Brewing State
@@ -203,8 +167,17 @@ export default function BaristaFlow() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showSteps, setShowSteps] = useState(false); 
   
-  // Journal State
-  const [logs, setLogs] = useState([]);
+  // Journal State (Initialized from Local Storage)
+  const [logs, setLogs] = useState(() => {
+    try {
+      const savedLogs = localStorage.getItem(STORAGE_KEY);
+      return savedLogs ? JSON.parse(savedLogs) : [];
+    } catch (e) {
+      console.error("Failed to load logs", e);
+      return [];
+    }
+  });
+
   const [beanName, setBeanName] = useState('');
   const [roastLevel, setRoastLevel] = useState('light');
   const [rating, setRating] = useState(5);
@@ -225,44 +198,6 @@ export default function BaristaFlow() {
   const waterTotal = Math.round(coffeeGrams * ratio);
   const selectedDripper = DRIPPERS.find(d => d.id === selectedDripperId) || DRIPPERS[0];
   
-  // --- Auth & Data Effects ---
-  useEffect(() => {
-    if (!isFirebaseConfigured) return;
-
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (error) {
-        console.error("Auth error:", error);
-      }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user || !isFirebaseConfigured) return;
-    const q = query(
-      collection(db, 'artifacts', appId, 'users', user.uid, 'brew_logs'),
-      orderBy('createdAt', 'desc')
-    );
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const logData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setLogs(logData);
-    }, (error) => console.error("Error fetching logs:", error));
-
-    return () => unsubscribe();
-  }, [user]);
-
   // --- Timer Logic ---
   useEffect(() => {
     let interval = null;
@@ -322,71 +257,49 @@ export default function BaristaFlow() {
   };
 
   const saveLog = async () => {
-    if (!user || !isFirebaseConfigured) {
-        // Fallback for demo/no-firebase mode
-        setLogs(prev => [{
-            id: Date.now().toString(),
-            recipeName: recipe.name,
-            dripperName: selectedDripper.fullName,
-            coffeeGrams,
-            waterTotal,
-            ratio,
-            time: Math.round(currentTime),
-            rating,
-            sensory,
-            beanName: beanName || '未命名咖啡豆',
-            roastLevel,
-            notes,
-            createdAt: { seconds: Date.now() / 1000 }
-        }, ...prev]);
-        setShowSaveModal(false);
-        handleReset();
-        setNotes('');
-        setBeanName(''); 
-        setRoastLevel('light');
-        setRating(5);
-        setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
-        setActiveTab('journal');
-        return;
+    const newLog = {
+      id: Date.now().toString(), // Simple ID generation
+      recipeName: recipe.name,
+      dripperName: selectedDripper.fullName,
+      coffeeGrams,
+      waterTotal,
+      ratio,
+      time: Math.round(currentTime),
+      rating,
+      sensory,
+      beanName: beanName || '未命名咖啡豆',
+      roastLevel,
+      notes,
+      createdAt: Date.now() // Store timestamp as number
+    };
+
+    const updatedLogs = [newLog, ...logs];
+    setLogs(updatedLogs);
+    
+    // Save to Local Storage
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+    } catch (e) {
+      console.error("Failed to save log to local storage", e);
     }
 
-    try {
-      await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'brew_logs'), {
-        createdAt: serverTimestamp(),
-        recipeName: recipe.name,
-        dripperName: selectedDripper.fullName,
-        coffeeGrams,
-        waterTotal,
-        ratio,
-        time: Math.round(currentTime),
-        rating,
-        sensory,
-        beanName: beanName || '未命名咖啡豆',
-        roastLevel,
-        notes
-      });
-      setShowSaveModal(false);
-      handleReset();
-      setNotes('');
-      setBeanName(''); 
-      setRoastLevel('light');
-      setRating(5);
-      setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
-      setActiveTab('journal');
-    } catch (e) {
-      console.error("Error saving log", e);
-    }
+    setShowSaveModal(false);
+    handleReset();
+    setNotes('');
+    setBeanName(''); 
+    setRoastLevel('light');
+    setRating(5);
+    setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
+    setActiveTab('journal');
   };
 
   const deleteLog = async (id) => {
-    if (!user || !isFirebaseConfigured) {
-        setLogs(prev => prev.filter(l => l.id !== id));
-        return;
-    }
+    const updatedLogs = logs.filter(l => l.id !== id);
+    setLogs(updatedLogs);
     try {
-      await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'brew_logs', id));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
     } catch (e) {
-      console.error("Error deleting log", e);
+      console.error("Failed to update local storage", e);
     }
   };
 
@@ -417,11 +330,6 @@ export default function BaristaFlow() {
 
   const CalculatorView = () => (
     <div className="space-y-4 pb-24 select-none">
-      {!isFirebaseConfigured && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-lg mb-4">
-            ⚠️ 尚未設定 Firebase，日誌將僅儲存於本地記憶體（重整後消失）。
-        </div>
-      )}
       
       {/* 1. Bean Info Card */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
@@ -614,7 +522,6 @@ export default function BaristaFlow() {
   );
 
   const TimerView = () => {
-    // ... (Keep existing TimerView code)
     const isFinished = timerStatus === 'finished';
     const totalTime = recipe.steps[recipe.steps.length-1].endTime;
     const progress = Math.min((currentTime / totalTime) * 100, 100);
@@ -692,7 +599,6 @@ export default function BaristaFlow() {
 
   const JournalView = () => (
     <div className="space-y-4">
-      {/* ... (Keep existing JournalView code) ... */}
       <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
         <BookOpen className="w-6 h-6 text-amber-600" /> 沖煮日誌
       </h2>
@@ -723,7 +629,7 @@ export default function BaristaFlow() {
                     <span>•</span>
                     <span>{log.recipeName?.split('(')[0]}</span>
                     <span>•</span>
-                    <span>{log.createdAt?.seconds ? new Date(log.createdAt.seconds * 1000).toLocaleDateString() : 'Just now'}</span>
+                    <span>{new Date(log.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-md">
@@ -799,7 +705,7 @@ export default function BaristaFlow() {
           <span className="font-bold text-lg tracking-tight">Barista Flow</span>
         </div>
         <div className="text-xs font-mono text-stone-400">
-           {user ? '已連線' : '訪客模式'}
+           本地模式
         </div>
       </div>
 
@@ -835,6 +741,8 @@ export default function BaristaFlow() {
           <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 h-[85vh] overflow-y-auto">
             <h3 className="text-xl font-bold mb-4 text-center">紀錄這杯咖啡</h3>
             
+            {/* Note: Bean Info section removed from here as per user request */}
+
             <div className="flex justify-center gap-2 mb-6">
               {[1, 2, 3, 4, 5].map(star => (
                 <button 
