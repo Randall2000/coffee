@@ -1,812 +1,769 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Coffee, Droplets, History, Settings, ChevronRight, Save, Plus, Trash2, BookOpen, Star, Bean, Timer, List, Info, Filter, ChevronDown, ChevronUp } from 'lucide-react';
-
-// --- Improved Audio Context (Singleton Pattern) ---
-let audioCtx = null;
-
-const playBeep = (freq = 440, type = 'sine', duration = 0.1) => {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Barista Flow</title>
     
-    if (!audioCtx) {
-      audioCtx = new AudioContext();
+    <!-- 1. 引入 Tailwind CSS (樣式庫) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. 設定 Import Maps (定義套件來源) -->
+    <!-- 這讓我們可以像在開發環境一樣使用 import 語法 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.300.0"
+        }
     }
-    
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
+    </script>
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {
-    console.error("Audio play failed", e);
-  }
-};
+    <!-- 3. 引入 Babel (讓瀏覽器看不懂的 JSX 變成看得懂的 JS) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-// --- Data Constants ---
-const DRIPPERS = [
-  { id: 'v60', name: 'V60', fullName: 'Hario V60', type: 'Cone' },
-  { id: 'kalita', name: 'Kalita', fullName: 'Kalita Wave', type: 'Flat' },
-  { id: 'origami', name: 'Origami', fullName: 'Origami Dripper', type: 'Cone' },
-  { id: 'chemex', name: 'Chemex', fullName: 'Chemex', type: 'Cone' },
-  { id: 'switch', name: 'Switch', fullName: 'Hario Switch', type: 'Hybrid' },
-  { id: 'bluebottle', name: 'BB', fullName: 'Blue Bottle', type: 'Flat' },
-  { id: 'other', name: 'Other', fullName: '其他濾杯', type: 'Other' },
-];
+    <!-- 防止 iOS 點擊延遲與選取 -->
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        /* 隱藏捲軸但保留功能 */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 h-screen overflow-hidden">
+    <div id="root"></div>
 
-const RECIPES = {
-  v60: {
-    id: 'v60',
-    name: '究極 V60 (James Hoffmann)',
-    description: '強調高萃取率與乾淨度，適合淺焙豆。',
-    ratio: 16.7, // 60g/L standard
-    steps: [
-      { name: '悶蒸 (Bloom)', desc: '濕潤粉層', endTime: 45, waterTargetPercentage: 0.2 }, 
-      { name: '第一段注水 (60%)', desc: '建立水位與高溫', endTime: 75, waterTargetPercentage: 0.6 }, 
-      { name: '第二段注水 (100%)', desc: '維持流速', endTime: 105, waterTargetPercentage: 1.0 }, 
-      { name: '攪拌與濾乾 (Draw)', desc: '輕輕搖晃濾杯', endTime: 210, waterTargetPercentage: 1.0 } 
-    ]
-  },
-  fourSix: {
-    id: 'fourSix',
-    name: '4:6 法 (Tetsu Kasuya)',
-    description: '前40%決定風味，後60%決定醇厚度。',
-    ratio: 15, // Standard 1:15
-    steps: [
-      { name: '第1注 (酸值)', desc: '決定酸質明亮度', endTime: 45, waterTargetPercentage: 0.2 },
-      { name: '第2注 (甜感)', desc: '決定甜感與平衡', endTime: 90, waterTargetPercentage: 0.4 },
-      { name: '第3注 (層次)', desc: '堆疊濃度', endTime: 135, waterTargetPercentage: 0.6 },
-      { name: '第4注 (強度)', desc: '強化醇厚度', endTime: 180, waterTargetPercentage: 0.8 },
-      { name: '第5注 (結尾)', desc: '最後調整與濾乾', endTime: 210, waterTargetPercentage: 1.0 }
-    ]
-  }
-};
+    <!-- 4. 主要程式邏輯 -->
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { Play, Pause, RotateCcw, Coffee, Droplets, History, Settings, ChevronRight, Save, Plus, Trash2, BookOpen, Star, Bean, Timer, List, Info, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 
-const SENSORY_ATTRIBUTES = [
-  { key: 'acidity', label: '酸值', color: 'bg-yellow-400' },
-  { key: 'sweetness', label: '甜感', color: 'bg-orange-400' },
-  { key: 'bitterness', label: '苦味', color: 'bg-stone-600' },
-  { key: 'body', label: '醇厚', color: 'bg-amber-700' },
-];
+        // --- 音效引擎 (Singleton) ---
+        let audioCtx = null;
 
-const ROAST_LEVELS = [
-  { id: 'light', label: '淺焙', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  { id: 'medium', label: '中焙', color: 'bg-orange-100 text-orange-700 border-orange-200' },
-  { id: 'dark', label: '深焙', color: 'bg-stone-200 text-stone-700 border-stone-300' },
-];
-
-// --- Dripper Icons Helper ---
-const getDripperIcon = (id, isActive) => {
-  const strokeColor = isActive ? "#FFFFFF" : "#a8a29e";
-  const strokeWidth = 1.5;
-
-  switch (id) {
-    case 'v60': 
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 5h18l-9 16L3 5z" />
-          <path d="M2 5h20" />
-          <path d="M12 21v-4" />
-        </svg>
-      );
-    case 'kalita':
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 5h16l-3 12H7L4 5z" />
-          <path d="M2 5h20" />
-          <path d="M7 17v-4" />
-          <path d="M17 17v-4" />
-          <path d="M12 17v2" />
-        </svg>
-      );
-    case 'origami':
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 5h18l-9 16L3 5z" />
-          <path d="M12 5v16" />
-          <path d="M7.5 5l2.5 11.5" />
-          <path d="M16.5 5l-2.5 11.5" />
-          <path d="M2 5h20" />
-        </svg>
-      );
-    case 'chemex':
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 3h10l-3 8 4 10H6l4-10-3-8z" />
-          <path d="M10 11h4" />
-        </svg>
-      );
-    case 'switch':
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 5h18l-9 16L3 5z" />
-          <path d="M2 5h20" />
-          <path d="M16 18l2 2" />
-          <rect x="11" y="19" width="2" height="3" />
-        </svg>
-      );
-    case 'bluebottle':
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 5h14l-2 10H7L5 5z" />
-          <path d="M3 5h18" />
-          <path d="M12 15v4" />
-        </svg>
-      );
-    default:
-      return <Coffee className="w-6 h-6" color={strokeColor} strokeWidth={strokeWidth} />;
-  }
-};
-
-// --- Storage Key ---
-const STORAGE_KEY = 'barista_flow_logs';
-
-export default function BaristaFlow() {
-  const [activeTab, setActiveTab] = useState('brew');
-  
-  // Brewing State
-  const [selectedRecipeId, setSelectedRecipeId] = useState('v60');
-  const [selectedDripperId, setSelectedDripperId] = useState('v60');
-  const [coffeeGrams, setCoffeeGrams] = useState(20);
-  const [ratio, setRatio] = useState(16.7);
-  const [timerStatus, setTimerStatus] = useState('idle');
-  const [currentTime, setCurrentTime] = useState(0);
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [showSteps, setShowSteps] = useState(false); 
-  
-  // Journal State (Initialized from Local Storage)
-  const [logs, setLogs] = useState(() => {
-    try {
-      const savedLogs = localStorage.getItem(STORAGE_KEY);
-      return savedLogs ? JSON.parse(savedLogs) : [];
-    } catch (e) {
-      console.error("Failed to load logs", e);
-      return [];
-    }
-  });
-
-  const [beanName, setBeanName] = useState('');
-  const [roastLevel, setRoastLevel] = useState('light');
-  const [rating, setRating] = useState(5);
-  const [notes, setNotes] = useState('');
-  
-  // Sensory State
-  const [sensory, setSensory] = useState({
-    acidity: 3,
-    sweetness: 3,
-    bitterness: 3,
-    body: 3
-  });
-
-  const prevTimeRef = useRef(0);
-
-  // Derived State
-  const recipe = RECIPES[selectedRecipeId];
-  const waterTotal = Math.round(coffeeGrams * ratio);
-  const selectedDripper = DRIPPERS.find(d => d.id === selectedDripperId) || DRIPPERS[0];
-  
-  // --- Timer Logic ---
-  useEffect(() => {
-    let interval = null;
-    if (timerStatus === 'running') {
-      interval = setInterval(() => {
-        setCurrentTime(prev => prev + 0.1);
-      }, 100);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [timerStatus]);
-
-  // --- Beep Logic ---
-  useEffect(() => {
-    if (timerStatus !== 'running') return;
-
-    const prev = prevTimeRef.current;
-    const now = currentTime;
-    
-    const currentStepIndex = recipe.steps.findIndex(s => s.endTime > prev);
-    const nextStepIndex = recipe.steps.findIndex(s => s.endTime > now);
-    
-    if (currentStepIndex !== -1 && nextStepIndex !== -1 && currentStepIndex !== nextStepIndex) {
-        playBeep(880, 'sine', 0.2);
-    }
-
-    prevTimeRef.current = now;
-  }, [currentTime, timerStatus, recipe]);
-
-  // --- Controls Handlers ---
-  const handleStartStop = (e) => {
-    if(e) e.preventDefault(); 
-    if (timerStatus === 'idle') {
-      playBeep(600, 'triangle', 0.1);
-      setTimerStatus('running');
-    } else if (timerStatus === 'running') {
-      setTimerStatus('paused');
-    } else if (timerStatus === 'paused') {
-      setTimerStatus('running');
-    }
-  };
-
-  const handleReset = (e) => {
-    if(e) e.preventDefault();
-    setTimerStatus('idle');
-    setCurrentTime(0);
-    prevTimeRef.current = 0;
-  };
-
-  const handleFinish = (e) => {
-    if(e) e.preventDefault();
-    setTimerStatus('finished');
-    setShowSaveModal(true);
-    playBeep(440, 'sine', 0.1);
-    setTimeout(() => playBeep(660, 'sine', 0.3), 150);
-  };
-
-  const saveLog = async () => {
-    const newLog = {
-      id: Date.now().toString(), // Simple ID generation
-      recipeName: recipe.name,
-      dripperName: selectedDripper.fullName,
-      coffeeGrams,
-      waterTotal,
-      ratio,
-      time: Math.round(currentTime),
-      rating,
-      sensory,
-      beanName: beanName || '未命名咖啡豆',
-      roastLevel,
-      notes,
-      createdAt: Date.now() // Store timestamp as number
-    };
-
-    const updatedLogs = [newLog, ...logs];
-    setLogs(updatedLogs);
-    
-    // Save to Local Storage
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
-    } catch (e) {
-      console.error("Failed to save log to local storage", e);
-    }
-
-    setShowSaveModal(false);
-    handleReset();
-    setNotes('');
-    setBeanName(''); 
-    setRoastLevel('light');
-    setRating(5);
-    setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
-    setActiveTab('journal');
-  };
-
-  const deleteLog = async (id) => {
-    const updatedLogs = logs.filter(l => l.id !== id);
-    setLogs(updatedLogs);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
-    } catch (e) {
-      console.error("Failed to update local storage", e);
-    }
-  };
-
-  const updateSensory = (key, value) => {
-    setSensory(prev => ({ ...prev, [key]: value }));
-  };
-
-  const getStepInfo = (targetTime) => {
-    const stepIndex = recipe.steps.findIndex(s => s.endTime >= targetTime);
-    const index = stepIndex === -1 ? recipe.steps.length - 1 : stepIndex;
-    const step = recipe.steps[index];
-    const prevEndTime = index > 0 ? recipe.steps[index - 1].endTime : 0;
-    const duration = step.endTime - prevEndTime;
-    const timeInStep = targetTime - prevEndTime;
-    
-    return { 
-      step, 
-      index, 
-      duration, 
-      timeInStep: Math.min(Math.max(timeInStep, 0), duration),
-      targetWater: Math.round(step.waterTargetPercentage * waterTotal)
-    };
-  };
-
-  const currentStepInfo = getStepInfo(currentTime);
-  
-  // --- UI Components ---
-
-  const CalculatorView = () => (
-    <div className="space-y-4 pb-24 select-none">
-      
-      {/* 1. Bean Info Card */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
-         <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-stone-700 flex items-center gap-2">
-               <Bean className="w-4 h-4 text-amber-600" /> 咖啡豆
-            </h2>
-            <div className="flex bg-stone-100 rounded-lg p-0.5">
-              {ROAST_LEVELS.map(level => (
-                <button
-                  key={level.id}
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    setRoastLevel(level.id);
-                  }}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
-                    roastLevel === level.id 
-                    ? 'bg-white text-stone-800 shadow-sm' 
-                    : 'text-stone-400 hover:text-stone-600'
-                  }`}
-                >
-                  {level.label}
-                </button>
-              ))}
-            </div>
-         </div>
-         <input 
-            type="text" 
-            placeholder="輸入豆名 (例如: 衣索比亞 日曬)" 
-            value={beanName}
-            onChange={(e) => setBeanName(e.target.value)}
-            className="w-full text-lg font-medium placeholder:text-stone-300 border-none p-0 focus:ring-0"
-         />
-      </div>
-
-      {/* 2. Gear & Recipe */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
-         <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-stone-700 flex items-center gap-2">
-               <Settings className="w-4 h-4 text-amber-600" /> 沖煮配置
-            </h2>
-         </div>
-         
-         <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-2 px-2 mb-3 border-b border-stone-100">
-            {DRIPPERS.map(d => {
-               const isActive = selectedDripperId === d.id;
-               return (
-                 <button
-                    key={d.id}
-                    onClick={() => setSelectedDripperId(d.id)}
-                    type="button"
-                    className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-xl border transition-all cursor-pointer ${
-                       isActive
-                       ? 'bg-stone-800 border-stone-800 shadow-sm' 
-                       : 'bg-white border-stone-100 hover:bg-stone-50'
-                    }`}
-                 >
-                    <div className="mb-1 scale-90">
-                      {getDripperIcon(d.id, isActive)}
-                    </div>
-                    <span className={`text-[9px] font-bold ${isActive ? 'text-white' : 'text-stone-400'}`}>
-                      {d.name}
-                    </span>
-                 </button>
-               );
-            })}
-         </div>
-
-         <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2">
-              {Object.values(RECIPES).map(r => (
-                <button
-                  key={r.id}
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    setSelectedRecipeId(r.id);
-                    setRatio(r.ratio);
-                  }}
-                  type="button"
-                  className={`p-2 rounded-lg text-left transition-all border cursor-pointer ${
-                    selectedRecipeId === r.id 
-                    ? 'bg-amber-50 border-amber-200 text-amber-900' 
-                    : 'bg-white border-stone-200 text-stone-400'
-                  }`}
-                >
-                  <div className="font-bold text-xs">{r.name.split('(')[0]}</div>
-                  <div className="text-[9px] opacity-70 truncate">{r.name.split('(')[1]?.replace(')', '')}</div>
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-               <div>
-                  <div className="flex justify-between text-xs mb-1">
-                     <span className="text-stone-400">粉量</span>
-                     <span className="font-bold text-stone-700">{coffeeGrams}g</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="40"
-                    step="0.5"
-                    value={coffeeGrams}
-                    onChange={(e) => setCoffeeGrams(Number(e.target.value))}
-                    className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-                  />
-               </div>
-               <div>
-                  <div className="flex justify-between text-xs mb-1">
-                     <span className="text-stone-400">粉水比</span>
-                     <span className="font-bold text-stone-700">1:{ratio}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="20"
-                    step="0.1"
-                    value={ratio}
-                    onChange={(e) => setRatio(Number(e.target.value))}
-                    className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-                  />
-               </div>
-            </div>
-         </div>
-      </div>
-
-      {/* 3. Summary */}
-      <div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
-          <div className="p-4 flex justify-between items-center">
-             <div>
-                <p className="text-[10px] text-stone-400 uppercase tracking-wider font-bold">預計結果</p>
-                <div className="flex items-baseline gap-1 mt-0.5">
-                   <span className="text-2xl font-bold text-stone-800">{waterTotal}</span>
-                   <span className="text-xs text-stone-500 font-medium">ml</span>
-                   <span className="text-stone-300 mx-3">|</span>
-                   <span className="text-xl font-bold text-stone-800">
-                     {Math.floor(recipe.steps[recipe.steps.length-1].endTime / 60)}:
-                     {(recipe.steps[recipe.steps.length-1].endTime % 60).toString().padStart(2, '0')}
-                   </span>
-                </div>
-             </div>
-             
-             <button 
-               onPointerDown={(e) => {
-                 e.preventDefault();
-                 setShowSteps(!showSteps);
-               }}
-               className="flex items-center gap-1 text-xs font-bold text-stone-500 bg-stone-50 border border-stone-100 px-3 py-1.5 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
-             >
-                {showSteps ? '收合' : '詳細步驟'} 
-                {showSteps ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-             </button>
-          </div>
-
-          {showSteps && (
-             <div className="p-3 pt-0 space-y-1 animate-in slide-in-from-top-2 duration-200">
-                <div className="h-px bg-stone-100 mb-3 mx-1" />
-                {recipe.steps.map((step, idx) => {
-                   const prevEndTime = idx > 0 ? recipe.steps[idx - 1].endTime : 0;
-                   const duration = step.endTime - prevEndTime;
-                   const targetWater = Math.round(step.waterTargetPercentage * waterTotal);
-                   
-                   return (
-                     <div key={idx} className="flex items-center justify-between text-xs p-2 rounded hover:bg-stone-50 transition-colors group">
-                        <div className="flex items-center gap-3">
-                           <span className="w-5 h-5 flex items-center justify-center bg-stone-100 text-stone-500 rounded-full text-[9px] font-bold group-hover:bg-stone-800 group-hover:text-white transition-colors">{idx + 1}</span>
-                           <span className="text-stone-600 font-medium">{step.name}</span>
-                        </div>
-                        <div className="flex items-center gap-4 font-mono text-stone-400">
-                           <span>{targetWater}ml</span>
-                           <span>{duration}s</span>
-                        </div>
-                     </div>
-                   )
-                })}
-             </div>
-          )}
-      </div>
-
-      {/* Floating Action Button */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent pointer-events-none z-10 flex justify-center">
-         <button 
-           onPointerDown={() => setTimerStatus('paused')} 
-           className="w-full max-w-sm bg-stone-900 text-white py-3.5 rounded-xl font-bold text-lg shadow-xl shadow-stone-200 hover:bg-stone-800 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none pointer-events-auto transform active:scale-95"
-         >
-           <Droplets className="w-5 h-5" /> 準備沖煮
-         </button>
-      </div>
-    </div>
-  );
-
-  const TimerView = () => {
-    const isFinished = timerStatus === 'finished';
-    const totalTime = recipe.steps[recipe.steps.length-1].endTime;
-    const progress = Math.min((currentTime / totalTime) * 100, 100);
-    const { step, index, duration, timeInStep, targetWater } = currentStepInfo;
-
-    const radius = 150; 
-    const stroke = 6; 
-    const normalizedRadius = radius - stroke * 2;
-    const circumference = normalizedRadius * 2 * Math.PI;
-    const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-    return (
-      <div className="flex flex-col h-full items-center py-4 relative select-none">
-        <div className="text-center space-y-1 mb-2 z-10 w-full px-8">
-          <h2 className="text-stone-500 font-bold text-sm tracking-wider uppercase">{recipe.name}</h2>
-          <div className="flex items-center justify-center gap-2 text-stone-400 text-[10px] font-mono">
-            <span>{selectedDripper.name}</span>
-            <span>•</span>
-            <span>{coffeeGrams}g / {waterTotal}ml</span>
-          </div>
-        </div>
-
-        <div className="flex-1 flex items-center justify-center relative w-full z-0">
-          <div className="relative">
-             <svg height={radius * 2} width={radius * 2} className="rotate-[-90deg]">
-               <circle stroke="#e7e5e4" strokeWidth={stroke} fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
-               <circle stroke="#d97706" strokeWidth={stroke} strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }} strokeLinecap="round" fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
-             </svg>
-             
-             <div className="absolute inset-0 flex flex-col items-center text-center py-10 px-4 pointer-events-none">
-                <div className="flex flex-col items-center opacity-50 mb-auto">
-                    <span className="text-[10px] tracking-widest uppercase">Total</span>
-                    <span className="text-sm font-mono font-bold tabular-nums">{Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}</span>
-                </div>
+        const playBeep = (freq = 440, type = 'sine', duration = 0.1) => {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
                 
-                {!isFinished ? (
-                  <div className="flex flex-col items-center justify-center w-full mb-auto space-y-1">
-                     <div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px]">{step.name.split('(')[0]}</div>
-                     <div className="flex items-end leading-none">
-                        <span className="text-6xl font-bold text-stone-800 tabular-nums tracking-tighter">{Math.floor(timeInStep)}</span>
-                        <span className="text-lg text-stone-400 font-medium mb-1 ml-1 w-8 text-left">/ {duration}</span>
-                     </div>
-                     <div className="mt-2 px-4 py-1.5 bg-amber-50 rounded-2xl text-base font-bold text-amber-700 border border-amber-100 flex items-center gap-2 shadow-sm">
-                        <Droplets className="w-4 h-4 fill-amber-700" />
-                        <span>目標: {targetWater}</span>
-                     </div>
-                  </div>
-                ) : (
-                   <div className="flex flex-col items-center justify-center mb-auto">
-                     <div className="text-amber-600 font-bold text-3xl animate-bounce">✨ 完成</div>
-                     <p className="text-stone-400 text-xs mt-2">享受您的咖啡</p>
-                   </div>
-                )}
-                <div className="h-4"></div>
-             </div>
-          </div>
-        </div>
+                if (!audioCtx) {
+                    audioCtx = new AudioContext();
+                }
+                
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
 
-        <div className="w-full grid grid-cols-3 gap-8 items-center justify-items-center mt-auto pb-4 relative z-[999]">
-           <button onPointerDown={handleReset} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
-            <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"><RotateCcw className="w-5 h-5" /></div>
-            <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">Reset</span>
-          </button>
-          <button onPointerDown={handleStartStop} className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none ${timerStatus === 'running' ? 'bg-amber-100 text-amber-600 border-2 border-amber-200' : 'bg-amber-600 text-white'}`}>
-            {timerStatus === 'running' ? <Pause className="w-10 h-10 fill-current" /> : <Play className="w-10 h-10 fill-current ml-1" />}
-          </button>
-          <button onPointerDown={handleFinish} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
-            <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"><Save className="w-5 h-5" /></div>
-            <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">Save</span>
-          </button>
-        </div>
-      </div>
-    );
-  };
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.error("Audio play failed", e);
+            }
+        };
 
-  const JournalView = () => (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
-        <BookOpen className="w-6 h-6 text-amber-600" /> 沖煮日誌
-      </h2>
-      
-      {logs.length === 0 ? (
-        <div className="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
-          <Coffee className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-          <p className="text-stone-500">尚無紀錄，快去沖一杯吧！</p>
-        </div>
-      ) : (
-        logs.map(log => {
-           const roastInfo = ROAST_LEVELS.find(r => r.id === log.roastLevel) || ROAST_LEVELS[0];
-           
-           return (
-            <div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col gap-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-stone-800 text-lg flex items-center gap-2">
-                    {log.beanName || '未命名咖啡豆'}
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-normal ${roastInfo.color}`}>
-                      {roastInfo.label}
-                    </span>
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-stone-400 mt-1">
-                    <span className="flex items-center gap-1 bg-stone-100 px-1.5 py-0.5 rounded text-stone-500">
-                       <Filter className="w-3 h-3" /> {log.dripperName || 'V60'}
-                    </span>
-                    <span>•</span>
-                    <span>{log.recipeName?.split('(')[0]}</span>
-                    <span>•</span>
-                    <span>{new Date(log.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-md">
-                  <Star className="w-4 h-4 text-amber-500 fill-current" />
-                  <span className="text-amber-800 font-bold text-sm">{log.rating}</span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-2 text-center text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
-                <div>
-                  <span className="block text-stone-400 scale-75 uppercase">粉重</span>
-                  {log.coffeeGrams}g
-                </div>
-                <div>
-                  <span className="block text-stone-400 scale-75 uppercase">總水</span>
-                  {log.waterTotal}ml
-                </div>
-                <div>
-                  <span className="block text-stone-400 scale-75 uppercase">時間</span>
-                  {Math.floor(log.time / 60)}:{(log.time % 60).toString().padStart(2, '0')}
-                </div>
-              </div>
+        // --- 資料常數 ---
+        const DRIPPERS = [
+            { id: 'v60', name: 'V60', fullName: 'Hario V60', type: 'Cone' },
+            { id: 'kalita', name: 'Kalita', fullName: 'Kalita Wave', type: 'Flat' },
+            { id: 'origami', name: 'Origami', fullName: 'Origami Dripper', type: 'Cone' },
+            { id: 'chemex', name: 'Chemex', fullName: 'Chemex', type: 'Cone' },
+            { id: 'switch', name: 'Switch', fullName: 'Hario Switch', type: 'Hybrid' },
+            { id: 'bluebottle', name: 'BB', fullName: 'Blue Bottle', type: 'Flat' },
+            { id: 'other', name: 'Other', fullName: '其他濾杯', type: 'Other' },
+        ];
 
-              {log.sensory && (
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                   {SENSORY_ATTRIBUTES.map(attr => (
-                     <div key={attr.key} className="flex items-center justify-between text-xs">
-                        <span className="text-stone-400">{attr.label}</span>
-                        <div className="flex gap-[1px]">
-                           {[1,2,3,4,5].map(lvl => (
-                              <div 
-                                key={lvl} 
-                                className={`w-2 h-1.5 rounded-sm ${lvl <= log.sensory[attr.key] ? attr.color : 'bg-stone-100'}`} 
-                              />
-                           ))}
-                        </div>
-                     </div>
-                   ))}
-                </div>
-              )}
+        const RECIPES = {
+            v60: {
+                id: 'v60',
+                name: '究極 V60 (James Hoffmann)',
+                description: '強調高萃取率與乾淨度，適合淺焙豆。',
+                ratio: 16.7, // 60g/L standard
+                steps: [
+                    { name: '悶蒸 (Bloom)', desc: '濕潤粉層', endTime: 45, waterTargetPercentage: 0.2 }, 
+                    { name: '第一段注水 (60%)', desc: '建立水位與高溫', endTime: 75, waterTargetPercentage: 0.6 }, 
+                    { name: '第二段注水 (100%)', desc: '維持流速', endTime: 105, waterTargetPercentage: 1.0 }, 
+                    { name: '攪拌與濾乾 (Draw)', desc: '輕輕搖晃濾杯', endTime: 210, waterTargetPercentage: 1.0 } 
+                ]
+            },
+            fourSix: {
+                id: 'fourSix',
+                name: '4:6 法 (Tetsu Kasuya)',
+                description: '前40%決定風味，後60%決定醇厚度。',
+                ratio: 15, // Standard 1:15
+                steps: [
+                    { name: '第1注 (酸值)', desc: '決定酸質明亮度', endTime: 45, waterTargetPercentage: 0.2 },
+                    { name: '第2注 (甜感)', desc: '決定甜感與平衡', endTime: 90, waterTargetPercentage: 0.4 },
+                    { name: '第3注 (層次)', desc: '堆疊濃度', endTime: 135, waterTargetPercentage: 0.6 },
+                    { name: '第4注 (強度)', desc: '強化醇厚度', endTime: 180, waterTargetPercentage: 0.8 },
+                    { name: '第5注 (結尾)', desc: '最後調整與濾乾', endTime: 210, waterTargetPercentage: 1.0 }
+                ]
+            }
+        };
 
-              {log.notes && (
-                <p className="text-sm text-stone-600 italic border-l-2 border-stone-200 pl-2 mt-2">
-                  "{log.notes}"
-                </p>
-              )}
+        const SENSORY_ATTRIBUTES = [
+            { key: 'acidity', label: '酸值', color: 'bg-yellow-400' },
+            { key: 'sweetness', label: '甜感', color: 'bg-orange-400' },
+            { key: 'bitterness', label: '苦味', color: 'bg-stone-600' },
+            { key: 'body', label: '醇厚', color: 'bg-amber-700' },
+        ];
 
-              <button 
-                onClick={() => deleteLog(log.id)}
-                className="self-end text-xs text-red-300 hover:text-red-500 flex items-center gap-1 mt-1 cursor-pointer"
-              >
-                <Trash2 className="w-3 h-3" /> 刪除
-              </button>
-            </div>
-           );
-        })
-      )}
-    </div>
-  );
+        const ROAST_LEVELS = [
+            { id: 'light', label: '淺焙', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+            { id: 'medium', label: '中焙', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+            { id: 'dark', label: '深焙', color: 'bg-stone-200 text-stone-700 border-stone-300' },
+        ];
 
-  return (
-    <div className="max-w-md mx-auto h-screen bg-stone-50 flex flex-col font-sans text-stone-800 overflow-hidden">
-      {/* Top Bar */}
-      <div className="bg-white px-6 py-4 shadow-sm z-10 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white shadow-sm">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 5h20" />
-              <path d="M3 5h18l-9 16L3 5z" />
-              <path d="M12 21v-3" />
-            </svg>
-          </div>
-          <span className="font-bold text-lg tracking-tight">Barista Flow</span>
-        </div>
-        <div className="text-xs font-mono text-stone-400">
-           本地模式
-        </div>
-      </div>
+        // --- 濾杯圖示 ---
+        const getDripperIcon = (id, isActive) => {
+            const strokeColor = isActive ? "#FFFFFF" : "#a8a29e";
+            const strokeWidth = 1.5;
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-6 pb-24 scroll-smooth">
-        {activeTab === 'brew' && (
-           timerStatus === 'idle' ? <CalculatorView /> : <TimerView />
-        )}
-        {activeTab === 'journal' && <JournalView />}
-      </div>
+            switch (id) {
+                case 'v60': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M2 5h20" /><path d="M12 21v-4" /></svg>;
+                case 'kalita': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-3 12H7L4 5z" /><path d="M2 5h20" /><path d="M7 17v-4" /><path d="M17 17v-4" /><path d="M12 17v2" /></svg>;
+                case 'origami': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M12 5v16" /><path d="M7.5 5l2.5 11.5" /><path d="M16.5 5l-2.5 11.5" /><path d="M2 5h20" /></svg>;
+                case 'chemex': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10l-3 8 4 10H6l4-10-3-8z" /><path d="M10 11h4" /></svg>;
+                case 'switch': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M2 5h20" /><path d="M16 18l2 2" /><rect x="11" y="19" width="2" height="3" /></svg>;
+                case 'bluebottle': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M5 5h14l-2 10H7L5 5z" /><path d="M3 5h18" /><path d="M12 15v4" /></svg>;
+                default: return <Coffee className="w-6 h-6" color={strokeColor} strokeWidth={strokeWidth} />;
+            }
+        };
 
-      {/* Bottom Nav */}
-      <div className="bg-white border-t border-stone-100 flex justify-around items-center py-3 px-6 fixed bottom-0 w-full max-w-md safe-area-pb z-20">
-        <button 
-          onClick={() => setActiveTab('brew')}
-          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-stone-400 hover:text-stone-600'}`}
-        >
-          <Droplets className="w-6 h-6" />
-          <span className="text-[10px] font-medium">沖煮</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('journal')}
-          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'journal' ? 'text-amber-600' : 'text-stone-400 hover:text-stone-600'}`}
-        >
-          <History className="w-6 h-6" />
-          <span className="text-[10px] font-medium">日誌</span>
-        </button>
-      </div>
+        const STORAGE_KEY = 'barista_flow_logs';
 
-      {/* Save Modal */}
-      {showSaveModal && (
-        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 h-[85vh] overflow-y-auto">
-            <h3 className="text-xl font-bold mb-4 text-center">紀錄這杯咖啡</h3>
+        function BaristaFlow() {
+            const [activeTab, setActiveTab] = useState('brew');
             
-            {/* Note: Bean Info section removed from here as per user request */}
+            // Brewing State
+            const [selectedRecipeId, setSelectedRecipeId] = useState('v60');
+            const [selectedDripperId, setSelectedDripperId] = useState('v60');
+            const [coffeeGrams, setCoffeeGrams] = useState(20);
+            const [ratio, setRatio] = useState(16.7);
+            const [timerStatus, setTimerStatus] = useState('idle');
+            const [currentTime, setCurrentTime] = useState(0);
+            const [showSaveModal, setShowSaveModal] = useState(false);
+            const [showSteps, setShowSteps] = useState(false); 
+            
+            // Journal State (Initialized from Local Storage)
+            const [logs, setLogs] = useState(() => {
+                try {
+                    const savedLogs = localStorage.getItem(STORAGE_KEY);
+                    return savedLogs ? JSON.parse(savedLogs) : [];
+                } catch (e) {
+                    console.error("Failed to load logs", e);
+                    return [];
+                }
+            });
 
-            <div className="flex justify-center gap-2 mb-6">
-              {[1, 2, 3, 4, 5].map(star => (
-                <button 
-                  key={star}
-                  onClick={() => setRating(star)}
-                  className={`text-3xl transition-transform hover:scale-110 ${rating >= star ? 'text-amber-400' : 'text-stone-200'}`}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
+            const [beanName, setBeanName] = useState('');
+            const [roastLevel, setRoastLevel] = useState('light');
+            const [rating, setRating] = useState(5);
+            const [notes, setNotes] = useState('');
+            
+            // Sensory State
+            const [sensory, setSensory] = useState({
+                acidity: 3,
+                sweetness: 3,
+                bitterness: 3,
+                body: 3
+            });
 
-            {/* Sensory Sliders */}
-            <div className="space-y-4 mb-6 bg-stone-50 p-4 rounded-xl">
-               <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">風味感受</h4>
-               {SENSORY_ATTRIBUTES.map(attr => (
-                 <div key={attr.key} className="flex items-center gap-3">
-                    <label className="text-sm font-medium w-10 text-stone-600">{attr.label}</label>
-                    <div className="flex-1 flex justify-between items-center bg-white rounded-lg p-1 border border-stone-100">
-                        {[1, 2, 3, 4, 5].map(lvl => (
-                          <button
-                            key={lvl}
-                            onClick={() => updateSensory(attr.key, lvl)}
-                            className={`w-8 h-8 rounded-md text-sm font-bold transition-all ${
-                              sensory[attr.key] === lvl 
-                              ? `${attr.color} text-white shadow-sm` 
-                              : 'text-stone-300 hover:bg-stone-50'
-                            }`}
-                          >
-                            {lvl}
-                          </button>
-                        ))}
+            const prevTimeRef = useRef(0);
+
+            // Derived State
+            const recipe = RECIPES[selectedRecipeId];
+            const waterTotal = Math.round(coffeeGrams * ratio);
+            const selectedDripper = DRIPPERS.find(d => d.id === selectedDripperId) || DRIPPERS[0];
+            
+            // --- Timer Logic ---
+            useEffect(() => {
+                let interval = null;
+                if (timerStatus === 'running') {
+                    interval = setInterval(() => {
+                        setCurrentTime(prev => prev + 0.1);
+                    }, 100);
+                } else {
+                    clearInterval(interval);
+                }
+                return () => clearInterval(interval);
+            }, [timerStatus]);
+
+            // --- Beep Logic ---
+            useEffect(() => {
+                if (timerStatus !== 'running') return;
+
+                const prev = prevTimeRef.current;
+                const now = currentTime;
+                
+                const currentStepIndex = recipe.steps.findIndex(s => s.endTime > prev);
+                const nextStepIndex = recipe.steps.findIndex(s => s.endTime > now);
+                
+                if (currentStepIndex !== -1 && nextStepIndex !== -1 && currentStepIndex !== nextStepIndex) {
+                    playBeep(880, 'sine', 0.2);
+                }
+
+                prevTimeRef.current = now;
+            }, [currentTime, timerStatus, recipe]);
+
+            // --- Controls Handlers ---
+            const handleStartStop = (e) => {
+                if(e) e.preventDefault(); 
+                if (timerStatus === 'idle') {
+                    playBeep(600, 'triangle', 0.1);
+                    setTimerStatus('running');
+                } else if (timerStatus === 'running') {
+                    setTimerStatus('paused');
+                } else if (timerStatus === 'paused') {
+                    setTimerStatus('running');
+                }
+            };
+
+            const handleReset = (e) => {
+                if(e) e.preventDefault();
+                setTimerStatus('idle');
+                setCurrentTime(0);
+                prevTimeRef.current = 0;
+            };
+
+            const handleFinish = (e) => {
+                if(e) e.preventDefault();
+                setTimerStatus('finished');
+                setShowSaveModal(true);
+                playBeep(440, 'sine', 0.1);
+                setTimeout(() => playBeep(660, 'sine', 0.3), 150);
+            };
+
+            const saveLog = async () => {
+                const newLog = {
+                    id: Date.now().toString(),
+                    recipeName: recipe.name,
+                    dripperName: selectedDripper.fullName,
+                    coffeeGrams,
+                    waterTotal,
+                    ratio,
+                    time: Math.round(currentTime),
+                    rating,
+                    sensory,
+                    beanName: beanName || '未命名咖啡豆',
+                    roastLevel,
+                    notes,
+                    createdAt: Date.now()
+                };
+
+                const updatedLogs = [newLog, ...logs];
+                setLogs(updatedLogs);
+                
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+                } catch (e) {
+                    console.error("Failed to save log to local storage", e);
+                }
+
+                setShowSaveModal(false);
+                handleReset();
+                setNotes('');
+                // Keep bean name? Let's reset for fresh brew
+                setBeanName(''); 
+                setRoastLevel('light');
+                setRating(5);
+                setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
+                setActiveTab('journal');
+            };
+
+            const deleteLog = async (id) => {
+                const updatedLogs = logs.filter(l => l.id !== id);
+                setLogs(updatedLogs);
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+                } catch (e) {
+                    console.error("Failed to update local storage", e);
+                }
+            };
+
+            const updateSensory = (key, value) => {
+                setSensory(prev => ({ ...prev, [key]: value }));
+            };
+
+            const getStepInfo = (targetTime) => {
+                const stepIndex = recipe.steps.findIndex(s => s.endTime >= targetTime);
+                const index = stepIndex === -1 ? recipe.steps.length - 1 : stepIndex;
+                const step = recipe.steps[index];
+                const prevEndTime = index > 0 ? recipe.steps[index - 1].endTime : 0;
+                const duration = step.endTime - prevEndTime;
+                const timeInStep = targetTime - prevEndTime;
+                
+                return { 
+                    step, 
+                    index, 
+                    duration, 
+                    timeInStep: Math.min(Math.max(timeInStep, 0), duration),
+                    targetWater: Math.round(step.waterTargetPercentage * waterTotal)
+                };
+            };
+
+            const currentStepInfo = getStepInfo(currentTime);
+
+            // --- Views ---
+            const CalculatorView = () => (
+                <div className="space-y-4 pb-24 select-none">
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-bold text-stone-700 flex items-center gap-2">
+                                <Bean className="w-4 h-4 text-amber-600" /> 咖啡豆
+                            </h2>
+                            <div className="flex bg-stone-100 rounded-lg p-0.5">
+                                {ROAST_LEVELS.map(level => (
+                                    <button
+                                        key={level.id}
+                                        onPointerDown={(e) => { e.preventDefault(); setRoastLevel(level.id); }}
+                                        className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                                            roastLevel === level.id 
+                                            ? 'bg-white text-stone-800 shadow-sm' 
+                                            : 'text-stone-400 hover:text-stone-600'
+                                        }`}
+                                    >
+                                        {level.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <input 
+                            type="text" 
+                            placeholder="輸入豆名 (例如: 衣索比亞 日曬)" 
+                            value={beanName}
+                            onChange={(e) => setBeanName(e.target.value)}
+                            className="w-full text-lg font-medium placeholder:text-stone-300 border-none p-0 focus:ring-0 outline-none"
+                        />
                     </div>
-                 </div>
-               ))}
-            </div>
 
-            <textarea
-              placeholder="其他筆記 (選填)"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full p-3 bg-stone-50 rounded-xl border border-stone-200 text-sm mb-6 focus:ring-2 focus:ring-amber-500 outline-none resize-none h-20"
-            />
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-bold text-stone-700 flex items-center gap-2">
+                                <Settings className="w-4 h-4 text-amber-600" /> 沖煮配置
+                            </h2>
+                        </div>
+                        
+                        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-2 px-2 mb-3 border-b border-stone-100">
+                            {DRIPPERS.map(d => {
+                                const isActive = selectedDripperId === d.id;
+                                return (
+                                    <button
+                                        key={d.id}
+                                        onClick={() => setSelectedDripperId(d.id)}
+                                        type="button"
+                                        className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-xl border transition-all cursor-pointer ${
+                                            isActive
+                                            ? 'bg-stone-800 border-stone-800 shadow-sm' 
+                                            : 'bg-white border-stone-100 hover:bg-stone-50'
+                                        }`}
+                                    >
+                                        <div className="mb-1 scale-90">
+                                            {getDripperIcon(d.id, isActive)}
+                                        </div>
+                                        <span className={`text-[9px] font-bold ${isActive ? 'text-white' : 'text-stone-400'}`}>
+                                            {d.name}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
 
-            <div className="flex gap-3 pb-4">
-              <button 
-                onClick={() => {
-                  setShowSaveModal(false);
-                  handleReset();
-                }}
-                className="flex-1 py-3 text-stone-500 font-medium hover:bg-stone-50 rounded-xl transition-colors cursor-pointer"
-              >
-                不儲存
-              </button>
-              <button 
-                onClick={saveLog}
-                className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-colors cursor-pointer"
-              >
-                儲存紀錄
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-2">
+                                {Object.values(RECIPES).map(r => (
+                                    <button
+                                        key={r.id}
+                                        onPointerDown={(e) => { e.preventDefault(); setSelectedRecipeId(r.id); setRatio(r.ratio); }}
+                                        type="button"
+                                        className={`p-2 rounded-lg text-left transition-all border cursor-pointer ${
+                                            selectedRecipeId === r.id 
+                                            ? 'bg-amber-50 border-amber-200 text-amber-900' 
+                                            : 'bg-white border-stone-200 text-stone-400'
+                                        }`}
+                                    >
+                                        <div className="font-bold text-xs">{r.name.split('(')[0]}</div>
+                                        <div className="text-[9px] opacity-70 truncate">{r.name.split('(')[1]?.replace(')', '')}</div>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div className="flex justify-between text-xs mb-1">
+                                        <span className="text-stone-400">粉量</span>
+                                        <span className="font-bold text-stone-700">{coffeeGrams}g</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="10"
+                                        max="40"
+                                        step="0.5"
+                                        value={coffeeGrams}
+                                        onChange={(e) => setCoffeeGrams(Number(e.target.value))}
+                                        className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                                    />
+                                </div>
+                                <div>
+                                    <div className="flex justify-between text-xs mb-1">
+                                        <span className="text-stone-400">粉水比</span>
+                                        <span className="font-bold text-stone-700">1:{ratio}</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="10"
+                                        max="20"
+                                        step="0.1"
+                                        value={ratio}
+                                        onChange={(e) => setRatio(Number(e.target.value))}
+                                        className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
+                        <div className="p-4 flex justify-between items-center">
+                            <div>
+                                <p className="text-[10px] text-stone-400 uppercase tracking-wider font-bold">預計結果</p>
+                                <div className="flex items-baseline gap-1 mt-0.5">
+                                    <span className="text-2xl font-bold text-stone-800">{waterTotal}</span>
+                                    <span className="text-xs text-stone-500 font-medium">ml</span>
+                                    <span className="text-stone-300 mx-3">|</span>
+                                    <span className="text-xl font-bold text-stone-800">
+                                        {Math.floor(recipe.steps[recipe.steps.length-1].endTime / 60)}:
+                                        {(recipe.steps[recipe.steps.length-1].endTime % 60).toString().padStart(2, '0')}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                onPointerDown={(e) => { e.preventDefault(); setShowSteps(!showSteps); }}
+                                className="flex items-center gap-1 text-xs font-bold text-stone-500 bg-stone-50 border border-stone-100 px-3 py-1.5 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+                            >
+                                {showSteps ? '收合' : '詳細步驟'} 
+                                {showSteps ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            </button>
+                        </div>
+
+                        {showSteps && (
+                            <div className="p-3 pt-0 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                                <div className="h-px bg-stone-100 mb-3 mx-1" />
+                                {recipe.steps.map((step, idx) => {
+                                    const prevEndTime = idx > 0 ? recipe.steps[idx - 1].endTime : 0;
+                                    const duration = step.endTime - prevEndTime;
+                                    const targetWater = Math.round(step.waterTargetPercentage * waterTotal);
+                                    
+                                    return (
+                                        <div key={idx} className="flex items-center justify-between text-xs p-2 rounded hover:bg-stone-50 transition-colors group">
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-5 h-5 flex items-center justify-center bg-stone-100 text-stone-500 rounded-full text-[9px] font-bold group-hover:bg-stone-800 group-hover:text-white transition-colors">{idx + 1}</span>
+                                                <span className="text-stone-600 font-medium">{step.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-4 font-mono text-stone-400">
+                                                <span>{targetWater}ml</span>
+                                                <span>{duration}s</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent pointer-events-none z-10 flex justify-center">
+                        <button 
+                            onPointerDown={() => setTimerStatus('paused')} 
+                            className="w-full max-w-sm bg-stone-900 text-white py-3.5 rounded-xl font-bold text-lg shadow-xl shadow-stone-200 hover:bg-stone-800 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none pointer-events-auto transform active:scale-95"
+                        >
+                            <Droplets className="w-5 h-5" /> 準備沖煮
+                        </button>
+                    </div>
+                </div>
+            );
+
+            const TimerView = () => {
+                const isFinished = timerStatus === 'finished';
+                const totalTime = recipe.steps[recipe.steps.length-1].endTime;
+                const progress = Math.min((currentTime / totalTime) * 100, 100);
+                const { step, index, duration, timeInStep, targetWater } = currentStepInfo;
+
+                const radius = 150; 
+                const stroke = 6; 
+                const normalizedRadius = radius - stroke * 2;
+                const circumference = normalizedRadius * 2 * Math.PI;
+                const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+                return (
+                    <div className="flex flex-col h-full items-center py-4 relative select-none">
+                        <div className="text-center space-y-1 mb-2 z-10 w-full px-8">
+                            <h2 className="text-stone-500 font-bold text-sm tracking-wider uppercase">{recipe.name}</h2>
+                            <div className="flex items-center justify-center gap-2 text-stone-400 text-[10px] font-mono">
+                                <span>{selectedDripper.name}</span>
+                                <span>•</span>
+                                <span>{coffeeGrams}g / {waterTotal}ml</span>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex items-center justify-center relative w-full z-0">
+                            <div className="relative">
+                                <svg height={radius * 2} width={radius * 2} className="rotate-[-90deg]">
+                                    <circle stroke="#e7e5e4" strokeWidth={stroke} fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
+                                    <circle stroke="#d97706" strokeWidth={stroke} strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }} strokeLinecap="round" fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
+                                </svg>
+                                
+                                <div className="absolute inset-0 flex flex-col items-center text-center py-10 px-4 pointer-events-none">
+                                    <div className="flex flex-col items-center opacity-50 mb-auto">
+                                        <span className="text-[10px] tracking-widest uppercase">Total</span>
+                                        <span className="text-sm font-mono font-bold tabular-nums">{Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}</span>
+                                    </div>
+                                    
+                                    {!isFinished ? (
+                                        <div className="flex flex-col items-center justify-center w-full mb-auto space-y-1">
+                                            <div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px]">{step.name.split('(')[0]}</div>
+                                            <div className="flex items-end leading-none">
+                                                <span className="text-6xl font-bold text-stone-800 tabular-nums tracking-tighter">{Math.floor(timeInStep)}</span>
+                                                <span className="text-lg text-stone-400 font-medium mb-1 ml-1 w-8 text-left">/ {duration}</span>
+                                            </div>
+                                            <div className="mt-2 px-4 py-1.5 bg-amber-50 rounded-2xl text-base font-bold text-amber-700 border border-amber-100 flex items-center gap-2 shadow-sm">
+                                                <Droplets className="w-4 h-4 fill-amber-700" />
+                                                <span>目標: {targetWater}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center mb-auto">
+                                            <div className="text-amber-600 font-bold text-3xl animate-bounce">✨ 完成</div>
+                                            <p className="text-stone-400 text-xs mt-2">享受您的咖啡</p>
+                                        </div>
+                                    )}
+                                    <div className="h-4"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="w-full grid grid-cols-3 gap-8 items-center justify-items-center mt-auto pb-4 relative z-[999]">
+                            <button onPointerDown={handleReset} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
+                                <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"><RotateCcw className="w-5 h-5" /></div>
+                                <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">Reset</span>
+                            </button>
+                            <button onPointerDown={handleStartStop} className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none ${timerStatus === 'running' ? 'bg-amber-100 text-amber-600 border-2 border-amber-200' : 'bg-amber-600 text-white'}`}>
+                                {timerStatus === 'running' ? <Pause className="w-10 h-10 fill-current" /> : <Play className="w-10 h-10 fill-current ml-1" />}
+                            </button>
+                            <button onPointerDown={handleFinish} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
+                                <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"><Save className="w-5 h-5" /></div>
+                                <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                );
+            };
+
+            const JournalView = () => (
+                <div className="space-y-4">
+                    <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+                        <BookOpen className="w-6 h-6 text-amber-600" /> 沖煮日誌
+                    </h2>
+                    
+                    {logs.length === 0 ? (
+                        <div className="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
+                            <Coffee className="w-12 h-12 text-stone-300 mx-auto mb-3" />
+                            <p className="text-stone-500">尚無紀錄，快去沖一杯吧！</p>
+                        </div>
+                    ) : (
+                        logs.map(log => {
+                            const roastInfo = ROAST_LEVELS.find(r => r.id === log.roastLevel) || ROAST_LEVELS[0];
+                            return (
+                                <div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col gap-3">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-bold text-stone-800 text-lg flex items-center gap-2">
+                                                {log.beanName || '未命名咖啡豆'}
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full border font-normal ${roastInfo.color}`}>
+                                                    {roastInfo.label}
+                                                </span>
+                                            </h3>
+                                            <div className="flex items-center gap-2 text-xs text-stone-400 mt-1">
+                                                <span className="flex items-center gap-1 bg-stone-100 px-1.5 py-0.5 rounded text-stone-500">
+                                                    <Filter className="w-3 h-3" /> {log.dripperName || 'V60'}
+                                                </span>
+                                                <span>•</span>
+                                                <span>{log.recipeName?.split('(')[0]}</span>
+                                                <span>•</span>
+                                                <span>{new Date(log.createdAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-md">
+                                            <Star className="w-4 h-4 text-amber-500 fill-current" />
+                                            <span className="text-amber-800 font-bold text-sm">{log.rating}</span>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2 text-center text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
+                                        <div>
+                                            <span className="block text-stone-400 scale-75 uppercase">粉重</span>
+                                            {log.coffeeGrams}g
+                                        </div>
+                                        <div>
+                                            <span className="block text-stone-400 scale-75 uppercase">總水</span>
+                                            {log.waterTotal}ml
+                                        </div>
+                                        <div>
+                                            <span className="block text-stone-400 scale-75 uppercase">時間</span>
+                                            {Math.floor(log.time / 60)}:{(log.time % 60).toString().padStart(2, '0')}
+                                        </div>
+                                    </div>
+                                    {log.sensory && (
+                                        <div className="grid grid-cols-2 gap-2 mt-1">
+                                            {SENSORY_ATTRIBUTES.map(attr => (
+                                                <div key={attr.key} className="flex items-center justify-between text-xs">
+                                                    <span className="text-stone-400">{attr.label}</span>
+                                                    <div className="flex gap-[1px]">
+                                                        {[1, 2, 3, 4, 5].map(lvl => (
+                                                            <div key={lvl} className={`w-2 h-1.5 rounded-sm ${lvl <= log.sensory[attr.key] ? attr.color : 'bg-stone-100'}`} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {log.notes && (
+                                        <p className="text-sm text-stone-600 italic border-l-2 border-stone-200 pl-2 mt-2">"{log.notes}"</p>
+                                    )}
+                                    <button 
+                                        onClick={() => deleteLog(log.id)}
+                                        className="self-end text-xs text-red-300 hover:text-red-500 flex items-center gap-1 mt-1 cursor-pointer"
+                                    >
+                                        <Trash2 className="w-3 h-3" /> 刪除
+                                    </button>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            );
+
+            return (
+                <div className="max-w-md mx-auto h-screen bg-stone-50 flex flex-col font-sans text-stone-800 overflow-hidden">
+                    <div className="bg-white px-6 py-4 shadow-sm z-10 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M2 5h20" />
+                                    <path d="M3 5h18l-9 16L3 5z" />
+                                    <path d="M12 21v-3" />
+                                </svg>
+                            </div>
+                            <span className="font-bold text-lg tracking-tight">Barista Flow</span>
+                        </div>
+                        <div className="text-xs font-mono text-stone-400">本地模式</div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-6 pb-24 scroll-smooth">
+                        {activeTab === 'brew' && (timerStatus === 'idle' ? <CalculatorView /> : <TimerView />)}
+                        {activeTab === 'journal' && <JournalView />}
+                    </div>
+
+                    <div className="bg-white border-t border-stone-100 flex justify-around items-center py-3 px-6 fixed bottom-0 w-full max-w-md safe-area-pb z-20">
+                        <button 
+                            onClick={() => setActiveTab('brew')}
+                            className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-stone-400 hover:text-stone-600'}`}
+                        >
+                            <Droplets className="w-6 h-6" />
+                            <span className="text-[10px] font-medium">沖煮</span>
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('journal')}
+                            className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'journal' ? 'text-amber-600' : 'text-stone-400 hover:text-stone-600'}`}
+                        >
+                            <History className="w-6 h-6" />
+                            <span className="text-[10px] font-medium">日誌</span>
+                        </button>
+                    </div>
+
+                    {showSaveModal && (
+                        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
+                            <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 h-[85vh] overflow-y-auto">
+                                <h3 className="text-xl font-bold mb-4 text-center">紀錄這杯咖啡</h3>
+                                <div className="flex justify-center gap-2 mb-6">
+                                    {[1, 2, 3, 4, 5].map(star => (
+                                        <button 
+                                            key={star}
+                                            onClick={() => setRating(star)}
+                                            className={`text-3xl transition-transform hover:scale-110 ${rating >= star ? 'text-amber-400' : 'text-stone-200'}`}
+                                        >
+                                            ★
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="space-y-4 mb-6 bg-stone-50 p-4 rounded-xl">
+                                    <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">風味感受</h4>
+                                    {SENSORY_ATTRIBUTES.map(attr => (
+                                        <div key={attr.key} className="flex items-center gap-3">
+                                            <label className="text-sm font-medium w-10 text-stone-600">{attr.label}</label>
+                                            <div className="flex-1 flex justify-between items-center bg-white rounded-lg p-1 border border-stone-100">
+                                                {[1, 2, 3, 4, 5].map(lvl => (
+                                                    <button
+                                                        key={lvl}
+                                                        onClick={() => updateSensory(attr.key, lvl)}
+                                                        className={`w-8 h-8 rounded-md text-sm font-bold transition-all ${sensory[attr.key] === lvl ? `${attr.color} text-white shadow-sm` : 'text-stone-300 hover:bg-stone-50'}`}
+                                                    >
+                                                        {lvl}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <textarea
+                                    placeholder="其他筆記 (選填)"
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    className="w-full p-3 bg-stone-50 rounded-xl border border-stone-200 text-sm mb-6 focus:ring-2 focus:ring-amber-500 outline-none resize-none h-20"
+                                />
+                                <div className="flex gap-3 pb-4">
+                                    <button 
+                                        onClick={() => { setShowSaveModal(false); handleReset(); }}
+                                        className="flex-1 py-3 text-stone-500 font-medium hover:bg-stone-50 rounded-xl transition-colors cursor-pointer"
+                                    >
+                                        不儲存
+                                    </button>
+                                    <button 
+                                        onClick={saveLog}
+                                        className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-colors cursor-pointer"
+                                    >
+                                        儲存紀錄
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<BaristaFlow />);
+    </script>
+</body>
+</html>
