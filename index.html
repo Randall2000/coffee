@@ -9,7 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- 2. 設定 Import Maps (定義套件來源) -->
-    <!-- 這讓我們可以像在開發環境一樣使用 import 語法 -->
     <script type="importmap">
     {
         "imports": {
@@ -20,16 +19,14 @@
     }
     </script>
 
-    <!-- 3. 引入 Babel (讓瀏覽器看不懂的 JSX 變成看得懂的 JS) -->
+    <!-- 3. 引入 Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- 防止 iOS 點擊延遲與選取 -->
     <style>
         body {
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
-        /* 隱藏捲軸但保留功能 */
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
@@ -48,7 +45,7 @@
         import { createRoot } from 'react-dom/client';
         import { Play, Pause, RotateCcw, Coffee, Droplets, History, Settings, ChevronRight, Save, Plus, Trash2, BookOpen, Star, Bean, Timer, List, Info, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 
-        // --- 音效引擎 (Singleton) ---
+        // --- 音效引擎 ---
         let audioCtx = null;
 
         const playBeep = (freq = 440, type = 'sine', duration = 0.1) => {
@@ -135,19 +132,66 @@
             { id: 'dark', label: '深焙', color: 'bg-stone-200 text-stone-700 border-stone-300' },
         ];
 
-        // --- 濾杯圖示 ---
+        // --- 濾杯圖示 (已還原為專屬 SVG) ---
         const getDripperIcon = (id, isActive) => {
             const strokeColor = isActive ? "#FFFFFF" : "#a8a29e";
             const strokeWidth = 1.5;
 
             switch (id) {
-                case 'v60': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M2 5h20" /><path d="M12 21v-4" /></svg>;
-                case 'kalita': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-3 12H7L4 5z" /><path d="M2 5h20" /><path d="M7 17v-4" /><path d="M17 17v-4" /><path d="M12 17v2" /></svg>;
-                case 'origami': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M12 5v16" /><path d="M7.5 5l2.5 11.5" /><path d="M16.5 5l-2.5 11.5" /><path d="M2 5h20" /></svg>;
-                case 'chemex': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10l-3 8 4 10H6l4-10-3-8z" /><path d="M10 11h4" /></svg>;
-                case 'switch': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M2 5h20" /><path d="M16 18l2 2" /><rect x="11" y="19" width="2" height="3" /></svg>;
-                case 'bluebottle': return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M5 5h14l-2 10H7L5 5z" /><path d="M3 5h18" /><path d="M12 15v4" /></svg>;
-                default: return <Coffee className="w-6 h-6" color={strokeColor} strokeWidth={strokeWidth} />;
+                case 'v60': 
+                    return (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 5h18l-9 16L3 5z" />
+                            <path d="M2 5h20" />
+                            <path d="M12 21v-4" />
+                        </svg>
+                    );
+                case 'kalita':
+                    return (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 5h16l-3 12H7L4 5z" />
+                            <path d="M2 5h20" />
+                            <path d="M7 17v-4" />
+                            <path d="M17 17v-4" />
+                            <path d="M12 17v2" />
+                        </svg>
+                    );
+                case 'origami':
+                    return (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 5h18l-9 16L3 5z" />
+                            <path d="M12 5v16" />
+                            <path d="M7.5 5l2.5 11.5" />
+                            <path d="M16.5 5l-2.5 11.5" />
+                            <path d="M2 5h20" />
+                        </svg>
+                    );
+                case 'chemex':
+                    return (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M7 3h10l-3 8 4 10H6l4-10-3-8z" />
+                            <path d="M10 11h4" />
+                        </svg>
+                    );
+                case 'switch':
+                    return (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 5h18l-9 16L3 5z" />
+                            <path d="M2 5h20" />
+                            <path d="M16 18l2 2" />
+                            <rect x="11" y="19" width="2" height="3" />
+                        </svg>
+                    );
+                case 'bluebottle':
+                    return (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 5h14l-2 10H7L5 5z" />
+                            <path d="M3 5h18" />
+                            <path d="M12 15v4" />
+                        </svg>
+                    );
+                default:
+                    return <Coffee className="w-6 h-6" color={strokeColor} strokeWidth={strokeWidth} />;
             }
         };
 
@@ -156,7 +200,6 @@
         function BaristaFlow() {
             const [activeTab, setActiveTab] = useState('brew');
             
-            // Brewing State
             const [selectedRecipeId, setSelectedRecipeId] = useState('v60');
             const [selectedDripperId, setSelectedDripperId] = useState('v60');
             const [coffeeGrams, setCoffeeGrams] = useState(20);
@@ -166,7 +209,6 @@
             const [showSaveModal, setShowSaveModal] = useState(false);
             const [showSteps, setShowSteps] = useState(false); 
             
-            // Journal State (Initialized from Local Storage)
             const [logs, setLogs] = useState(() => {
                 try {
                     const savedLogs = localStorage.getItem(STORAGE_KEY);
@@ -182,7 +224,6 @@
             const [rating, setRating] = useState(5);
             const [notes, setNotes] = useState('');
             
-            // Sensory State
             const [sensory, setSensory] = useState({
                 acidity: 3,
                 sweetness: 3,
@@ -192,12 +233,10 @@
 
             const prevTimeRef = useRef(0);
 
-            // Derived State
             const recipe = RECIPES[selectedRecipeId];
             const waterTotal = Math.round(coffeeGrams * ratio);
             const selectedDripper = DRIPPERS.find(d => d.id === selectedDripperId) || DRIPPERS[0];
             
-            // --- Timer Logic ---
             useEffect(() => {
                 let interval = null;
                 if (timerStatus === 'running') {
@@ -210,7 +249,6 @@
                 return () => clearInterval(interval);
             }, [timerStatus]);
 
-            // --- Beep Logic ---
             useEffect(() => {
                 if (timerStatus !== 'running') return;
 
@@ -227,7 +265,6 @@
                 prevTimeRef.current = now;
             }, [currentTime, timerStatus, recipe]);
 
-            // --- Controls Handlers ---
             const handleStartStop = (e) => {
                 if(e) e.preventDefault(); 
                 if (timerStatus === 'idle') {
@@ -284,7 +321,6 @@
                 setShowSaveModal(false);
                 handleReset();
                 setNotes('');
-                // Keep bean name? Let's reset for fresh brew
                 setBeanName(''); 
                 setRoastLevel('light');
                 setRating(5);
@@ -327,7 +363,7 @@
 
             // --- Views ---
             const CalculatorView = () => (
-                <div className="space-y-4 pb-24 select-none">
+                <div className="space-y-4 pb-32 select-none">
                     <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="text-sm font-bold text-stone-700 flex items-center gap-2">
@@ -409,7 +445,6 @@
                                 ))}
                             </div>
 
-                            {/* Modified Slider Section: Vertical Stack & Integer Steps */}
                             <div className="space-y-6 pt-2">
                                 <div>
                                     <div className="flex justify-between text-sm mb-2">
@@ -502,7 +537,7 @@
                         )}
                     </div>
 
-                    <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent pointer-events-none z-10 flex justify-center">
+                    <div className="fixed bottom-24 left-0 right-0 p-4 bg-gradient-to-t from-stone-50 via-stone-50 to-transparent pointer-events-none z-10 flex justify-center">
                         <button 
                             onPointerDown={() => setTimerStatus('paused')} 
                             className="w-full max-w-sm bg-stone-900 text-white py-3.5 rounded-xl font-bold text-lg shadow-xl shadow-stone-200 hover:bg-stone-800 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none pointer-events-auto transform active:scale-95"
@@ -572,7 +607,7 @@
                             </div>
                         </div>
 
-                        <div className="w-full grid grid-cols-3 gap-8 items-center justify-items-center mt-auto pb-4 relative z-[999]">
+                        <div className="w-full grid grid-cols-3 gap-8 items-center justify-items-center mt-auto pb-8 relative z-[999]">
                             <button onPointerDown={handleReset} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
                                 <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 group-hover:border-stone-400 group-hover:text-stone-600 shadow-sm"><RotateCcw className="w-5 h-5" /></div>
                                 <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">Reset</span>
@@ -693,7 +728,7 @@
                         {activeTab === 'journal' && <JournalView />}
                     </div>
 
-                    <div className="bg-white border-t border-stone-100 flex justify-around items-center py-3 px-6 fixed bottom-0 w-full max-w-md safe-area-pb z-20">
+                    <div className="bg-white border-t border-stone-100 flex justify-around items-center pt-4 pb-8 px-6 fixed bottom-0 w-full max-w-md z-20">
                         <button 
                             onClick={() => setActiveTab('brew')}
                             className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-stone-400 hover:text-stone-600'}`}
