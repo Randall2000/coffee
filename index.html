@@ -141,13 +141,6 @@
             dark:   { temp: '82–86°C', grind: '偏粗（粗砂糖）' },
         };
 
-        const CHECKLIST_ITEMS = [
-            { id: 'scale',  label: '電子秤',   icon: '⚖' },
-            { id: 'filter', label: '濾紙',     icon: '📄' },
-            { id: 'beans',  label: '咖啡豆',   icon: '☕' },
-            { id: 'kettle', label: '熱水備妥', icon: '🌡' },
-        ];
-
         const FLOW_OPTIONS      = [{ id: 'fast', label: '太快' }, { id: 'good', label: '剛好' }, { id: 'clog', label: '堵塞' }];
         const STABILITY_OPTIONS = [{ id: 'shaky', label: '手抖' }, { id: 'stable', label: '穩定' }, { id: 'bypass', label: '穿流' }];
 
@@ -197,6 +190,48 @@
             return new Date(timestamp).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
         };
 
+        function RadarChart({ data }) {
+            const cx = 80, cy = 80, maxR = 54;
+            const axes = [
+                { key: 'acidity',   label: '酸值', angle: -Math.PI / 2 },
+                { key: 'sweetness', label: '甜感', angle: 0 },
+                { key: 'bitterness',label: '苦味', angle: Math.PI / 2 },
+                { key: 'body',      label: '醇厚', angle: Math.PI },
+            ];
+            const pt = (angle, r) => ({
+                x: cx + r * Math.cos(angle),
+                y: cy + r * Math.sin(angle),
+            });
+            const gridPath = (r) => {
+                const pts = axes.map(a => pt(a.angle, r));
+                return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + 'Z';
+            };
+            const dataPath = (() => {
+                const pts = axes.map(a => pt(a.angle, (data[a.key] / 5) * maxR));
+                return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + 'Z';
+            })();
+            return (
+                <svg viewBox="0 0 160 160" style={{ width: '100%', maxWidth: '160px', display: 'block', margin: '0 auto' }}>
+                    {[1,2,3,4,5].map(l => (
+                        <path key={l} d={gridPath((l/5)*maxR)} fill="none" stroke="#e5e7eb" strokeWidth="1" />
+                    ))}
+                    {axes.map(a => {
+                        const end = pt(a.angle, maxR);
+                        return <line key={a.key} x1={cx} y1={cy} x2={end.x.toFixed(1)} y2={end.y.toFixed(1)} stroke="#d1d5db" strokeWidth="1" />;
+                    })}
+                    <path d={dataPath} fill="rgba(217,119,6,0.2)" stroke="#d97706" strokeWidth="2" />
+                    {axes.map(a => {
+                        const p = pt(a.angle, (data[a.key] / 5) * maxR);
+                        return <circle key={a.key} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="3.5" fill="#d97706" />;
+                    })}
+                    {axes.map(a => {
+                        const p = pt(a.angle, maxR + 13);
+                        return <text key={a.key} x={p.x.toFixed(1)} y={p.y.toFixed(1)} textAnchor="middle" dominantBaseline="central" fontSize="10" fill="#78716c" fontWeight="bold">{a.label}</text>;
+                    })}
+                </svg>
+            );
+        }
+
         function BaristaFlow() {
             const [activeTab, setActiveTab] = useState('brew');
             
@@ -222,8 +257,6 @@
 
             const [editingLogId, setEditingLogId] = useState(null);
             const [searchQuery, setSearchQuery] = useState('');
-            const [showChecklist, setShowChecklist] = useState(false);
-            const [checkedItems, setCheckedItems] = useState([]);
             const [flowRate, setFlowRate] = useState('good');
             const [stability, setStability] = useState('stable');
 
@@ -453,7 +486,7 @@
                                 <button
                                     key={level.id}
                                     onPointerDown={(e) => { e.preventDefault(); setRoastLevel(level.id); }}
-                                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                                    className={`flex-1 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
                                         roastLevel === level.id
                                         ? `${level.color} shadow-sm`
                                         : 'bg-neutral-50 text-neutral-400 border-neutral-100 hover:bg-neutral-100'
@@ -507,7 +540,7 @@
                                         key={d.id}
                                         onClick={() => setSelectedDripperId(d.id)}
                                         type="button"
-                                        className={`flex-shrink-0 flex flex-col items-center justify-center w-[68px] h-[68px] rounded-xl border transition-all cursor-pointer ${
+                                        className={`flex-shrink-0 flex flex-col items-center justify-center w-[54px] h-[54px] rounded-xl border transition-all cursor-pointer ${
                                             isActive
                                             ? 'bg-neutral-900 border-neutral-900 shadow-sm'
                                             : 'bg-white border-neutral-100 hover:bg-neutral-50'
@@ -607,7 +640,7 @@
 
                     <div className="fixed bottom-24 left-0 right-0 p-4 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent pointer-events-none z-10 flex justify-center">
                         <button
-                            onPointerDown={() => { unlockAudio(); setCheckedItems([]); setShowChecklist(true); }}
+                            onPointerDown={() => { unlockAudio(); setTimerStatus('paused'); }}
                             className="w-full max-w-sm bg-neutral-900 text-white py-3.5 rounded-xl font-bold text-lg shadow-xl shadow-neutral-300/50 hover:bg-neutral-800 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none pointer-events-auto transform active:scale-95"
                         >
                             <Droplets className="w-5 h-5" /> 準備沖煮
@@ -907,49 +940,6 @@
                         </button>
                     </div>
 
-                    {showChecklist && (
-                        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-                            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 p-6">
-                                <h3 className="text-base font-bold text-neutral-900 mb-1">開沖前確認</h3>
-                                <p className="text-xs text-neutral-400 mb-5">全部勾選後才能開始計時</p>
-                                <div className="space-y-2 mb-6">
-                                    {CHECKLIST_ITEMS.map(item => {
-                                        const checked = checkedItems.includes(item.id);
-                                        return (
-                                            <button key={item.id}
-                                                onClick={() => setCheckedItems(prev =>
-                                                    checked ? prev.filter(i => i !== item.id) : [...prev, item.id]
-                                                )}
-                                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all cursor-pointer ${
-                                                    checked ? 'bg-neutral-900 border-neutral-900 text-white' : 'bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50'
-                                                }`}
-                                            >
-                                                <span className="text-base">{item.icon}</span>
-                                                <span className="font-medium text-sm flex-1 text-left">{item.label}</span>
-                                                <span className={`text-sm font-bold transition-opacity ${checked ? 'opacity-100' : 'opacity-0'}`}>✓</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                                <div className="flex gap-3">
-                                    <button onClick={() => setShowChecklist(false)}
-                                        className="px-4 py-3 rounded-xl border border-neutral-200 text-neutral-500 text-sm font-medium hover:bg-neutral-50 cursor-pointer transition-colors">
-                                        取消
-                                    </button>
-                                    <button
-                                        onClick={() => { setShowChecklist(false); setTimerStatus('paused'); }}
-                                        disabled={checkedItems.length < CHECKLIST_ITEMS.length}
-                                        className="flex-1 py-3 bg-neutral-900 text-white font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-                                    >
-                                        {checkedItems.length < CHECKLIST_ITEMS.length
-                                            ? `還差 ${CHECKLIST_ITEMS.length - checkedItems.length} 項`
-                                            : '開始沖煮 →'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {showSaveModal && (
                         <div className="fixed inset-0 bg-black/50 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
                             <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
@@ -1005,6 +995,32 @@
                                                     ★
                                                 </button>
                                             ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 風味雷達 */}
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">風味雷達</p>
+                                        <div className="flex gap-4 items-center">
+                                            <div className="flex-shrink-0 w-[160px]">
+                                                <RadarChart data={sensory} />
+                                            </div>
+                                            <div className="flex-1 space-y-2.5">
+                                                {SENSORY_ATTRIBUTES.map(attr => (
+                                                    <div key={attr.key}>
+                                                        <div className="flex justify-between text-[10px] mb-1">
+                                                            <span className="text-neutral-500 font-medium">{attr.label}</span>
+                                                            <span className="font-bold text-amber-700">{sensory[attr.key]}</span>
+                                                        </div>
+                                                        <input
+                                                            type="range" min="1" max="5" step="1"
+                                                            value={sensory[attr.key]}
+                                                            onChange={(e) => setSensory(prev => ({ ...prev, [attr.key]: Number(e.target.value) }))}
+                                                            className="w-full h-1.5 bg-neutral-200 rounded appearance-none cursor-pointer accent-amber-600"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
