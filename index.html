@@ -390,45 +390,28 @@
                 <div className="space-y-3 pb-32 select-none">
 
                     {/* ① 選配方 */}
-                    <div>
-                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2 px-1">① 選配方</p>
-                        <div className="space-y-2">
+                    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-2">
+                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">① 選配方</p>
+                        <div className="flex gap-2">
                             {Object.values(RECIPES).map(r => {
                                 const isActive = selectedRecipeId === r.id;
-                                const totalTime = r.steps[r.steps.length - 1].endTime;
-                                const mins = Math.floor(totalTime / 60);
-                                const secs = totalTime % 60;
                                 return (
                                     <button
                                         key={r.id}
                                         onPointerDown={(e) => { e.preventDefault(); setSelectedRecipeId(r.id); setRatio(r.ratio); }}
                                         type="button"
-                                        className={`w-full p-4 rounded-2xl text-left transition-all border cursor-pointer ${
+                                        className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all cursor-pointer ${
                                             isActive
-                                            ? 'bg-neutral-900 border-neutral-900 shadow-lg shadow-neutral-200'
-                                            : 'bg-white border-neutral-100 hover:border-neutral-200'
+                                            ? 'bg-neutral-900 text-white border-neutral-900'
+                                            : 'bg-neutral-50 text-neutral-500 border-neutral-100 hover:border-neutral-300'
                                         }`}
                                     >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <div className={`font-bold text-sm ${isActive ? 'text-white' : 'text-neutral-800'}`}>
-                                                    {r.name.split('(')[0].trim()}
-                                                </div>
-                                                <div className={`text-xs mt-0.5 ${isActive ? 'text-amber-100' : 'text-neutral-400'}`}>
-                                                    {r.description}
-                                                </div>
-                                            </div>
-                                            <div className={`text-right flex-shrink-0 ml-4 ${isActive ? 'text-amber-100' : 'text-neutral-400'}`}>
-                                                <div className={`text-sm font-mono font-bold ${isActive ? 'text-white' : 'text-neutral-600'}`}>
-                                                    {mins}:{secs.toString().padStart(2, '0')}
-                                                </div>
-                                                <div className="text-[10px]">{r.steps.length} 步驟</div>
-                                            </div>
-                                        </div>
+                                        {r.name.split('(')[0].trim()}
                                     </button>
                                 );
                             })}
                         </div>
+                        <p className="text-xs text-neutral-400 px-0.5">{recipe.description}</p>
                     </div>
 
                     {/* ② 豆子 & 濾杯 */}
