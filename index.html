@@ -839,7 +839,6 @@
                     .slice()
                     .sort((a, b) => sortBy === 'rating' ? b.rating - a.rating : sortBy === 'oldest' ? a.createdAt - b.createdAt : b.createdAt - a.createdAt);
 
-                const now = new Date();
                 const monthlyCount = logs.filter(l => {
                     const d = new Date(l.createdAt);
                     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
