@@ -824,21 +824,34 @@
             };
 
             const renderJournalView = () => {
-                const avgRating = logs.length > 0
-                    ? (logs.reduce((s, l) => s + l.rating, 0) / logs.length).toFixed(1)
-                    : null;
-
-                const mostUsedDripper = logs.length > 0
-                    ? (() => {
-                        const count = {};
-                        logs.forEach(l => { count[l.dripperName] = (count[l.dripperName] || 0) + 1; });
-                        return Object.entries(count).sort((a, b) => b[1] - a[1])[0][0];
-                    })()
-                    : null;
-
                 const filteredLogs = logs.filter(log =>
                     !searchQuery || (log.beanName || '').toLowerCase().includes(searchQuery.toLowerCase())
                 );
+
+                const now = new Date();
+                const monthlyCount = logs.filter(l => {
+                    const d = new Date(l.createdAt);
+                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                }).length;
+
+                const sparkData = [...logs].sort((a, b) => a.createdAt - b.createdAt).filter(l => l.rating).slice(-14);
+                const SW = 130, SH = 46;
+                const sy = (r) => SH - 5 - ((r - 1) / 4) * (SH - 14);
+                const sx = (i) => sparkData.length < 2 ? SW / 2 : (i / (sparkData.length - 1)) * (SW - 10) + 5;
+                const sparkPts = sparkData.map((l, i) => `${sx(i)},${sy(l.rating)}`).join(' ');
+                const areaPts = sparkData.length > 1
+                    ? [`${sx(0)},${SH}`, ...sparkData.map((l, i) => `${sx(i)},${sy(l.rating)}`), `${sx(sparkData.length-1)},${SH}`].join(' ')
+                    : '';
+
+                let trendLabel = '', trendCls = '';
+                if (sparkData.length >= 4) {
+                    const n = Math.min(3, Math.floor(sparkData.length / 2));
+                    const recent = sparkData.slice(-n).reduce((s, l) => s + l.rating, 0) / n;
+                    const earlier = sparkData.slice(0, n).reduce((s, l) => s + l.rating, 0) / n;
+                    if (recent - earlier > 0.3) { trendLabel = '↑ 進步中'; trendCls = 'text-amber-600 font-bold'; }
+                    else if (earlier - recent > 0.3) { trendLabel = '↓ 待加強'; trendCls = 'text-neutral-400'; }
+                    else { trendLabel = '→ 穩定'; trendCls = 'text-neutral-400'; }
+                }
 
                 return (
                     <div className="space-y-4 pb-4">
@@ -849,18 +862,36 @@
                         </div>
 
                         {logs.length > 0 && (
-                            <div className="grid grid-cols-3 gap-2">
-                                <div className="bg-white rounded-xl p-3 text-center border border-neutral-100 shadow-sm">
-                                    <div className="text-2xl font-bold text-neutral-800">{logs.length}</div>
-                                    <div className="text-[10px] text-neutral-400 uppercase tracking-wide mt-0.5">紀錄</div>
+                            <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden flex">
+                                <div className="flex flex-col justify-center gap-4 px-5 py-4 border-r border-neutral-100 flex-shrink-0 w-[100px]">
+                                    <div>
+                                        <div className="text-[28px] font-bold text-neutral-800 leading-none tabular-nums">{logs.length}</div>
+                                        <div className="text-[9px] text-neutral-400 uppercase tracking-widest mt-1">總沖煮</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[28px] font-bold text-neutral-800 leading-none tabular-nums">{monthlyCount}</div>
+                                        <div className="text-[9px] text-neutral-400 uppercase tracking-widest mt-1">本月</div>
+                                    </div>
                                 </div>
-                                <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100 shadow-sm">
-                                    <div className="text-2xl font-bold text-amber-600">{avgRating}</div>
-                                    <div className="text-[10px] text-amber-400 uppercase tracking-wide mt-0.5">平均評分</div>
-                                </div>
-                                <div className="bg-white rounded-xl p-3 text-center border border-neutral-100 shadow-sm overflow-hidden">
-                                    <div className="text-sm font-bold text-neutral-800 truncate">{mostUsedDripper?.split(' ')[0]}</div>
-                                    <div className="text-[10px] text-neutral-400 uppercase tracking-wide mt-0.5">常用濾杯</div>
+                                <div className="flex-1 px-4 py-3 flex flex-col justify-between min-w-0">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[9px] text-neutral-400 uppercase tracking-widest">自評成長曲線</span>
+                                        {trendLabel && <span className={`text-[10px] ${trendCls}`}>{trendLabel}</span>}
+                                    </div>
+                                    {sparkData.length >= 2 ? (
+                                        <svg viewBox={`0 0 ${SW} ${SH}`} className="w-full mt-1" style={{overflow:'visible'}}>
+                                            {areaPts && <polygon points={areaPts} fill="rgba(217,119,6,0.08)" />}
+                                            <polyline points={sparkPts} fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                            {(() => {
+                                                const last = sparkData[sparkData.length - 1];
+                                                return <circle cx={sx(sparkData.length-1)} cy={sy(last.rating)} r="3" fill="#d97706" />;
+                                            })()}
+                                        </svg>
+                                    ) : (
+                                        <div className="flex-1 flex items-center justify-center">
+                                            <span className="text-[10px] text-neutral-300">多沖幾杯後顯示</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -932,20 +963,30 @@
                                             </div>
 
                                             {(log.flowRate || log.stability) && (
-                                                <div className="px-4 pb-3 flex gap-2 flex-wrap">
+                                                <div className="px-4 pb-3 flex gap-4">
                                                     {log.flowRate && (
-                                                        <span className={`text-[10px] px-2.5 py-1 rounded-full border font-medium ${
-                                                            log.flowRate === 'good' ? 'bg-neutral-100 text-neutral-600 border-neutral-200' :
-                                                            log.flowRate === 'fast' ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                                                            'bg-neutral-900 text-white border-neutral-900'
-                                                        }`}>流速 {FLOW_OPTIONS.find(f => f.id === log.flowRate)?.label}</span>
+                                                        <span className="inline-flex items-center gap-1.5 text-[10px]">
+                                                            <span className={`w-1.5 h-1.5 rounded-sm flex-shrink-0 ${
+                                                                log.flowRate === 'good' ? 'bg-neutral-300' :
+                                                                log.flowRate === 'fast' ? 'bg-amber-400' : 'bg-neutral-700'
+                                                            }`}/>
+                                                            <span className={`${
+                                                                log.flowRate === 'good' ? 'text-neutral-400' :
+                                                                log.flowRate === 'fast' ? 'text-amber-600' : 'text-neutral-600'
+                                                            }`}>流速 {FLOW_OPTIONS.find(f => f.id === log.flowRate)?.label}</span>
+                                                        </span>
                                                     )}
                                                     {log.stability && (
-                                                        <span className={`text-[10px] px-2.5 py-1 rounded-full border font-medium ${
-                                                            log.stability === 'stable' ? 'bg-neutral-100 text-neutral-600 border-neutral-200' :
-                                                            log.stability === 'shaky'  ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                                                            'bg-neutral-900 text-white border-neutral-900'
-                                                        }`}>注水 {STABILITY_OPTIONS.find(s => s.id === log.stability)?.label}</span>
+                                                        <span className="inline-flex items-center gap-1.5 text-[10px]">
+                                                            <span className={`w-1.5 h-1.5 rounded-sm flex-shrink-0 ${
+                                                                log.stability === 'stable' ? 'bg-neutral-300' :
+                                                                log.stability === 'shaky'  ? 'bg-amber-400' : 'bg-neutral-700'
+                                                            }`}/>
+                                                            <span className={`${
+                                                                log.stability === 'stable' ? 'text-neutral-400' :
+                                                                log.stability === 'shaky'  ? 'text-amber-600' : 'text-neutral-600'
+                                                            }`}>注水 {STABILITY_OPTIONS.find(s => s.id === log.stability)?.label}</span>
+                                                        </span>
                                                     )}
                                                 </div>
                                             )}
