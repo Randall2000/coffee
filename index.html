@@ -326,6 +326,7 @@
 
             const [editingLogId, setEditingLogId] = useState(null);
             const [searchQuery, setSearchQuery] = useState('');
+            const [sortOrder, setSortOrder] = useState('date');
             const [flowRate, setFlowRate] = useState('good');
             const [stability, setStability] = useState('stable');
 
@@ -523,7 +524,7 @@
 
                     {/* ① 選配方 */}
                     <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-2">
-                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">① 選配方</p>
+                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">① 選配方</p>
                         <div className="flex gap-2">
                             {Object.values(RECIPES).map(r => {
                                 const isActive = selectedRecipeId === r.id;
@@ -548,7 +549,7 @@
 
                     {/* ② 豆子 & 濾杯 */}
                     <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-3">
-                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">② 豆子 &amp; 濾杯</p>
+                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">② 豆子 &amp; 濾杯</p>
 
                         <div className="flex items-center gap-2">
                             <div className="flex bg-neutral-100 rounded-xl p-1 flex-shrink-0">
@@ -556,7 +557,7 @@
                                     <button
                                         key={level.id}
                                         onPointerDown={(e) => { e.preventDefault(); setRoastLevel(level.id); }}
-                                        className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                        className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                                             roastLevel === level.id
                                             ? level.id === 'dark'
                                                 ? 'bg-neutral-900 text-white shadow-sm'
@@ -587,7 +588,7 @@
                                 .slice(0, 3);
                             return recentBeans.length > 0 ? (
                                 <div>
-                                    <p className="text-[10px] text-neutral-400 mb-1.5">最近使用</p>
+                                    <p className="text-xs text-neutral-400 mb-1.5">最近使用</p>
                                     <div className="flex gap-2 flex-wrap">
                                         {recentBeans.map(b => (
                                             <button key={b.beanName}
@@ -615,7 +616,7 @@
                                         }`}
                                     >
                                         <div className="mb-0.5 scale-90">{getDripperIcon(d.id, isActive)}</div>
-                                        <span className={`text-[9px] font-bold ${isActive ? 'text-white' : 'text-neutral-400'}`}>{d.name}</span>
+                                        <span className={`text-xs font-bold ${isActive ? 'text-white' : 'text-neutral-400'}`}>{d.name}</span>
                                     </button>
                                 );
                             })}
@@ -625,7 +626,7 @@
                     {/* ③ 調整比例 */}
                     <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-4">
                         <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">③ 調整比例</p>
+                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">③ 調整比例</p>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-3xl font-bold text-neutral-800">{waterTotal}</span>
                                 <span className="text-sm text-neutral-400 font-medium">ml</span>
@@ -693,7 +694,7 @@
                                     const targetWater = Math.round(step.waterTargetPercentage * waterTotal);
                                     return (
                                         <div key={idx} className="flex items-center gap-3 text-xs p-2 rounded-lg hover:bg-neutral-50">
-                                            <span className="w-5 h-5 flex items-center justify-center bg-neutral-100 text-neutral-500 rounded-full text-[9px] font-bold flex-shrink-0">{idx + 1}</span>
+                                            <span className="w-5 h-5 flex items-center justify-center bg-neutral-100 text-neutral-500 rounded-full text-xs font-bold flex-shrink-0">{idx + 1}</span>
                                             <span className="text-neutral-600 flex-1">{step.name}</span>
                                             <span className="font-mono text-neutral-400">{targetWater}ml</span>
                                             <span className="font-mono text-neutral-300 w-8 text-right">{duration}s</span>
@@ -731,7 +732,7 @@
                     <div className="flex flex-col h-full items-center py-4 relative select-none">
                         <div className="text-center space-y-1 mb-3 z-10 w-full px-6">
                             <h2 className="text-neutral-500 font-bold text-sm tracking-wider uppercase">{recipe.name}</h2>
-                            <div className="flex items-center justify-center gap-2 text-neutral-400 text-[10px] font-mono">
+                            <div className="flex items-center justify-center gap-2 text-neutral-400 text-xs font-mono">
                                 <span>{selectedDripper.name}</span>
                                 <span>•</span>
                                 <span>{coffeeGrams}g / {waterTotal}ml</span>
@@ -758,7 +759,7 @@
                                     {recipe.steps.map((s, idx) => {
                                         const isCurrent = index === idx;
                                         return (
-                                            <span key={idx} className={`text-[9px] font-medium transition-all flex-1 text-center ${
+                                            <span key={idx} className={`text-xs font-medium transition-all flex-1 text-center ${
                                                 isCurrent ? 'text-amber-600' : 'text-neutral-300'
                                             }`}>
                                                 {idx + 1}
@@ -778,14 +779,14 @@
                                 
                                 <div className="absolute inset-0 flex flex-col items-center text-center py-10 px-4 pointer-events-none">
                                     <div className="flex flex-col items-center opacity-50 mb-auto">
-                                        <span className="text-[10px] tracking-widest uppercase">Total</span>
+                                        <span className="text-xs tracking-widest uppercase">Total</span>
                                         <span className="text-sm font-mono font-bold tabular-nums">{Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}</span>
                                     </div>
                                     
                                     {!isFinished ? (
                                         <div className="flex flex-col items-center justify-center w-full mb-auto space-y-1">
                                             <div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px] text-center">{step.name.split('(')[0]}</div>
-                                            <div className="text-neutral-400 text-[10px] px-6 text-center leading-snug">{step.desc}</div>
+                                            <div className="text-neutral-400 text-xs px-6 text-center leading-snug">{step.desc}</div>
                                             <div className="flex items-end leading-none">
                                                 <span className="text-6xl font-bold text-neutral-800 tabular-nums tracking-tighter">{Math.floor(timeInStep)}</span>
                                                 <span className="text-lg text-neutral-400 font-medium mb-1 ml-1 w-8 text-left">/ {duration}</span>
@@ -809,14 +810,14 @@
                         <div className="w-full grid grid-cols-3 gap-8 items-center justify-items-center mt-auto pb-8 relative z-[999]">
                             <button onPointerDown={handleReset} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
                                 <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm"><RotateCcw className="w-5 h-5" /></div>
-                                <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Reset</span>
+                                <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Reset</span>
                             </button>
                             <button onPointerDown={handleStartStop} className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none ${timerStatus === 'running' ? 'bg-amber-100 text-amber-600 border-2 border-amber-200' : 'bg-amber-600 text-white'}`}>
                                 {timerStatus === 'running' ? <Pause className="w-10 h-10 fill-current" /> : <Play className="w-10 h-10 fill-current ml-1" />}
                             </button>
                             <button onPointerDown={handleFinish} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
                                 <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm"><Save className="w-5 h-5" /></div>
-                                <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Save</span>
+                                <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Save</span>
                             </button>
                         </div>
                     </div>
@@ -824,9 +825,10 @@
             };
 
             const renderJournalView = () => {
-                const filteredLogs = logs.filter(log =>
-                    !searchQuery || (log.beanName || '').toLowerCase().includes(searchQuery.toLowerCase())
-                );
+                const filteredLogs = logs
+                    .filter(log => !searchQuery || (log.beanName || '').toLowerCase().includes(searchQuery.toLowerCase()))
+                    .slice()
+                    .sort((a, b) => sortOrder === 'rating' ? b.rating - a.rating : b.createdAt - a.createdAt);
 
                 const now = new Date();
                 const monthlyCount = logs.filter(l => {
@@ -866,17 +868,17 @@
                                 <div className="flex flex-col justify-center gap-4 px-5 py-4 border-r border-neutral-100 flex-shrink-0 w-[100px]">
                                     <div>
                                         <div className="text-[28px] font-bold text-neutral-800 leading-none tabular-nums">{logs.length}</div>
-                                        <div className="text-[9px] text-neutral-400 uppercase tracking-widest mt-1">總沖煮</div>
+                                        <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">總沖煮</div>
                                     </div>
                                     <div>
                                         <div className="text-[28px] font-bold text-neutral-800 leading-none tabular-nums">{monthlyCount}</div>
-                                        <div className="text-[9px] text-neutral-400 uppercase tracking-widest mt-1">本月</div>
+                                        <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">本月</div>
                                     </div>
                                 </div>
                                 <div className="flex-1 px-4 py-3 flex flex-col justify-between min-w-0">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[9px] text-neutral-400 uppercase tracking-widest">自評成長曲線</span>
-                                        {trendLabel && <span className={`text-[10px] ${trendCls}`}>{trendLabel}</span>}
+                                        <span className="text-xs text-neutral-400 uppercase tracking-widest">自評成長曲線</span>
+                                        {trendLabel && <span className={`text-xs ${trendCls}`}>{trendLabel}</span>}
                                     </div>
                                     {sparkData.length >= 2 ? (
                                         <svg viewBox={`0 0 ${SW} ${SH}`} className="w-full mt-1" style={{overflow:'visible'}}>
@@ -889,7 +891,7 @@
                                         </svg>
                                     ) : (
                                         <div className="flex-1 flex items-center justify-center">
-                                            <span className="text-[10px] text-neutral-300">多沖幾杯後顯示</span>
+                                            <span className="text-xs text-neutral-300">多沖幾杯後顯示</span>
                                         </div>
                                     )}
                                 </div>
@@ -897,22 +899,34 @@
                         )}
 
                         {logs.length > 0 && (
-                            <div className="relative">
-                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <input
-                                    type="text"
-                                    placeholder="搜尋豆子名稱..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 pr-9 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-neutral-300"
-                                />
-                                {searchQuery && (
-                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                )}
+                            <div className="flex gap-2 items-center">
+                                <div className="relative flex-1 min-w-0">
+                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input
+                                        type="text"
+                                        placeholder="搜尋豆子名稱..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-9 pr-9 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-neutral-300"
+                                    />
+                                    {searchQuery && (
+                                        <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500">
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex bg-neutral-100 rounded-xl p-1 flex-shrink-0">
+                                    <button
+                                        onClick={() => setSortOrder('date')}
+                                        className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${sortOrder === 'date' ? 'bg-white text-neutral-700 shadow-sm' : 'text-neutral-400'}`}
+                                    >日期</button>
+                                    <button
+                                        onClick={() => setSortOrder('rating')}
+                                        className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${sortOrder === 'rating' ? 'bg-white text-neutral-700 shadow-sm' : 'text-neutral-400'}`}
+                                    >評分</button>
+                                </div>
                             </div>
                         )}
 
@@ -939,12 +953,12 @@
                                                             {log.beanName || '未命名咖啡豆'}
                                                         </h3>
                                                         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${roastInfo.color}`}>
+                                                            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${roastInfo.color}`}>
                                                                 {roastInfo.label}
                                                             </span>
-                                                            <span className="text-[10px] text-neutral-400">{log.dripperName || 'V60'}</span>
-                                                            <span className="text-[10px] text-neutral-300">·</span>
-                                                            <span className="text-[10px] text-neutral-400">{getRelativeDate(log.createdAt)}</span>
+                                                            <span className="text-xs text-neutral-400">{log.dripperName || 'V60'}</span>
+                                                            <span className="text-xs text-neutral-300">·</span>
+                                                            <span className="text-xs text-neutral-400">{getRelativeDate(log.createdAt)}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -965,7 +979,7 @@
                                             {(log.flowRate || log.stability) && (
                                                 <div className="px-4 pb-3 flex gap-4">
                                                     {log.flowRate && (
-                                                        <span className="inline-flex items-center gap-1.5 text-[10px]">
+                                                        <span className="inline-flex items-center gap-1.5 text-xs">
                                                             <span className={`w-1.5 h-1.5 rounded-sm flex-shrink-0 ${
                                                                 log.flowRate === 'good' ? 'bg-neutral-300' :
                                                                 log.flowRate === 'fast' ? 'bg-amber-400' : 'bg-neutral-700'
@@ -977,7 +991,7 @@
                                                         </span>
                                                     )}
                                                     {log.stability && (
-                                                        <span className="inline-flex items-center gap-1.5 text-[10px]">
+                                                        <span className="inline-flex items-center gap-1.5 text-xs">
                                                             <span className={`w-1.5 h-1.5 rounded-sm flex-shrink-0 ${
                                                                 log.stability === 'stable' ? 'bg-neutral-300' :
                                                                 log.stability === 'shaky'  ? 'bg-amber-400' : 'bg-neutral-700'
@@ -991,7 +1005,7 @@
                                                 </div>
                                             )}
 
-                                            <div className="px-4 py-2.5 bg-neutral-50 border-t border-neutral-100 flex items-center gap-3 text-[11px] text-neutral-400 font-mono">
+                                            <div className="px-4 py-2.5 bg-neutral-50 border-t border-neutral-100 flex items-center gap-3 text-xs text-neutral-400 font-mono">
                                                 <span>{log.coffeeGrams}g</span>
                                                 <span className="text-neutral-200">·</span>
                                                 <span>{log.waterTotal}ml</span>
@@ -1036,14 +1050,14 @@
                             className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <Droplets className="w-6 h-6" />
-                            <span className="text-[10px] font-medium">沖煮</span>
+                            <span className="text-xs font-medium">沖煮</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('journal')}
                             className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'journal' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <BookOpen className="w-6 h-6" />
-                            <span className="text-[10px] font-medium">日誌</span>
+                            <span className="text-xs font-medium">日誌</span>
                         </button>
                     </div>
 
@@ -1107,17 +1121,17 @@
 
                                     {/* 風味雷達 */}
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">風味雷達</p>
+                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">風味雷達</p>
                                         <RadarChart
                                             data={sensory}
                                             onChange={(key, val) => setSensory(prev => ({ ...prev, [key]: val }))}
                                         />
-                                        <p className="text-center text-[10px] text-neutral-300">往各方向拖曳調整</p>
+                                        <p className="text-center text-xs text-neutral-300">往各方向拖曳調整</p>
                                     </div>
 
                                     {/* 3 快選：流速 & 穩定度 */}
                                     <div className="space-y-2">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">這杯狀況</p>
+                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">這杯狀況</p>
                                         <div>
                                             <p className="text-xs text-neutral-500 mb-1.5">流速</p>
                                             <div className="flex gap-2">
