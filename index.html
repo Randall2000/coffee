@@ -190,43 +190,112 @@
             return new Date(timestamp).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
         };
 
-        function RadarChart({ data }) {
-            const cx = 80, cy = 80, maxR = 54;
+        function RadarChart({ data, onChange }) {
+            const cx = 100, cy = 100, maxR = 68;
+            const svgRef = useRef(null);
+            const draggingRef = useRef(null);
+
             const axes = [
-                { key: 'acidity',   label: '酸值', angle: -Math.PI / 2 },
-                { key: 'sweetness', label: '甜感', angle: 0 },
-                { key: 'bitterness',label: '苦味', angle: Math.PI / 2 },
-                { key: 'body',      label: '醇厚', angle: Math.PI },
+                { key: 'acidity',    label: '酸值', angle: -Math.PI / 2 },
+                { key: 'sweetness',  label: '甜感', angle: 0 },
+                { key: 'bitterness', label: '苦味', angle: Math.PI / 2 },
+                { key: 'body',       label: '醇厚', angle: Math.PI },
             ];
+
             const pt = (angle, r) => ({
-                x: cx + r * Math.cos(angle),
-                y: cy + r * Math.sin(angle),
+                x: +(cx + r * Math.cos(angle)).toFixed(1),
+                y: +(cy + r * Math.sin(angle)).toFixed(1),
             });
+
             const gridPath = (r) => {
                 const pts = axes.map(a => pt(a.angle, r));
-                return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + 'Z';
+                return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + 'Z';
             };
+
             const dataPath = (() => {
                 const pts = axes.map(a => pt(a.angle, (data[a.key] / 5) * maxR));
-                return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + 'Z';
+                return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + 'Z';
             })();
+
+            const getSvgXY = (e) => {
+                const svg = svgRef.current;
+                if (!svg) return null;
+                const rect = svg.getBoundingClientRect();
+                const src = e.touches ? e.touches[0] : e;
+                return {
+                    x: ((src.clientX - rect.left) / rect.width) * 200,
+                    y: ((src.clientY - rect.top) / rect.height) * 200,
+                };
+            };
+
+            const nearestAxis = (dx, dy) => {
+                const angle = Math.atan2(dy, dx);
+                let best = axes[0], minD = Infinity;
+                axes.forEach(a => {
+                    let d = Math.abs(angle - a.angle);
+                    if (d > Math.PI) d = 2 * Math.PI - d;
+                    if (d < minD) { minD = d; best = a; }
+                });
+                return best;
+            };
+
+            const projValue = (dx, dy, axis) => {
+                const proj = dx * Math.cos(axis.angle) + dy * Math.sin(axis.angle);
+                return Math.max(1, Math.min(5, Math.round((proj / maxR) * 5)));
+            };
+
+            const onDown = (e) => {
+                if (!onChange) return;
+                e.preventDefault();
+                const pos = getSvgXY(e);
+                if (!pos) return;
+                const dx = pos.x - cx, dy = pos.y - cy;
+                const axis = nearestAxis(dx, dy);
+                draggingRef.current = axis;
+                onChange(axis.key, projValue(dx, dy, axis));
+            };
+
+            const onMove = (e) => {
+                if (!onChange || !draggingRef.current) return;
+                e.preventDefault();
+                const pos = getSvgXY(e);
+                if (!pos) return;
+                const dx = pos.x - cx, dy = pos.y - cy;
+                onChange(draggingRef.current.key, projValue(dx, dy, draggingRef.current));
+            };
+
+            const onUp = () => { draggingRef.current = null; };
+
             return (
-                <svg viewBox="0 0 160 160" style={{ width: '100%', maxWidth: '160px', display: 'block', margin: '0 auto' }}>
+                <svg
+                    ref={svgRef}
+                    viewBox="0 0 200 200"
+                    style={{ width: '100%', maxWidth: '200px', display: 'block', margin: '0 auto', touchAction: 'none', cursor: onChange ? 'crosshair' : 'default' }}
+                    onPointerDown={onDown}
+                    onPointerMove={onMove}
+                    onPointerUp={onUp}
+                    onPointerLeave={onUp}
+                >
                     {[1,2,3,4,5].map(l => (
-                        <path key={l} d={gridPath((l/5)*maxR)} fill="none" stroke="#e5e7eb" strokeWidth="1" />
+                        <path key={l} d={gridPath((l/5)*maxR)} fill="none" stroke={l===5?"#d1d5db":"#e5e7eb"} strokeWidth={l===5?1.5:1} />
                     ))}
                     {axes.map(a => {
                         const end = pt(a.angle, maxR);
-                        return <line key={a.key} x1={cx} y1={cy} x2={end.x.toFixed(1)} y2={end.y.toFixed(1)} stroke="#d1d5db" strokeWidth="1" />;
+                        return <line key={a.key} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="#d1d5db" strokeWidth="1" />;
                     })}
-                    <path d={dataPath} fill="rgba(217,119,6,0.2)" stroke="#d97706" strokeWidth="2" />
+                    <path d={dataPath} fill="rgba(217,119,6,0.18)" stroke="#d97706" strokeWidth="2" strokeLinejoin="round" />
                     {axes.map(a => {
                         const p = pt(a.angle, (data[a.key] / 5) * maxR);
-                        return <circle key={a.key} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="3.5" fill="#d97706" />;
+                        return <circle key={a.key} cx={p.x} cy={p.y} r="5" fill="#d97706" stroke="white" strokeWidth="2" style={{ pointerEvents: 'none' }} />;
                     })}
                     {axes.map(a => {
-                        const p = pt(a.angle, maxR + 13);
-                        return <text key={a.key} x={p.x.toFixed(1)} y={p.y.toFixed(1)} textAnchor="middle" dominantBaseline="central" fontSize="10" fill="#78716c" fontWeight="bold">{a.label}</text>;
+                        const lp = pt(a.angle, maxR + 20);
+                        return (
+                            <text key={a.key} x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="central" style={{ pointerEvents: 'none', userSelect: 'none' }}>
+                                <tspan fontSize="10" fill="#78716c" fontWeight="bold">{a.label} </tspan>
+                                <tspan fontSize="10" fill="#d97706" fontWeight="bold">{data[a.key]}</tspan>
+                            </text>
+                        );
                     })}
                 </svg>
             );
@@ -319,7 +388,7 @@
 
             const handleReset = (e) => {
                 if(e) e.preventDefault();
-                if (timerStatus !== 'idle' && !confirm('確定要中止這次沖煮嗎？')) return;
+                if (timerStatus === 'idle') return;
                 setTimerStatus('idle');
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
@@ -481,15 +550,19 @@
                     <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-3">
                         <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">② 豆子 &amp; 濾杯</p>
 
-                        <div className="flex gap-2">
+                        <div className="flex bg-neutral-100 rounded-xl p-1">
                             {ROAST_LEVELS.map(level => (
                                 <button
                                     key={level.id}
                                     onPointerDown={(e) => { e.preventDefault(); setRoastLevel(level.id); }}
-                                    className={`flex-1 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                                         roastLevel === level.id
-                                        ? `${level.color} shadow-sm`
-                                        : 'bg-neutral-50 text-neutral-400 border-neutral-100 hover:bg-neutral-100'
+                                        ? level.id === 'dark'
+                                            ? 'bg-neutral-900 text-white shadow-sm'
+                                            : level.id === 'medium'
+                                                ? 'bg-white text-neutral-700 shadow-sm'
+                                                : 'bg-white text-neutral-500 shadow-sm'
+                                        : 'text-neutral-400 hover:text-neutral-500'
                                     }`}
                                 >
                                     {level.label}
@@ -999,29 +1072,13 @@
                                     </div>
 
                                     {/* 風味雷達 */}
-                                    <div className="space-y-2">
+                                    <div className="space-y-1">
                                         <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">風味雷達</p>
-                                        <div className="flex gap-4 items-center">
-                                            <div className="flex-shrink-0 w-[160px]">
-                                                <RadarChart data={sensory} />
-                                            </div>
-                                            <div className="flex-1 space-y-2.5">
-                                                {SENSORY_ATTRIBUTES.map(attr => (
-                                                    <div key={attr.key}>
-                                                        <div className="flex justify-between text-[10px] mb-1">
-                                                            <span className="text-neutral-500 font-medium">{attr.label}</span>
-                                                            <span className="font-bold text-amber-700">{sensory[attr.key]}</span>
-                                                        </div>
-                                                        <input
-                                                            type="range" min="1" max="5" step="1"
-                                                            value={sensory[attr.key]}
-                                                            onChange={(e) => setSensory(prev => ({ ...prev, [attr.key]: Number(e.target.value) }))}
-                                                            className="w-full h-1.5 bg-neutral-200 rounded appearance-none cursor-pointer accent-amber-600"
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <RadarChart
+                                            data={sensory}
+                                            onChange={(key, val) => setSensory(prev => ({ ...prev, [key]: val }))}
+                                        />
+                                        <p className="text-center text-[10px] text-neutral-300">往各方向拖曳調整</p>
                                     </div>
 
                                     {/* 3 快選：流速 & 穩定度 */}
