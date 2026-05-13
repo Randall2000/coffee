@@ -550,30 +550,33 @@
                     <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-3">
                         <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">② 豆子 &amp; 濾杯</p>
 
-                        <div className="flex bg-neutral-100 rounded-xl p-1">
-                            {ROAST_LEVELS.map(level => (
-                                <button
-                                    key={level.id}
-                                    onPointerDown={(e) => { e.preventDefault(); setRoastLevel(level.id); }}
-                                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                                        roastLevel === level.id
-                                        ? level.id === 'dark'
-                                            ? 'bg-neutral-900 text-white shadow-sm'
-                                            : level.id === 'medium'
-                                                ? 'bg-white text-neutral-700 shadow-sm'
-                                                : 'bg-white text-neutral-500 shadow-sm'
-                                        : 'text-neutral-400 hover:text-neutral-500'
-                                    }`}
-                                >
-                                    {level.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="flex items-center gap-3 text-[11px] text-neutral-400 bg-neutral-50 rounded-lg px-3 py-2 border border-neutral-100">
-                            <span>🌡 {ROAST_TIPS[roastLevel].temp}</span>
-                            <span className="text-neutral-200">·</span>
-                            <span>⚙ 研磨 {ROAST_TIPS[roastLevel].grind}</span>
+                        <div className="flex items-center gap-2">
+                            <div className="flex bg-neutral-100 rounded-xl p-1 flex-shrink-0">
+                                {ROAST_LEVELS.map(level => (
+                                    <button
+                                        key={level.id}
+                                        onPointerDown={(e) => { e.preventDefault(); setRoastLevel(level.id); }}
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                            roastLevel === level.id
+                                            ? level.id === 'dark'
+                                                ? 'bg-neutral-900 text-white shadow-sm'
+                                                : level.id === 'medium'
+                                                    ? 'bg-white text-neutral-700 shadow-sm'
+                                                    : 'bg-white text-neutral-500 shadow-sm'
+                                            : 'text-neutral-400 hover:text-neutral-500'
+                                        }`}
+                                    >
+                                        {level.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="豆子名稱（選填）"
+                                value={beanName}
+                                onChange={(e) => setBeanName(e.target.value)}
+                                className="flex-1 text-sm placeholder:text-neutral-300 border border-neutral-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
                         </div>
 
                         {(() => {
@@ -596,14 +599,6 @@
                                 </div>
                             ) : null;
                         })()}
-
-                        <input
-                            type="text"
-                            placeholder="豆子名稱（選填）"
-                            value={beanName}
-                            onChange={(e) => setBeanName(e.target.value)}
-                            className="w-full text-sm placeholder:text-neutral-300 border border-neutral-200 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-amber-500 outline-none"
-                        />
 
                         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
                             {DRIPPERS.map(d => {
