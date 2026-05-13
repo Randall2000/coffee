@@ -623,7 +623,7 @@
                     </div>
 
                     {/* ③ 調整比例 */}
-                    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-5">
+                    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-4">
                         <div className="flex items-center justify-between">
                             <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">③ 調整比例</p>
                             <div className="flex items-baseline gap-1">
@@ -632,39 +632,37 @@
                             </div>
                         </div>
 
-                        <div>
-                            <div className="flex justify-between text-sm mb-2">
-                                <span className="text-neutral-500 font-medium flex items-center gap-1.5">
-                                    <Bean className="w-3.5 h-3.5 text-amber-600" /> 粉量
-                                </span>
-                                <span className="font-bold text-amber-700">{coffeeGrams}g</span>
-                            </div>
-                            <input
-                                type="range" min="10" max="40" step="1"
-                                value={coffeeGrams}
-                                onChange={(e) => setCoffeeGrams(Number(e.target.value))}
-                                className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-                            />
-                            <div className="flex justify-between text-[10px] text-neutral-400 mt-1 px-0.5">
-                                <span>10g</span><span>40g</span>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-neutral-500 font-medium flex items-center gap-1.5">
+                                <Bean className="w-3.5 h-3.5 text-amber-600" /> 粉量
+                            </span>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.max(10, g - 1)); }}
+                                    className="w-9 h-9 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer touch-none"
+                                >−</button>
+                                <span className="w-12 text-center font-bold text-amber-700 text-lg tabular-nums">{coffeeGrams}g</span>
+                                <button
+                                    onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.min(40, g + 1)); }}
+                                    className="w-9 h-9 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer touch-none"
+                                >+</button>
                             </div>
                         </div>
 
-                        <div>
-                            <div className="flex justify-between text-sm mb-2">
-                                <span className="text-neutral-500 font-medium flex items-center gap-1.5">
-                                    <Droplets className="w-3.5 h-3.5 text-amber-600" /> 粉水比
-                                </span>
-                                <span className="font-bold text-amber-700">1:{Math.round(ratio)}</span>
-                            </div>
-                            <input
-                                type="range" min="10" max="20" step="1"
-                                value={Math.round(ratio)}
-                                onChange={(e) => { const v = Number(e.target.value); setRatio(v); setRecipeRatios(prev => ({ ...prev, [selectedRecipeId]: v })); }}
-                                className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-                            />
-                            <div className="flex justify-between text-[10px] text-neutral-400 mt-1 px-0.5">
-                                <span>1:10</span><span>1:20</span>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-neutral-500 font-medium flex items-center gap-1.5">
+                                <Droplets className="w-3.5 h-3.5 text-amber-600" /> 粉水比
+                            </span>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onPointerDown={(e) => { e.preventDefault(); const v = Math.max(10, Math.round(ratio) - 1); setRatio(v); setRecipeRatios(prev => ({ ...prev, [selectedRecipeId]: v })); }}
+                                    className="w-9 h-9 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer touch-none"
+                                >−</button>
+                                <span className="w-12 text-center font-bold text-amber-700 text-base tabular-nums">1:{Math.round(ratio)}</span>
+                                <button
+                                    onPointerDown={(e) => { e.preventDefault(); const v = Math.min(20, Math.round(ratio) + 1); setRatio(v); setRecipeRatios(prev => ({ ...prev, [selectedRecipeId]: v })); }}
+                                    className="w-9 h-9 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer touch-none"
+                                >+</button>
                             </div>
                         </div>
                     </div>
