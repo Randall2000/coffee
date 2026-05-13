@@ -112,27 +112,33 @@
                 id: 'v60',
                 name: '究極 V60 (James Hoffmann)',
                 description: '強調高萃取率與乾淨度，適合淺焙豆。',
-                ratio: 16.7, // 60g/L standard
+                ratio: 16.7,
                 steps: [
-                    { name: '悶蒸 (Bloom)', desc: '濕潤粉層', endTime: 45, waterTargetPercentage: 0.2 }, 
-                    { name: '第一段注水 (60%)', desc: '建立水位與高溫', endTime: 75, waterTargetPercentage: 0.6 }, 
-                    { name: '第二段注水 (100%)', desc: '維持流速', endTime: 105, waterTargetPercentage: 1.0 }, 
-                    { name: '攪拌與濾乾 (Draw)', desc: '輕輕搖晃濾杯', endTime: 210, waterTargetPercentage: 1.0 } 
+                    { name: '悶蒸 (Bloom)', desc: '從中心緩慢繞圈，確保粉層均勻濕潤', endTime: 45, waterTargetPercentage: 0.2 },
+                    { name: '第一段注水', desc: '細水流由中心向外繞，勿沖到濾紙邊緣', endTime: 75, waterTargetPercentage: 0.6 },
+                    { name: '第二段注水', desc: '維持穩定小水流，保持水位不要落差太大', endTime: 105, waterTargetPercentage: 1.0 },
+                    { name: '攪拌與濾乾', desc: '輕輕繞圈搖晃濾杯，讓粉層平整後靜待', endTime: 210, waterTargetPercentage: 1.0 }
                 ]
             },
             fourSix: {
                 id: 'fourSix',
                 name: '4:6 法 (Tetsu Kasuya)',
                 description: '前40%決定風味，後60%決定醇厚度。',
-                ratio: 15, // Standard 1:15
+                ratio: 15,
                 steps: [
-                    { name: '第1注 (酸值)', desc: '決定酸質明亮度', endTime: 45, waterTargetPercentage: 0.2 },
-                    { name: '第2注 (甜感)', desc: '決定甜感與平衡', endTime: 90, waterTargetPercentage: 0.4 },
-                    { name: '第3注 (層次)', desc: '堆疊濃度', endTime: 135, waterTargetPercentage: 0.6 },
-                    { name: '第4注 (強度)', desc: '強化醇厚度', endTime: 180, waterTargetPercentage: 0.8 },
-                    { name: '第5注 (結尾)', desc: '最後注水後等待濾乾（約30秒）', endTime: 210, waterTargetPercentage: 1.0 }
+                    { name: '第1注 (酸值)', desc: '輕柔小水流繞圈，決定最終酸感明亮度', endTime: 45, waterTargetPercentage: 0.2 },
+                    { name: '第2注 (甜感)', desc: '相同手法，與第1注共同建立甜感平衡', endTime: 90, waterTargetPercentage: 0.4 },
+                    { name: '第3注 (層次)', desc: '穩定繞圈，開始堆疊醇厚層次', endTime: 135, waterTargetPercentage: 0.6 },
+                    { name: '第4注 (強度)', desc: '保持一致節奏，強化濃度與厚實感', endTime: 180, waterTargetPercentage: 0.8 },
+                    { name: '第5注 (結尾)', desc: '最後注水後靜待濾乾，勿搖晃（約30秒）', endTime: 210, waterTargetPercentage: 1.0 }
                 ]
             }
+        };
+
+        const ROAST_TIPS = {
+            light:  { temp: '90–93°C', grind: '偏細（細砂糖）' },
+            medium: { temp: '86–90°C', grind: '中等（粗砂糖）' },
+            dark:   { temp: '82–86°C', grind: '偏粗（粗砂糖）' },
         };
 
         const SENSORY_ATTRIBUTES = [
@@ -436,6 +442,12 @@
                             ))}
                         </div>
 
+                        <div className="flex items-center gap-3 text-[11px] text-neutral-400 bg-neutral-50 rounded-lg px-3 py-2 border border-neutral-100">
+                            <span>🌡 {ROAST_TIPS[roastLevel].temp}</span>
+                            <span className="text-neutral-200">·</span>
+                            <span>⚙ 研磨 {ROAST_TIPS[roastLevel].grind}</span>
+                        </div>
+
                         <input
                             type="text"
                             placeholder="豆子名稱（選填）"
@@ -630,7 +642,8 @@
                                     
                                     {!isFinished ? (
                                         <div className="flex flex-col items-center justify-center w-full mb-auto space-y-1">
-                                            <div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px]">{step.name.split('(')[0]}</div>
+                                            <div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px] text-center">{step.name.split('(')[0]}</div>
+                                            <div className="text-neutral-400 text-[10px] px-6 text-center leading-snug">{step.desc}</div>
                                             <div className="flex items-end leading-none">
                                                 <span className="text-6xl font-bold text-neutral-800 tabular-nums tracking-tighter">{Math.floor(timeInStep)}</span>
                                                 <span className="text-lg text-neutral-400 font-medium mb-1 ml-1 w-8 text-left">/ {duration}</span>
