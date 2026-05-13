@@ -130,7 +130,7 @@
                     { name: '第2注 (甜感)', desc: '決定甜感與平衡', endTime: 90, waterTargetPercentage: 0.4 },
                     { name: '第3注 (層次)', desc: '堆疊濃度', endTime: 135, waterTargetPercentage: 0.6 },
                     { name: '第4注 (強度)', desc: '強化醇厚度', endTime: 180, waterTargetPercentage: 0.8 },
-                    { name: '第5注 (結尾)', desc: '最後調整與濾乾', endTime: 210, waterTargetPercentage: 1.0 }
+                    { name: '第5注 (結尾)', desc: '最後注水後等待濾乾（約30秒）', endTime: 210, waterTargetPercentage: 1.0 }
                 ]
             }
         };
@@ -158,7 +158,7 @@
                 case 'kalita':
                     return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-3 12H7L4 5z" /><path d="M2 5h20" /><path d="M7 17v-4" /><path d="M17 17v-4" /><path d="M12 17v2" /></svg>;
                 case 'origami':
-                    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-9 16L3 5z" /><path d="M12 5v16" /><path d="M7.5 5l2.5 11.5" /><path d="M16.5 5l-2.5 11.5" /><path d="M2 5h20" /></svg>;
+                    return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-8 14z" /><line x1="4" y1="5" x2="20" y2="5" /><line x1="12" y1="5" x2="12" y2="19" /><line x1="8" y1="5" x2="10" y2="13" /><line x1="16" y1="5" x2="14" y2="13" /></svg>;
                 case 'chemex':
                     return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10l-3 8 4 10H6l4-10-3-8z" /><path d="M10 11h4" /></svg>;
                 case 'switch':
@@ -188,6 +188,7 @@
             const [selectedDripperId, setSelectedDripperId] = useState('v60');
             const [coffeeGrams, setCoffeeGrams] = useState(20);
             const [ratio, setRatio] = useState(16.7);
+            const [recipeRatios, setRecipeRatios] = useState({ v60: 16.7, fourSix: 15 });
             const [timerStatus, setTimerStatus] = useState('idle');
             const [currentTime, setCurrentTime] = useState(0);
             const [showSaveModal, setShowSaveModal] = useState(false);
@@ -265,6 +266,7 @@
 
             const handleReset = (e) => {
                 if(e) e.preventDefault();
+                if (timerStatus !== 'idle' && !confirm('確定要中止這次沖煮嗎？')) return;
                 setTimerStatus('idle');
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
@@ -398,7 +400,7 @@
                                 return (
                                     <button
                                         key={r.id}
-                                        onPointerDown={(e) => { e.preventDefault(); setSelectedRecipeId(r.id); setRatio(r.ratio); }}
+                                        onPointerDown={(e) => { e.preventDefault(); setSelectedRecipeId(r.id); setRatio(recipeRatios[r.id] ?? r.ratio); }}
                                         type="button"
                                         className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all cursor-pointer ${
                                             isActive
@@ -502,7 +504,7 @@
                             <input
                                 type="range" min="10" max="20" step="1"
                                 value={Math.round(ratio)}
-                                onChange={(e) => setRatio(Number(e.target.value))}
+                                onChange={(e) => { const v = Number(e.target.value); setRatio(v); setRecipeRatios(prev => ({ ...prev, [selectedRecipeId]: v })); }}
                                 className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
                             />
                             <div className="flex justify-between text-[10px] text-neutral-400 mt-1 px-0.5">
@@ -818,7 +820,7 @@
                             </div>
                             <span className="font-bold text-lg tracking-tight">Barista Flow</span>
                         </div>
-                        <div className="text-xs font-mono text-neutral-400">本地模式</div>
+                        <div className="text-xs font-mono text-neutral-400 cursor-help" title="資料儲存在您的裝置，不會上傳至雲端">本地模式</div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-6 pb-24 scroll-smooth">
