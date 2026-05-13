@@ -861,98 +861,118 @@
                     </div>
 
                     {showSaveModal && (
-                        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-                            <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 h-[85vh] overflow-y-auto relative">
-                                <button 
-                                    onClick={closeModal}
-                                    className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
-                                >
-                                    <X className="w-6 h-6" />
-                                </button>
-                                <h3 className="text-xl font-bold mb-4 text-center mt-2">{editingLogId ? '編輯紀錄' : '紀錄這杯咖啡'}</h3>
-                                
-                                <div className="mb-6 space-y-3">
-                                    <div className="relative">
-                                        <Bean className="absolute left-3 top-3 w-5 h-5 text-stone-400" />
-                                        <input 
-                                            type="text" 
-                                            placeholder="咖啡豆名稱" 
-                                            value={beanName}
-                                            onChange={(e) => setBeanName(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-3 bg-stone-50 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
-                                        />
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {ROAST_LEVELS.map(level => (
-                                            <button
-                                                key={level.id}
-                                                onClick={() => setRoastLevel(level.id)}
-                                                className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-all ${
-                                                    roastLevel === level.id 
-                                                    ? `${level.color} shadow-sm ring-1 ring-offset-1 ring-amber-200` 
-                                                    : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50'
-                                                }`}
-                                            >
-                                                {level.label}
-                                            </button>
-                                        ))}
-                                    </div>
+                        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-end justify-center backdrop-blur-sm animate-in fade-in">
+                            <div className="bg-white w-full max-w-sm rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom-10 max-h-[80vh] overflow-y-auto">
+                                {/* Handle */}
+                                <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                                    <div className="w-10 h-1 bg-stone-200 rounded-full" />
                                 </div>
 
-                                <div className="flex justify-center gap-2 mb-6">
-                                    {[1, 2, 3, 4, 5].map(star => (
-                                        <button 
-                                            key={star}
-                                            onClick={() => setRating(star)}
-                                            className={`text-3xl transition-transform hover:scale-110 ${rating >= star ? 'text-amber-400' : 'text-stone-200'}`}
-                                        >
-                                            ★
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="space-y-4 mb-6 bg-stone-50 p-4 rounded-xl">
-                                    <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">風味感受</h4>
-                                    {SENSORY_ATTRIBUTES.map(attr => (
-                                        <div key={attr.key} className="flex items-center gap-3">
-                                            <label className="text-sm font-medium w-10 text-stone-600">{attr.label}</label>
-                                            <div className="flex-1 flex justify-between items-center bg-white rounded-lg p-1 border border-stone-100">
-                                                {[1, 2, 3, 4, 5].map(lvl => (
-                                                    <button
-                                                        key={lvl}
-                                                        onClick={() => updateSensory(attr.key, lvl)}
-                                                        className={`w-8 h-8 rounded-md text-sm font-bold transition-all ${sensory[attr.key] === lvl ? `${attr.color} text-white shadow-sm` : 'text-stone-300 hover:bg-stone-50'}`}
-                                                    >
-                                                        {lvl}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <textarea
-                                    placeholder="其他筆記 (選填)"
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                    className="w-full p-3 bg-stone-50 rounded-xl border border-stone-200 text-sm mb-6 focus:ring-2 focus:ring-amber-500 outline-none resize-none h-20"
-                                />
-                                
-                                <div className="flex gap-3 pb-4">
-                                    {editingLogId && (
-                                        <button 
-                                            onClick={deleteLog}
-                                            className="flex-none p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors cursor-pointer"
-                                            title="刪除紀錄"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
-                                    )}
-                                    
-                                    <button 
-                                        onClick={saveLog}
-                                        className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-colors cursor-pointer"
-                                    >
-                                        {editingLogId ? '更新紀錄' : '儲存紀錄'}
+                                {/* Header */}
+                                <div className="flex items-center justify-between px-5 py-2">
+                                    <h3 className="text-base font-bold text-stone-800">{editingLogId ? '編輯紀錄' : '紀錄這杯'}</h3>
+                                    <button onClick={closeModal} className="p-1.5 text-stone-400 hover:text-stone-600 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer">
+                                        <X className="w-5 h-5" />
                                     </button>
+                                </div>
+
+                                <div className="px-5 pb-6 space-y-3">
+                                    {/* 豆子 + 焙度 */}
+                                    <div className="space-y-2">
+                                        <div className="relative">
+                                            <Bean className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="咖啡豆名稱"
+                                                value={beanName}
+                                                onChange={(e) => setBeanName(e.target.value)}
+                                                className="w-full pl-9 pr-4 py-2.5 bg-stone-50 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {ROAST_LEVELS.map(level => (
+                                                <button
+                                                    key={level.id}
+                                                    onClick={() => setRoastLevel(level.id)}
+                                                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                                                        roastLevel === level.id
+                                                        ? `${level.color} shadow-sm`
+                                                        : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50'
+                                                    }`}
+                                                >
+                                                    {level.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 評分 — inline */}
+                                    <div className="flex items-center justify-between bg-stone-50 rounded-xl px-4 py-2.5">
+                                        <span className="text-sm font-medium text-stone-600">整體評分</span>
+                                        <div className="flex gap-0.5">
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <button
+                                                    key={star}
+                                                    onClick={() => setRating(star)}
+                                                    className={`text-2xl transition-transform active:scale-110 cursor-pointer ${rating >= star ? 'text-amber-400' : 'text-stone-200'}`}
+                                                >
+                                                    ★
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 風味感受 — 2×2 緊湊格 */}
+                                    <div>
+                                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">風味感受</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {SENSORY_ATTRIBUTES.map(attr => (
+                                                <div key={attr.key} className="bg-stone-50 rounded-xl px-3 py-2.5">
+                                                    <div className="text-xs font-medium text-stone-500 mb-2">{attr.label}</div>
+                                                    <div className="flex gap-1.5">
+                                                        {[1, 2, 3, 4, 5].map(lvl => (
+                                                            <button
+                                                                key={lvl}
+                                                                onClick={() => updateSensory(attr.key, lvl)}
+                                                                className={`w-5 h-5 rounded-full transition-all cursor-pointer border-2 ${
+                                                                    sensory[attr.key] >= lvl
+                                                                    ? `${attr.color} border-transparent`
+                                                                    : 'bg-white border-stone-200 hover:border-stone-300'
+                                                                }`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 備註 */}
+                                    <textarea
+                                        placeholder="備註（選填）"
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                        className="w-full p-3 bg-stone-50 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-16"
+                                    />
+
+                                    {/* 按鈕 */}
+                                    <div className="flex gap-3">
+                                        {editingLogId && (
+                                            <button
+                                                onClick={deleteLog}
+                                                className="flex-none p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors cursor-pointer"
+                                                title="刪除紀錄"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={saveLog}
+                                            className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-colors cursor-pointer"
+                                        >
+                                            {editingLogId ? '更新紀錄' : '儲存紀錄'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
