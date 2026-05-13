@@ -172,6 +172,15 @@
 
         const STORAGE_KEY = 'barista_flow_logs';
 
+        const getRelativeDate = (timestamp) => {
+            const days = Math.floor((Date.now() - timestamp) / 86400000);
+            if (days === 0) return '今天';
+            if (days === 1) return '昨天';
+            if (days < 7) return `${days} 天前`;
+            if (days < 30) return `${Math.floor(days / 7)} 週前`;
+            return new Date(timestamp).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
+        };
+
         function BaristaFlow() {
             const [activeTab, setActiveTab] = useState('brew');
             
@@ -195,6 +204,7 @@
             });
 
             const [editingLogId, setEditingLogId] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
 
             const [beanName, setBeanName] = useState('');
             const [roastLevel, setRoastLevel] = useState('light');
@@ -638,86 +648,148 @@
                 );
             };
 
-            const renderJournalView = () => (
-                <div className="space-y-4">
-                    <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
-                        <BookOpen className="w-6 h-6 text-amber-600" /> 沖煮日誌
-                    </h2>
-                    
-                    {logs.length === 0 ? (
-                        <div className="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
-                            <Coffee className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-                            <p className="text-stone-500">尚無紀錄，快去沖一杯吧！</p>
+            const renderJournalView = () => {
+                const avgRating = logs.length > 0
+                    ? (logs.reduce((s, l) => s + l.rating, 0) / logs.length).toFixed(1)
+                    : null;
+
+                const mostUsedDripper = logs.length > 0
+                    ? (() => {
+                        const count = {};
+                        logs.forEach(l => { count[l.dripperName] = (count[l.dripperName] || 0) + 1; });
+                        return Object.entries(count).sort((a, b) => b[1] - a[1])[0][0];
+                    })()
+                    : null;
+
+                const filteredLogs = logs.filter(log =>
+                    !searchQuery || (log.beanName || '').toLowerCase().includes(searchQuery.toLowerCase())
+                );
+
+                return (
+                    <div className="space-y-4 pb-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-2">
+                                <BookOpen className="w-6 h-6 text-amber-600" /> 沖煮日誌
+                            </h2>
                         </div>
-                    ) : (
-                        logs.map(log => {
-                            const roastInfo = ROAST_LEVELS.find(r => r.id === log.roastLevel) || ROAST_LEVELS[0];
-                            return (
-                                <div 
-                                    key={log.id} 
-                                    onClick={() => handleEditLog(log)}
-                                    className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col gap-3 cursor-pointer hover:border-amber-200 hover:shadow-md transition-all active:scale-[0.99]"
-                                >
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-bold text-stone-800 text-lg flex items-center gap-2">
-                                                {log.beanName || '未命名咖啡豆'}
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full border font-normal ${roastInfo.color}`}>
-                                                    {roastInfo.label}
-                                                </span>
-                                            </h3>
-                                            <div className="flex items-center gap-2 text-xs text-stone-400 mt-1">
-                                                <span className="flex items-center gap-1 bg-stone-100 px-1.5 py-0.5 rounded text-stone-500">
-                                                    <Filter className="w-3 h-3" /> {log.dripperName || 'V60'}
-                                                </span>
-                                                <span>•</span>
-                                                <span>{log.recipeName?.split('(')[0]}</span>
-                                                <span>•</span>
-                                                <span>{new Date(log.createdAt).toLocaleDateString()}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-md">
-                                            <Star className="w-4 h-4 text-amber-500 fill-current" />
-                                            <span className="text-amber-800 font-bold text-sm">{log.rating}</span>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-2 text-center text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
-                                        <div>
-                                            <span className="block text-stone-400 scale-75 uppercase">粉重</span>
-                                            {log.coffeeGrams}g
-                                        </div>
-                                        <div>
-                                            <span className="block text-stone-400 scale-75 uppercase">總水</span>
-                                            {log.waterTotal}ml
-                                        </div>
-                                        <div>
-                                            <span className="block text-stone-400 scale-75 uppercase">時間</span>
-                                            {Math.floor(log.time / 60)}:{(log.time % 60).toString().padStart(2, '0')}
-                                        </div>
-                                    </div>
-                                    {log.sensory && (
-                                        <div className="grid grid-cols-2 gap-2 mt-1">
-                                            {SENSORY_ATTRIBUTES.map(attr => (
-                                                <div key={attr.key} className="flex items-center justify-between text-xs">
-                                                    <span className="text-stone-400">{attr.label}</span>
-                                                    <div className="flex gap-[1px]">
-                                                        {[1, 2, 3, 4, 5].map(lvl => (
-                                                            <div key={lvl} className={`w-2 h-1.5 rounded-sm ${lvl <= log.sensory[attr.key] ? attr.color : 'bg-stone-100'}`} />
-                                                        ))}
+
+                        {logs.length > 0 && (
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="bg-white rounded-xl p-3 text-center border border-stone-100 shadow-sm">
+                                    <div className="text-2xl font-bold text-stone-800">{logs.length}</div>
+                                    <div className="text-[10px] text-stone-400 uppercase tracking-wide mt-0.5">紀錄</div>
+                                </div>
+                                <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100 shadow-sm">
+                                    <div className="text-2xl font-bold text-amber-600">{avgRating}</div>
+                                    <div className="text-[10px] text-amber-400 uppercase tracking-wide mt-0.5">平均評分</div>
+                                </div>
+                                <div className="bg-white rounded-xl p-3 text-center border border-stone-100 shadow-sm overflow-hidden">
+                                    <div className="text-sm font-bold text-stone-800 truncate">{mostUsedDripper?.split(' ')[0]}</div>
+                                    <div className="text-[10px] text-stone-400 uppercase tracking-wide mt-0.5">常用濾杯</div>
+                                </div>
+                            </div>
+                        )}
+
+                        {logs.length > 0 && (
+                            <div className="relative">
+                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input
+                                    type="text"
+                                    placeholder="搜尋豆子名稱..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-9 pr-9 py-2.5 bg-white border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-stone-300"
+                                />
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-300 hover:text-stone-500">
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {logs.length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-stone-200">
+                                <div className="text-5xl mb-3">☕</div>
+                                <p className="font-medium text-stone-600 mb-1">還沒有紀錄</p>
+                                <p className="text-sm text-stone-400">沖完一杯後儲存，就會出現在這裡</p>
+                            </div>
+                        ) : filteredLogs.length === 0 ? (
+                            <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-stone-200">
+                                <p className="text-stone-400 text-sm">找不到「{searchQuery}」的紀錄</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {filteredLogs.map(log => {
+                                    const roastInfo = ROAST_LEVELS.find(r => r.id === log.roastLevel) || ROAST_LEVELS[0];
+                                    return (
+                                        <div key={log.id} className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
+                                            <div className="p-4 pb-3">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-bold text-stone-800 text-base leading-tight truncate">
+                                                            {log.beanName || '未命名咖啡豆'}
+                                                        </h3>
+                                                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${roastInfo.color}`}>
+                                                                {roastInfo.label}
+                                                            </span>
+                                                            <span className="text-[10px] text-stone-400">{log.dripperName || 'V60'}</span>
+                                                            <span className="text-[10px] text-stone-300">·</span>
+                                                            <span className="text-[10px] text-stone-400">{getRelativeDate(log.createdAt)}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                                        <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1.5 rounded-lg">
+                                                            <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
+                                                            <span className="text-amber-800 font-bold text-sm">{log.rating}</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleEditLog(log)}
+                                                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors border border-stone-100"
+                                                        >
+                                                            <Pencil className="w-3.5 h-3.5" />
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            ))}
+                                            </div>
+
+                                            {log.sensory && (
+                                                <div className="px-4 pb-3 grid grid-cols-2 gap-x-4 gap-y-2">
+                                                    {SENSORY_ATTRIBUTES.map(attr => (
+                                                        <div key={attr.key} className="flex items-center gap-2">
+                                                            <span className="text-[10px] text-stone-400 w-8 flex-shrink-0">{attr.label}</span>
+                                                            <div className="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden">
+                                                                <div className={`h-full rounded-full ${attr.color}`} style={{ width: `${(log.sensory[attr.key] / 5) * 100}%` }} />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div className="px-4 py-2.5 bg-stone-50 border-t border-stone-100 flex items-center gap-3 text-[11px] text-stone-400 font-mono">
+                                                <span>{log.coffeeGrams}g</span>
+                                                <span className="text-stone-200">·</span>
+                                                <span>{log.waterTotal}ml</span>
+                                                <span className="text-stone-200">·</span>
+                                                <span>{Math.floor(log.time / 60)}:{(log.time % 60).toString().padStart(2, '0')}</span>
+                                            </div>
+
+                                            {log.notes && (
+                                                <div className="px-4 py-2.5 border-t border-stone-50">
+                                                    <p className="text-xs text-stone-500 italic">"{log.notes}"</p>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                    {log.notes && (
-                                        <p className="text-sm text-stone-600 italic border-l-2 border-stone-200 pl-2 mt-2">"{log.notes}"</p>
-                                    )}
-                                </div>
-                            );
-                        })
-                    )}
-                </div>
-            );
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
 
             return (
                 <div className="max-w-md mx-auto h-screen bg-stone-50 flex flex-col font-sans text-stone-800 overflow-hidden">
