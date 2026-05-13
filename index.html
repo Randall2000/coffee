@@ -825,7 +825,7 @@
                             <button onPointerDown={handleStartStop} className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none ${timerStatus === 'running' ? 'bg-amber-100 text-amber-600 border-2 border-amber-200' : 'bg-amber-600 text-white'}`}>
                                 {timerStatus === 'running' ? <Pause className="w-10 h-10 fill-current" /> : <Play className="w-10 h-10 fill-current ml-1" />}
                             </button>
-                            <button onPointerDown={handleFinish} disabled={timerStatus === 'idle'} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
+                            <button onPointerDown={handleFinish} disabled={timerStatus === 'idle' || currentTime === 0} className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
                                 <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm"><Save className="w-5 h-5" /></div>
                                 <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Save</span>
                             </button>
