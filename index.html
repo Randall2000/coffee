@@ -1122,14 +1122,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 備註 */}
-                                    <textarea
-                                        placeholder="備註（選填）"
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        className="w-full p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-16"
-                                    />
-
                                     {/* 評分 — inline */}
                                     <div className="flex items-center justify-between bg-neutral-50 rounded-xl px-4 py-2.5">
                                         <span className="text-sm font-medium text-neutral-600">整體評分</span>
@@ -1182,6 +1174,14 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* 備註 */}
+                                    <textarea
+                                        placeholder="備註（選填）"
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                        className="w-full p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-16"
+                                    />
 
                                     {/* 按鈕 */}
                                     <div className="flex gap-3">
