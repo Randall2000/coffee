@@ -47,18 +47,23 @@
             from { opacity: 0; }
             to   { opacity: 1; }
         }
-        /* Spring easing: accelerates then overshoots slightly before settling */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to   { opacity: 0; }
+        }
+        /* Smooth, iOS-like spring easing */
         .sheet-panel {
             backface-visibility: hidden;
             transform: translate3d(0, 0, 0);
             will-change: transform;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
         }
-        .sheet-enter { animation: slideUp 0.32s cubic-bezier(0.16,1,0.3,1) both; }
-        .sheet-exit  { transform: translate3d(0, 100%, 0); transition: transform 0.26s cubic-bezier(0.4,0,0.8,0.4); }
+        .sheet-enter { animation: slideUp 0.45s cubic-bezier(0.32, 0.72, 0, 1) both; }
+        .sheet-exit  { transform: translate3d(0, 100%, 0) !important; transition: transform 0.35s cubic-bezier(0.32, 0, 0.67, 0); }
         .sheet-dragging { transition: none !important; }
-        .sheet-settle { transition: transform 0.28s cubic-bezier(0.16,1,0.3,1), height 0.28s cubic-bezier(0.16,1,0.3,1); }
-        .backdrop-enter { animation: fadeIn 0.20s ease forwards; }
-        .backdrop-exit  { opacity: 0; transition: opacity 0.24s ease; }
+        .sheet-settle { transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1), height 0.45s cubic-bezier(0.32, 0.72, 0, 1); }
+        .backdrop-enter { animation: fadeIn 0.3s ease-out forwards; }
+        .backdrop-exit  { animation: fadeOut 0.3s ease-in forwards; }
     </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900 h-screen overflow-hidden">
@@ -477,7 +482,8 @@
                 setSheetDragOffset(0);
                 setClosingSheet(name);
                 setSheetIsExpanded(false);
-                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 280);
+                // Wait for the .sheet-exit transition (0.35s) to finish before unmounting
+                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 350);
             };
             const onSheetTouchStart = (e, name, setOpen) => {
                 sheetDragStartY.current = e.touches[0].clientY;
@@ -546,7 +552,7 @@
 
             const chooseRecipeAndCollapse = (recipeId) => {
                 updateRecipe(recipeId);
-                setTimeout(() => closeBottomSheet('recipe', setRecipeSheetOpen), 280);
+                setTimeout(() => closeBottomSheet('recipe', setRecipeSheetOpen), 150);
             };
             
             useEffect(() => {
@@ -1010,7 +1016,7 @@
                                                                     setBeanName(b.beanName);
                                                                     setRoastLevel(b.roastLevel);
                                                                     setWaterTemp(WATER_TEMPS[b.roastLevel] || 90);
-                                                                    setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 280);
+                                                                    setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 150);
                                                                 }}
                                                                 className="flex-1 flex items-center gap-3 px-4 py-3.5 cursor-pointer touch-none active:opacity-70 text-left"
                                                             >
@@ -1125,7 +1131,7 @@
                                                         setRoastLevel(sheetRoastLevel);
                                                         setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 90);
                                                         setAddingNewBean(false);
-                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 280);
+                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 150);
                                                     }}
                                                     className="w-full bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
@@ -1181,7 +1187,7 @@
                                                                 const rid = getRecommendedRecipeId('balanced', d.id);
                                                                 updateRecipe(rid);
                                                             }
-                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 280);
+                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 150);
                                                         }}
                                                         className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-95 ${
                                                             isActive ? 'bg-neutral-900 border-neutral-900' : 'bg-neutral-50 border-neutral-100 active:bg-neutral-100'
@@ -1229,7 +1235,7 @@
                                                         onPointerDown={(e) => {
                                                             e.preventDefault();
                                                             setSelectedGrinder(g.id);
-                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 280);
+                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 150);
                                                         }}
                                                         className={`px-3 py-3 rounded-xl border-2 text-left transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] ${
                                                             isActive ? 'border-amber-500 bg-amber-50 active:bg-amber-100' : 'border-neutral-100 bg-neutral-50 active:bg-neutral-100'
