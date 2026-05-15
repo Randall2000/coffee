@@ -469,20 +469,22 @@
             const [sheetRoastLevel, setSheetRoastLevel] = useState('light');
             const [closingSheet, setClosingSheet] = useState(null);
             const [sheetIsExpanded, setSheetIsExpanded] = useState(false);
-            const [sheetDragOffset, setSheetDragOffset] = useState(0);
-            const [sheetIsDragging, setSheetIsDragging] = useState(false);
+            const [sheetIsExpanded, setSheetIsExpanded] = useState(false);
             const sheetDragStartY = useRef(null);
             const sheetLastTouch = useRef({ y: 0, time: 0 });
             const sheetDragMeta = useRef(null); // { name, setOpen }
             const sheetRoastDateInputRef = useRef(null);
+            const activeSheetRef = useRef(null);
 
             const closeBottomSheet = (name, setOpen) => {
                 sheetDragStartY.current = null;
                 sheetDragMeta.current = null;
-                setSheetIsDragging(false);
-                setSheetDragOffset(0);
                 setClosingSheet(name);
                 setSheetIsExpanded(false);
+                if (activeSheetRef.current) {
+                    activeSheetRef.current.style.transform = '';
+                    activeSheetRef.current.style.transition = '';
+                }
                 // Wait for the .sheet-exit transition (0.35s) to finish before unmounting
                 setTimeout(() => { setOpen(false); setClosingSheet(null); }, 350);
             };
@@ -491,11 +493,12 @@
                 sheetDragStartY.current = y;
                 sheetLastTouch.current = { y, time: Date.now() };
                 sheetDragMeta.current = { name, setOpen };
-                setSheetIsDragging(true);
+                if (activeSheetRef.current) {
+                    activeSheetRef.current.style.transition = 'none';
+                }
             };
             const onSheetTouchMove = (e) => {
                 if (sheetDragStartY.current === null) return;
-                e.preventDefault();
                 const y = e.touches[0].clientY;
                 const now = Date.now();
                 sheetLastTouch.current = { y, time: now };
@@ -507,7 +510,10 @@
                     delta = -1 * (Math.abs(delta) / (1 + Math.abs(delta) / 150));
                 }
                 
-                setSheetDragOffset(delta);
+                if (activeSheetRef.current) {
+                    // Direct DOM manipulation bypasses React render lag!
+                    activeSheetRef.current.style.transform = `translate3d(0, ${delta}px, 0)`;
+                }
             };
             const onSheetTouchEnd = (e) => {
                 if (sheetDragStartY.current === null) return;
@@ -521,37 +527,35 @@
                 
                 const { name, setOpen } = sheetDragMeta.current || {};
                 sheetDragStartY.current = null;
-                setSheetIsDragging(false);
-                setSheetDragOffset(0);
                 
-                if (!name) return;
+                if (activeSheetRef.current) {
+                    activeSheetRef.current.style.transition = ''; // restore CSS transition
+                }
                 
-                // Predict resting position based on momentum (velocity * constant)
+                if (!name) {
+                    if (activeSheetRef.current) activeSheetRef.current.style.transform = '';
+                    return;
+                }
+                
+                // Predict resting position based on momentum
                 const predictedDelta = delta + velocity * 150;
                 
                 if (sheetIsExpanded) {
                     if (predictedDelta > 200 || velocity > 1.2) { 
                         closeBottomSheet(name, setOpen); 
-                    } else if (predictedDelta > 80 || velocity > 0.5) { 
-                        setSheetIsExpanded(false); 
+                    } else { 
+                        if (predictedDelta > 80 || velocity > 0.5) setSheetIsExpanded(false); 
+                        if (activeSheetRef.current) activeSheetRef.current.style.transform = '';
                     }
                 } else {
                     if (predictedDelta > 100 || velocity > 0.8) { 
                         closeBottomSheet(name, setOpen); 
-                    } else if (predictedDelta < -60 || velocity < -0.6) { 
-                        setSheetIsExpanded(true); 
+                    } else { 
+                        if (predictedDelta < -60 || velocity < -0.6) setSheetIsExpanded(true); 
+                        if (activeSheetRef.current) activeSheetRef.current.style.transform = '';
                     }
                 }
             };
-
-            const getBottomSheetStyle = () => (
-                closingSheet
-                    ? undefined
-                    : { 
-                        transform: `translate3d(0, ${sheetDragOffset}px, 0)`,
-                        transition: sheetIsDragging ? 'none' : undefined
-                      }
-            );
 
             const handleSheetTouchStart = (e) => {
                 sheetDragStartRef.current = e.touches[0].clientY;
@@ -998,8 +1002,8 @@
                                     onPointerDown={() => { closeBottomSheet('bean', setBeanSheetOpen); setAddingNewBean(false); }}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden sheet-panel ${sheetIsExpanded ? 'h-[90vh]' : 'h-[68vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'} ${sheetIsDragging ? 'sheet-dragging' : 'sheet-settle'}`}
-                                    style={getBottomSheetStyle()}
+                                    className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden sheet-panel sheet-settle ${sheetIsExpanded ? 'h-[90vh]' : 'h-[68vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    ref={activeSheetRef}
                                 >
                                     {/* Drag handle */}
                                     <div
@@ -1191,8 +1195,8 @@
                                     onPointerDown={() => closeBottomSheet('dripper', setDripperSheetOpen)}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'} ${sheetIsDragging ? 'sheet-dragging' : 'sheet-settle'}`}
-                                    style={getBottomSheetStyle()}
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel sheet-settle ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    ref={activeSheetRef}
                                 >
                                     <div
                                         className="py-4 flex justify-center cursor-ns-resize select-none touch-none"
@@ -1242,8 +1246,8 @@
                                     onPointerDown={() => closeBottomSheet('grinder', setGrinderSheetOpen)}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'} ${sheetIsDragging ? 'sheet-dragging' : 'sheet-settle'}`}
-                                    style={getBottomSheetStyle()}
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel sheet-settle ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    ref={activeSheetRef}
                                 >
                                     <div
                                         className="py-4 flex justify-center cursor-ns-resize select-none touch-none"
@@ -1523,8 +1527,8 @@
                                     onPointerDown={() => closeBottomSheet('recipe', setRecipeSheetOpen)}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel ${closingSheet === 'recipe' ? 'sheet-exit' : 'sheet-enter'} ${sheetIsDragging ? 'sheet-dragging' : 'sheet-settle'}`}
-                                    style={getBottomSheetStyle()}
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel sheet-settle ${closingSheet === 'recipe' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    ref={activeSheetRef}
                                 >
                                     <div
                                         className="py-4 flex justify-center cursor-ns-resize select-none touch-none"
