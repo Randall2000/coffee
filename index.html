@@ -214,7 +214,7 @@
             'other':       { range: null,    recommend: null  },
         };
 
-        const WATER_TEMPS = { light: 93, medium: 89, dark: 85 };
+        const WATER_TEMPS = { light: 90, medium: 90, dark: 90 };
 
         const FLAVOR_OPTIONS = [
             { id: 'bright',   label: '明亮', desc: '突出果酸、清透花香，適合淺焙單品', recipe: 'v60'     },
@@ -468,6 +468,7 @@
             const [sheetIsDragging, setSheetIsDragging] = useState(false);
             const sheetDragStartY = useRef(null);
             const sheetDragMeta = useRef(null); // { name, setOpen }
+            const sheetRoastDateInputRef = useRef(null);
 
             const closeBottomSheet = (name, setOpen) => {
                 sheetDragStartY.current = null;
@@ -1057,33 +1058,46 @@
                                                 <div>
                                                     <label htmlFor="sheet-roast-date" className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘豆日期</label>
                                                     <div className="relative">
-                                                        <div className={`w-full min-h-[48px] px-4 py-3 rounded-xl border text-sm flex items-center justify-between gap-3 ${
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (sheetRoastDateInputRef.current?.showPicker) {
+                                                                    sheetRoastDateInputRef.current.showPicker();
+                                                                } else {
+                                                                    sheetRoastDateInputRef.current?.focus();
+                                                                    sheetRoastDateInputRef.current?.click();
+                                                                }
+                                                            }}
+                                                            className={`w-full min-h-[48px] px-4 py-3 rounded-xl border text-sm flex items-center justify-between gap-3 text-left ${
                                                             sheetRoastDate
                                                             ? 'bg-amber-50 border-amber-200 text-amber-900'
                                                             : 'bg-neutral-50 border-neutral-200 text-neutral-400'
-                                                        }`}>
+                                                        } ${sheetRoastDate ? 'pr-11' : ''}`}
+                                                        >
                                                             <span className="flex items-center gap-2 min-w-0">
                                                                 <Calendar className={`w-4 h-4 shrink-0 ${sheetRoastDate ? 'text-amber-600' : 'text-neutral-300'}`} />
                                                                 <span className="truncate">{formatRoastDate(sheetRoastDate) || '選擇烘豆日期（選填）'}</span>
                                                             </span>
-                                                            {sheetRoastDate && (
-                                                                <button
-                                                                    type="button"
-                                                                    onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); setSheetRoastDate(''); }}
-                                                                    aria-label="清除烘豆日期"
-                                                                    className="relative z-10 p-1 rounded-lg text-amber-500 active:bg-amber-100 cursor-pointer touch-none"
-                                                                >
-                                                                    <X className="w-4 h-4" />
-                                                                </button>
-                                                            )}
-                                                        </div>
+                                                        </button>
+                                                        {sheetRoastDate && (
+                                                            <button
+                                                                type="button"
+                                                                onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); setSheetRoastDate(''); }}
+                                                                aria-label="清除烘豆日期"
+                                                                className="absolute right-3 top-1/2 z-10 -translate-y-1/2 p-1 rounded-lg text-amber-500 active:bg-amber-100 cursor-pointer touch-none"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        )}
                                                         <input
+                                                            ref={sheetRoastDateInputRef}
                                                             id="sheet-roast-date"
                                                             type="date"
                                                             value={sheetRoastDate}
                                                             onChange={(e) => setSheetRoastDate(e.target.value)}
-                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                            className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
                                                             aria-label="烘豆日期"
+                                                            tabIndex={-1}
                                                         />
                                                     </div>
                                                 </div>
@@ -1574,7 +1588,9 @@
                                     <span className="text-neutral-200">·</span>
                                     <span className="font-mono text-neutral-400">{waterTotal}ml</span>
                                     <span className="text-neutral-200">·</span>
-                                    <span className="font-mono text-neutral-400">1:{Math.round(ratio)}</span>
+                                    <span className="font-mono text-neutral-400">{waterTemp}°C</span>
+                                    <span className="text-neutral-200">·</span>
+                                    <span className="font-mono text-neutral-400">{formatTimerDisplay(totalTime)}</span>
                                 </div>
                                 {/* Row 2: 進度條 — 加粗 */}
                                 <div className="flex gap-1 items-center mb-2">
