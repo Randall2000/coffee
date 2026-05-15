@@ -779,8 +779,8 @@
                         {/* 選擇列：豆子 / 濾杯 / 磨豆機 */}
                         <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
                             <button
-                                onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(recentBeans.length === 0); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel(roastLevel); setBeanSheetOpen(true); }}
-                                className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer touch-none active:bg-neutral-50 border-b border-neutral-50"
+                                onClick={() => { setAddingNewBean(recentBeans.length === 0); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel(roastLevel); setBeanSheetOpen(true); }}
+                                className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer active:bg-neutral-50 border-b border-neutral-50"
                             >
                                 <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">豆子</span>
                                 <span className={`flex-1 text-sm text-left truncate ${beanName ? 'font-medium text-neutral-800' : 'text-neutral-400'}`}>
@@ -792,8 +792,8 @@
                                 <ChevronRight className="w-4 h-4 text-neutral-300 shrink-0" />
                             </button>
                             <button
-                                onPointerDown={(e) => { e.preventDefault(); setDripperSheetOpen(true); }}
-                                className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer touch-none active:bg-neutral-50 border-b border-neutral-50"
+                                onClick={() => setDripperSheetOpen(true)}
+                                className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer active:bg-neutral-50 border-b border-neutral-50"
                             >
                                 <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">濾杯</span>
                                 <span className={`flex-1 text-sm text-left ${selectedDripperObj ? 'font-medium text-neutral-800' : 'text-neutral-400'}`}>
@@ -802,8 +802,8 @@
                                 <ChevronRight className="w-4 h-4 text-neutral-300 shrink-0" />
                             </button>
                             <button
-                                onPointerDown={(e) => { e.preventDefault(); setGrinderSheetOpen(true); }}
-                                className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer touch-none active:bg-neutral-50"
+                                onClick={() => setGrinderSheetOpen(true)}
+                                className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer active:bg-neutral-50"
                             >
                                 <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">磨豆機</span>
                                 <span className={`flex-1 text-sm text-left ${selectedGrinderObj ? 'font-medium text-neutral-800' : 'text-neutral-400'}`}>
@@ -880,7 +880,7 @@
                                                                 setBeanName(b.beanName);
                                                                 setRoastLevel(b.roastLevel);
                                                                 setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
-                                                                setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 120);
+                                                                setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 220);
                                                             }}
                                                             className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] active:bg-amber-50 ${
                                                                 isSelected ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
@@ -922,8 +922,8 @@
                                                                     ? level.id === 'dark'
                                                                         ? 'bg-neutral-900 text-white border-neutral-900'
                                                                         : level.id === 'medium'
-                                                                            ? 'bg-white text-neutral-700 border-neutral-400 shadow-sm'
-                                                                            : 'bg-amber-50 text-amber-700 border-amber-400'
+                                                                            ? 'bg-amber-600 text-white border-amber-600'
+                                                                            : 'bg-amber-400 text-white border-amber-400'
                                                                     : 'bg-neutral-50 text-neutral-400 border-neutral-200'
                                                                 }`}
                                                             >
@@ -940,7 +940,7 @@
                                                         setRoastLevel(sheetRoastLevel);
                                                         setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 93);
                                                         setAddingNewBean(false);
-                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 80);
+                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 180);
                                                     }}
                                                     className="w-full bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
@@ -992,7 +992,7 @@
                                                                 setSelectedRecipeId(rid);
                                                                 setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
                                                             }
-                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 120);
+                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 220);
                                                         }}
                                                         className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-95 ${
                                                             isActive ? 'bg-neutral-900 border-neutral-900' : 'bg-neutral-50 border-neutral-100 active:bg-neutral-100'
@@ -1039,7 +1039,7 @@
                                                         onPointerDown={(e) => {
                                                             e.preventDefault();
                                                             setSelectedGrinder(g.id);
-                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 120);
+                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 220);
                                                         }}
                                                         className={`px-3 py-3 rounded-xl border-2 text-left transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] ${
                                                             isActive ? 'border-amber-500 bg-amber-50 active:bg-amber-100' : 'border-neutral-100 bg-neutral-50 active:bg-neutral-100'
@@ -1139,8 +1139,8 @@
                         {/* Adjust panel */}
                         <div className={`rounded-2xl shadow-sm overflow-hidden transition-colors ${showAdjust ? 'bg-amber-50 border-2 border-amber-400' : 'bg-white border-2 border-amber-200'}`}>
                             <button
-                                onPointerDown={(e) => { e.preventDefault(); setShowAdjust(!showAdjust); }}
-                                className="w-full px-5 py-4 flex items-center justify-between cursor-pointer touch-none active:opacity-80"
+                                onClick={() => setShowAdjust(!showAdjust)}
+                                className="w-full px-5 py-4 flex items-center justify-between cursor-pointer active:opacity-80"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${showAdjust ? 'bg-amber-500' : 'bg-amber-100'}`}>
@@ -1198,14 +1198,14 @@
                                                         setRoastLevel(level.id);
                                                         setWaterTemp(WATER_TEMPS[level.id] || 93);
                                                     }}
-                                                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer touch-none ${
+                                                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all cursor-pointer touch-none active:scale-95 ${
                                                         roastLevel === level.id
                                                         ? level.id === 'dark'
                                                             ? 'bg-neutral-900 text-white border-neutral-900'
                                                             : level.id === 'medium'
-                                                                ? 'bg-white text-neutral-700 border-neutral-400 shadow-sm'
-                                                                : 'bg-white text-neutral-500 border-neutral-300 shadow-sm'
-                                                        : 'bg-white text-neutral-400 border-neutral-200'
+                                                                ? 'bg-amber-600 text-white border-amber-600'
+                                                                : 'bg-amber-400 text-white border-amber-400'
+                                                        : 'bg-neutral-50 text-neutral-400 border-neutral-200'
                                                     }`}
                                                 >
                                                     {level.label}
