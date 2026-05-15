@@ -40,18 +40,25 @@
             scrollbar-width: none;
         }
         @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to   { transform: translateY(0); }
+            from { transform: translate3d(0, 100%, 0); }
+            to   { transform: translate3d(0, 0, 0); }
         }
         @keyframes fadeIn {
             from { opacity: 0; }
             to   { opacity: 1; }
         }
         /* Spring easing: accelerates then overshoots slightly before settling */
-        .sheet-enter { animation: slideUp 0.46s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .sheet-exit  { transform: translateY(100%); transition: transform 0.36s cubic-bezier(0.4,0,0.8,0.4); }
-        .backdrop-enter { animation: fadeIn 0.30s ease forwards; }
-        .backdrop-exit  { opacity: 0; transition: opacity 0.36s ease; }
+        .sheet-panel {
+            backface-visibility: hidden;
+            transform: translate3d(0, 0, 0);
+            will-change: transform;
+        }
+        .sheet-enter { animation: slideUp 0.32s cubic-bezier(0.16,1,0.3,1) both; }
+        .sheet-exit  { transform: translate3d(0, 100%, 0); transition: transform 0.26s cubic-bezier(0.4,0,0.8,0.4); }
+        .sheet-dragging { transition: none !important; }
+        .sheet-settle { transition: transform 0.28s cubic-bezier(0.16,1,0.3,1), height 0.28s cubic-bezier(0.16,1,0.3,1); }
+        .backdrop-enter { animation: fadeIn 0.20s ease forwards; }
+        .backdrop-exit  { opacity: 0; transition: opacity 0.24s ease; }
     </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900 h-screen overflow-hidden">
@@ -436,9 +443,13 @@
             const sheetDragMeta = useRef(null); // { name, setOpen }
 
             const closeBottomSheet = (name, setOpen) => {
+                sheetDragStartY.current = null;
+                sheetDragMeta.current = null;
+                setSheetIsDragging(false);
+                setSheetDragOffset(0);
                 setClosingSheet(name);
                 setSheetIsExpanded(false);
-                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 370);
+                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 280);
             };
             const onSheetTouchStart = (e, name, setOpen) => {
                 sheetDragStartY.current = e.touches[0].clientY;
@@ -447,6 +458,7 @@
             };
             const onSheetTouchMove = (e) => {
                 if (sheetDragStartY.current === null) return;
+                e.preventDefault();
                 const delta = e.touches[0].clientY - sheetDragStartY.current;
                 if (sheetIsExpanded) {
                     setSheetDragOffset(Math.max(0, delta));
@@ -470,6 +482,12 @@
                     else if (delta < -55) { setSheetIsExpanded(true); }
                 }
             };
+
+            const getBottomSheetStyle = () => (
+                closingSheet
+                    ? undefined
+                    : { transform: `translate3d(0, ${sheetDragOffset}px, 0)` }
+            );
 
             const handleSheetTouchStart = (e) => {
                 sheetDragStartRef.current = e.touches[0].clientY;
@@ -496,6 +514,11 @@
                 setRatio(recipeRatios[recipeId] ?? nextRecipe.ratio);
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
+            };
+
+            const chooseRecipeAndCollapse = (recipeId) => {
+                updateRecipe(recipeId);
+                setShowRecipeOptions(false);
             };
             
             useEffect(() => {
@@ -908,15 +931,12 @@
                                     onPointerDown={() => { closeBottomSheet('bean', setBeanSheetOpen); setAddingNewBean(false); }}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden ${sheetIsExpanded ? 'h-[90vh]' : 'h-[68vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'}`}
-                                    style={closingSheet === 'bean' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
-                                        transform: `translateY(${sheetDragOffset}px)`,
-                                        transition: sheetIsDragging ? 'none' : 'transform 0.46s cubic-bezier(0.16,1,0.3,1)'
-                                    } : { transition: 'height 0.46s cubic-bezier(0.16,1,0.3,1)' }}
+                                    className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden sheet-panel ${sheetIsExpanded ? 'h-[90vh]' : 'h-[68vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'} ${sheetIsDragging ? 'sheet-dragging' : 'sheet-settle'}`}
+                                    style={getBottomSheetStyle()}
                                 >
                                     {/* Drag handle */}
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize shrink-0 select-none"
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize shrink-0 select-none touch-none"
                                         onTouchStart={(e) => onSheetTouchStart(e, 'bean', setBeanSheetOpen)}
                                         onTouchMove={onSheetTouchMove}
                                         onTouchEnd={onSheetTouchEnd}
@@ -959,7 +979,7 @@
                                                                     setBeanName(b.beanName);
                                                                     setRoastLevel(b.roastLevel);
                                                                     setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
-                                                                    setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 440);
+                                                                    setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 140);
                                                                 }}
                                                                 className="flex-1 flex items-center gap-3 px-4 py-3.5 cursor-pointer touch-none active:opacity-70 text-left"
                                                             >
@@ -1044,7 +1064,7 @@
                                                         setRoastLevel(sheetRoastLevel);
                                                         setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 93);
                                                         setAddingNewBean(false);
-                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 360);
+                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 140);
                                                     }}
                                                     className="w-full bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
@@ -1074,14 +1094,11 @@
                                     onPointerDown={() => closeBottomSheet('dripper', setDripperSheetOpen)}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'}`}
-                                    style={closingSheet === 'dripper' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
-                                        transform: `translateY(${sheetDragOffset}px)`,
-                                        transition: sheetIsDragging ? 'none' : 'transform 0.46s cubic-bezier(0.16,1,0.3,1)'
-                                    } : undefined}
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'} ${sheetIsDragging ? 'sheet-dragging' : 'sheet-settle'}`}
+                                    style={getBottomSheetStyle()}
                                 >
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none"
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none touch-none"
                                         onTouchStart={(e) => onSheetTouchStart(e, 'dripper', setDripperSheetOpen)}
                                         onTouchMove={onSheetTouchMove}
                                         onTouchEnd={onSheetTouchEnd}
@@ -1103,7 +1120,7 @@
                                                                 const rid = getRecommendedRecipeId('balanced', d.id);
                                                                 updateRecipe(rid);
                                                             }
-                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 440);
+                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 140);
                                                         }}
                                                         className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-95 ${
                                                             isActive ? 'bg-neutral-900 border-neutral-900' : 'bg-neutral-50 border-neutral-100 active:bg-neutral-100'
@@ -1128,14 +1145,11 @@
                                     onPointerDown={() => closeBottomSheet('grinder', setGrinderSheetOpen)}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'}`}
-                                    style={closingSheet === 'grinder' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
-                                        transform: `translateY(${sheetDragOffset}px)`,
-                                        transition: sheetIsDragging ? 'none' : 'transform 0.46s cubic-bezier(0.16,1,0.3,1)'
-                                    } : undefined}
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'} ${sheetIsDragging ? 'sheet-dragging' : 'sheet-settle'}`}
+                                    style={getBottomSheetStyle()}
                                 >
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none"
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none touch-none"
                                         onTouchStart={(e) => onSheetTouchStart(e, 'grinder', setGrinderSheetOpen)}
                                         onTouchMove={onSheetTouchMove}
                                         onTouchEnd={onSheetTouchEnd}
@@ -1154,7 +1168,7 @@
                                                         onPointerDown={(e) => {
                                                             e.preventDefault();
                                                             setSelectedGrinder(g.id);
-                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 440);
+                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 140);
                                                         }}
                                                         className={`px-3 py-3 rounded-xl border-2 text-left transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] ${
                                                             isActive ? 'border-amber-500 bg-amber-50 active:bg-amber-100' : 'border-neutral-100 bg-neutral-50 active:bg-neutral-100'
@@ -1267,7 +1281,7 @@
                             {!isUsingRecommendation && (
                                 <button
                                     type="button"
-                                    onPointerDown={(e) => { e.preventDefault(); updateRecipe(recommendedRecipeId); setShowRecipeOptions(false); }}
+                                    onClick={() => chooseRecipeAndCollapse(recommendedRecipeId)}
                                     className="mt-3 w-full rounded-xl border border-amber-200 bg-white py-3 text-sm font-bold text-amber-700 cursor-pointer touch-none active:scale-[0.98] transition-all"
                                 >
                                     回到系統推薦沖法
@@ -1295,7 +1309,7 @@
                                                 type="button"
                                                 role="radio"
                                                 aria-checked={false}
-                                                onPointerDown={(e) => { e.preventDefault(); updateRecipe(option.id); setShowRecipeOptions(false); }}
+                                                onClick={() => chooseRecipeAndCollapse(option.id)}
                                                 className="w-full min-h-[68px] rounded-xl border-2 border-neutral-100 bg-neutral-50 px-3 py-3 transition-all cursor-pointer touch-none active:scale-[0.98]"
                                             >
                                                 <span className="flex items-center gap-3 text-left">
