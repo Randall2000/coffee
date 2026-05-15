@@ -42,10 +42,11 @@
             from { opacity: 0; }
             to   { opacity: 1; }
         }
-        .sheet-enter { animation: slideUp 0.32s cubic-bezier(0.32,0.72,0,1) forwards; }
-        .sheet-exit  { transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.32,0.72,0,1); }
-        .backdrop-enter { animation: fadeIn 0.25s ease forwards; }
-        .backdrop-exit  { opacity: 0; transition: opacity 0.28s ease; }
+        /* Spring easing: accelerates then overshoots slightly before settling */
+        .sheet-enter { animation: slideUp 0.46s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .sheet-exit  { transform: translateY(100%); transition: transform 0.36s cubic-bezier(0.4,0,0.8,0.4); }
+        .backdrop-enter { animation: fadeIn 0.30s ease forwards; }
+        .backdrop-exit  { opacity: 0; transition: opacity 0.36s ease; }
     </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900 h-screen overflow-hidden">
@@ -182,13 +183,13 @@
         ];
 
         const GRINDER_CLICKS = {
-            'C40':         { light: '20–22 click', medium: '17–19 click', dark: '14–16 click' },
-            'C60':         { light: '22–24 click', medium: '19–21 click', dark: '16–18 click' },
-            'K-Ultra':     { light: '3.0–3.5 圈',  medium: '2.5–3.0 圈',  dark: '2.0–2.5 圈'  },
-            'ZP6':         { light: '4.0–4.5 圈',  medium: '3.5–4.0 圈',  dark: '3.0–3.5 圈'  },
-            'Timemore-C3': { light: '18–20 click', medium: '15–17 click', dark: '12–14 click' },
-            'Timemore-C2': { light: '16–18 click', medium: '13–15 click', dark: '10–12 click' },
-            'other':       { light: '細砂糖粗細',   medium: '粗砂糖粗細',   dark: '海鹽粗細'    },
+            'C40':         { range: '22–30', recommend: '24' },
+            'C60':         { range: '25–46', recommend: '33' },
+            'K-Ultra':     { range: '60–85', recommend: '80' },
+            'ZP6':         { range: '35–60', recommend: '45' },
+            'Timemore-C3': { range: '13–18', recommend: '15' },
+            'Timemore-C2': { range: '15–24', recommend: '22' },
+            'other':       { range: null,    recommend: null  },
         };
 
         const WATER_TEMPS = { light: 93, medium: 89, dark: 85 };
@@ -419,7 +420,7 @@
             const closeBottomSheet = (name, setOpen) => {
                 setClosingSheet(name);
                 setSheetIsExpanded(false);
-                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 290);
+                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 370);
             };
             const onSheetTouchStart = (e, name, setOpen) => {
                 sheetDragStartY.current = e.touches[0].clientY;
@@ -667,8 +668,11 @@
                 return ['kalita', 'bluebottle'].includes(dripperId) ? 'fourSix' : 'v60';
             };
 
-            const getGrindSetting = (grinderId, roastLvl) =>
-                grinderId ? (GRINDER_CLICKS[grinderId]?.[roastLvl] || '—') : '—';
+            const getGrindSetting = (grinderId) => {
+                if (!grinderId) return '—';
+                const c = GRINDER_CLICKS[grinderId];
+                return c?.recommend ? `建議 ${c.recommend}` : '—';
+            };
 
             // --- Views ---
             // --- Home ---
@@ -750,7 +754,7 @@
                 const selectedRoast = ROAST_LEVELS.find(r => r.id === roastLevel);
                 const selectedDripperObj = DRIPPERS.find(d => d.id === selectedDripperId);
                 const selectedGrinderObj = GRINDERS.find(g => g.id === selectedGrinder);
-                const grindHint = selectedGrinder ? GRINDER_CLICKS[selectedGrinder]?.[roastLevel] : null;
+                const grindHint = selectedGrinder ? (GRINDER_CLICKS[selectedGrinder]?.recommend ? `建議 ${GRINDER_CLICKS[selectedGrinder].recommend}` : null) : null;
 
                 return (
                     <div className="pb-24 select-none space-y-3">
@@ -872,8 +876,8 @@
                                     className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden ${sheetIsExpanded ? 'h-[90vh]' : 'h-[68vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'}`}
                                     style={closingSheet === 'bean' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
                                         transform: `translateY(${sheetDragOffset}px)`,
-                                        transition: sheetIsDragging ? 'none' : 'transform 0.32s cubic-bezier(0.32,0.72,0,1)'
-                                    } : { transition: 'height 0.32s cubic-bezier(0.32,0.72,0,1)' }}
+                                        transition: sheetIsDragging ? 'none' : 'transform 0.46s cubic-bezier(0.16,1,0.3,1)'
+                                    } : { transition: 'height 0.46s cubic-bezier(0.16,1,0.3,1)' }}
                                 >
                                     {/* Drag handle */}
                                     <div
@@ -1033,7 +1037,7 @@
                                     className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'}`}
                                     style={closingSheet === 'dripper' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
                                         transform: `translateY(${sheetDragOffset}px)`,
-                                        transition: sheetIsDragging ? 'none' : 'transform 0.32s cubic-bezier(0.32,0.72,0,1)'
+                                        transition: sheetIsDragging ? 'none' : 'transform 0.46s cubic-bezier(0.16,1,0.3,1)'
                                     } : undefined}
                                 >
                                     <div
@@ -1088,7 +1092,7 @@
                                     className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'}`}
                                     style={closingSheet === 'grinder' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
                                         transform: `translateY(${sheetDragOffset}px)`,
-                                        transition: sheetIsDragging ? 'none' : 'transform 0.32s cubic-bezier(0.32,0.72,0,1)'
+                                        transition: sheetIsDragging ? 'none' : 'transform 0.46s cubic-bezier(0.16,1,0.3,1)'
                                     } : undefined}
                                 >
                                     <div
@@ -1100,14 +1104,11 @@
                                         <div className={`w-10 h-1 rounded-full transition-colors ${sheetIsDragging ? 'bg-neutral-400' : 'bg-neutral-200'}`} />
                                     </div>
                                     <div className="px-5 pb-10">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <p className="text-base font-bold text-neutral-800">選擇磨豆機</p>
-                                            <p className="text-xs text-neutral-400">刻數建議 · {ROAST_LEVELS.find(r=>r.id===roastLevel)?.label}</p>
-                                        </div>
+                                        <p className="text-base font-bold text-neutral-800 mb-4">選擇磨豆機</p>
                                         <div className="grid grid-cols-2 gap-2">
                                             {GRINDERS.map(g => {
                                                 const isActive = selectedGrinder === g.id;
-                                                const hint = GRINDER_CLICKS[g.id]?.[roastLevel];
+                                                const clicks = GRINDER_CLICKS[g.id];
                                                 return (
                                                     <button
                                                         key={g.id}
@@ -1121,9 +1122,14 @@
                                                         }`}
                                                     >
                                                         <p className="text-sm font-bold text-neutral-800">{g.short}</p>
-                                                        <p className={`text-xs font-mono mt-0.5 ${isActive ? 'text-amber-600 font-semibold' : 'text-neutral-400'}`}>
-                                                            {hint || g.label}
-                                                        </p>
+                                                        {clicks?.recommend ? (
+                                                            <p className={`text-xs font-mono mt-0.5 ${isActive ? 'text-amber-600 font-semibold' : 'text-neutral-400'}`}>
+                                                                建議 {clicks.recommend}
+                                                                <span className={`ml-1 font-normal ${isActive ? 'text-amber-400' : 'text-neutral-300'}`}>/ {clicks.range}</span>
+                                                            </p>
+                                                        ) : (
+                                                            <p className="text-xs text-neutral-400 mt-0.5">{g.label}</p>
+                                                        )}
                                                     </button>
                                                 );
                                             })}
@@ -1141,7 +1147,7 @@
             const renderSuggestionView = () => {
                 const rec = RECIPES[selectedRecipeId];
                 const totalTime = rec.steps[rec.steps.length - 1].endTime;
-                const grindSetting = getGrindSetting(selectedGrinder, roastLevel);
+                const grindSetting = getGrindSetting(selectedGrinder);
 
                 return (
                     <div className="pb-24 select-none">
