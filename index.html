@@ -434,7 +434,7 @@
             const [selectedFlavor, setSelectedFlavor] = useState(null);
             const [selectedGrinder, setSelectedGrinder] = useState(null);
             const [roastDate, setRoastDate] = useState('');
-            const [waterTemp, setWaterTemp] = useState(93);
+            const [waterTemp, setWaterTemp] = useState(90);
             const [showAdjust, setShowAdjust] = useState(false);
             const [recipeSheetOpen, setRecipeSheetOpen] = useState(false);
             const [isNewBean, setIsNewBean] = useState(false);
@@ -755,7 +755,7 @@
                 setRatio(log.ratio);
                 setRecipeRatios(prev => ({ ...prev, [recipeId]: log.ratio }));
                 setRoastLevel(log.roastLevel);
-                setWaterTemp(WATER_TEMPS[log.roastLevel] || 93);
+                setWaterTemp(WATER_TEMPS[log.roastLevel] || 90);
                 setBeanName(log.beanName !== '未命名咖啡豆' ? log.beanName : '');
                 setBrewStep('suggestion');
             };
@@ -992,7 +992,7 @@
                                                                     e.preventDefault();
                                                                     setBeanName(b.beanName);
                                                                     setRoastLevel(b.roastLevel);
-                                                                    setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
+                                                                    setWaterTemp(WATER_TEMPS[b.roastLevel] || 90);
                                                                     setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 140);
                                                                 }}
                                                                 className="flex-1 flex items-center gap-3 px-4 py-3.5 cursor-pointer touch-none active:opacity-70 text-left"
@@ -1099,7 +1099,7 @@
                                                         setBeanName(sheetBeanName);
                                                         setRoastDate(sheetRoastDate);
                                                         setRoastLevel(sheetRoastLevel);
-                                                        setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 93);
+                                                        setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 90);
                                                         setAddingNewBean(false);
                                                         setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 140);
                                                     }}
@@ -1302,6 +1302,7 @@
                                             <span className="text-base font-bold text-neutral-800">{rec.name.split('(')[0].trim()}</span>
                                             <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
                                         </button>
+                                        <p className="text-xs text-neutral-400 mt-0.5">{rec.description}</p>
                                     </div>
                                     {isUsingRecommendation && (
                                         <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
@@ -1354,10 +1355,7 @@
                             </div>
                             <div className="px-4 py-3 space-y-2">
                                 {rec.steps.map((step, idx) => {
-                                    const prevEnd = idx > 0 ? rec.steps[idx-1].endTime : 0;
                                     const tw = Math.round(step.waterTargetPercentage * waterTotal);
-                                    const prevWater = idx > 0 ? Math.round(rec.steps[idx-1].waterTargetPercentage * waterTotal) : 0;
-                                    const pourWater = Math.max(0, tw - prevWater);
                                     return (
                                         <div key={idx} className="grid grid-cols-[28px_1fr_auto] gap-3 items-start rounded-xl bg-neutral-50 px-3 py-3">
                                             <span className="w-7 h-7 flex items-center justify-center bg-white border border-neutral-200 text-neutral-500 rounded-full font-bold text-xs flex-shrink-0">{idx+1}</span>
@@ -1366,8 +1364,8 @@
                                                 <span className="block text-xs text-neutral-400 mt-0.5 leading-snug">{step.desc}</span>
                                             </span>
                                             <span className="text-right shrink-0">
-                                                <span className="block font-mono text-amber-700 font-bold text-sm">+{pourWater}ml</span>
-                                                <span className="block font-mono text-neutral-400 text-xs mt-0.5">{prevEnd}-{step.endTime}s</span>
+                                                <span className="block font-mono text-amber-700 font-bold text-sm">{tw}ml</span>
+                                                <span className="block font-mono text-neutral-400 text-xs mt-0.5">{step.endTime}s</span>
                                             </span>
                                         </div>
                                     );
@@ -1435,7 +1433,7 @@
                                                     onPointerDown={(e) => {
                                                         e.preventDefault();
                                                         setRoastLevel(level.id);
-                                                        setWaterTemp(WATER_TEMPS[level.id] || 93);
+                                                        setWaterTemp(WATER_TEMPS[level.id] || 90);
                                                     }}
                                                     className={`flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all cursor-pointer touch-none active:scale-95 ${
                                                         roastLevel === level.id
