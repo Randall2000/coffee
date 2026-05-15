@@ -409,24 +409,46 @@
             const [sheetRoastDate, setSheetRoastDate] = useState('');
             const [sheetRoastLevel, setSheetRoastLevel] = useState('light');
             const [closingSheet, setClosingSheet] = useState(null);
-            const [expandedSheet, setExpandedSheet] = useState(null);
-            const sheetHandleDragStart = useRef(null);
-            const sheetHandleDragSheet = useRef(null);
+            const [sheetIsExpanded, setSheetIsExpanded] = useState(false);
+            const [sheetDragOffset, setSheetDragOffset] = useState(0);
+            const [sheetIsDragging, setSheetIsDragging] = useState(false);
+            const sheetDragStartY = useRef(null);
+            const sheetDragMeta = useRef(null); // { name, setOpen }
 
             const closeBottomSheet = (name, setOpen) => {
                 setClosingSheet(name);
+                setSheetIsExpanded(false);
                 setTimeout(() => { setOpen(false); setClosingSheet(null); }, 290);
             };
-            const onHandleTouchStart = (e, name) => {
-                sheetHandleDragStart.current = e.touches[0].clientY;
-                sheetHandleDragSheet.current = name;
+            const onSheetTouchStart = (e, name, setOpen) => {
+                sheetDragStartY.current = e.touches[0].clientY;
+                sheetDragMeta.current = { name, setOpen };
+                setSheetIsDragging(true);
             };
-            const onHandleTouchEnd = (e, name, setOpen) => {
-                if (sheetHandleDragStart.current === null) return;
-                const delta = e.changedTouches[0].clientY - sheetHandleDragStart.current;
-                sheetHandleDragStart.current = null;
-                if (delta > 60) { closeBottomSheet(name, setOpen); setExpandedSheet(null); }
-                else if (delta < -60) { setExpandedSheet(prev => prev === name ? null : name); }
+            const onSheetTouchMove = (e) => {
+                if (sheetDragStartY.current === null) return;
+                const delta = e.touches[0].clientY - sheetDragStartY.current;
+                if (sheetIsExpanded) {
+                    setSheetDragOffset(Math.max(0, delta));
+                } else {
+                    setSheetDragOffset(delta < 0 ? Math.max(delta * 0.15, -18) : Math.min(delta, 260));
+                }
+            };
+            const onSheetTouchEnd = (e) => {
+                if (sheetDragStartY.current === null) return;
+                const delta = e.changedTouches[0].clientY - sheetDragStartY.current;
+                const { name, setOpen } = sheetDragMeta.current || {};
+                sheetDragStartY.current = null;
+                setSheetIsDragging(false);
+                setSheetDragOffset(0);
+                if (!name) return;
+                if (sheetIsExpanded) {
+                    if (delta > 220) { closeBottomSheet(name, setOpen); }
+                    else if (delta > 80) { setSheetIsExpanded(false); }
+                } else {
+                    if (delta > 110) { closeBottomSheet(name, setOpen); }
+                    else if (delta < -55) { setSheetIsExpanded(true); }
+                }
             };
 
             const handleSheetTouchStart = (e) => {
@@ -723,7 +745,7 @@
                 const recentBeans = logs
                     .filter(l => l.beanName && l.beanName !== '未命名咖啡豆')
                     .filter(l => { if (seen.has(l.beanName)) return false; seen.add(l.beanName); return true; })
-                    .slice(0, 6);
+                    .slice(0, 20);
                 const selectedRoast = ROAST_LEVELS.find(r => r.id === roastLevel);
                 const selectedDripperObj = DRIPPERS.find(d => d.id === selectedDripperId);
                 const selectedGrinderObj = GRINDERS.find(g => g.id === selectedGrinder);
@@ -836,20 +858,30 @@
                         </div>
 
                         {/* Bean Bottom Sheet */}
-                        {beanSheetOpen && (
+                        {beanSheetOpen && (() => {
+                            const displayedBeans = sheetIsExpanded ? recentBeans : recentBeans.slice(0, 5);
+                            const hasMore = !sheetIsExpanded && recentBeans.length > 5;
+                            return (
                             <div className="fixed inset-0 z-50 flex flex-col justify-end">
                                 <div
                                     className={`absolute inset-0 bg-black/50 ${closingSheet === 'bean' ? 'backdrop-exit' : 'backdrop-enter'}`}
                                     onPointerDown={() => { closeBottomSheet('bean', setBeanSheetOpen); setAddingNewBean(false); }}
                                 />
-                                <div className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden transition-[height] duration-300 ${expandedSheet === 'bean' ? 'h-[90vh]' : 'max-h-[72vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'}`}>
+                                <div
+                                    className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden ${sheetIsExpanded ? 'h-[90vh]' : 'h-[68vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    style={closingSheet === 'bean' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
+                                        transform: `translateY(${sheetDragOffset}px)`,
+                                        transition: sheetIsDragging ? 'none' : 'transform 0.32s cubic-bezier(0.32,0.72,0,1)'
+                                    } : { transition: 'height 0.32s cubic-bezier(0.32,0.72,0,1)' }}
+                                >
                                     {/* Drag handle */}
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize shrink-0"
-                                        onTouchStart={(e) => onHandleTouchStart(e, 'bean')}
-                                        onTouchEnd={(e) => onHandleTouchEnd(e, 'bean', setBeanSheetOpen)}
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize shrink-0 select-none"
+                                        onTouchStart={(e) => onSheetTouchStart(e, 'bean', setBeanSheetOpen)}
+                                        onTouchMove={onSheetTouchMove}
+                                        onTouchEnd={onSheetTouchEnd}
                                     >
-                                        <div className="w-10 h-1 bg-neutral-200 rounded-full" />
+                                        <div className={`w-10 h-1 rounded-full transition-colors ${sheetIsDragging ? 'bg-neutral-400' : 'bg-neutral-200'}`} />
                                     </div>
                                     {/* Header */}
                                     <div className="px-5 pb-3 flex items-center justify-between shrink-0">
@@ -869,7 +901,7 @@
                                             <>
                                                 {recentBeans.length === 0 ? (
                                                     <p className="text-sm text-neutral-400 text-center py-6">尚無紀錄，點右上角新增咖啡豆</p>
-                                                ) : recentBeans.map(b => {
+                                                ) : displayedBeans.map(b => {
                                                     const roast = ROAST_LEVELS.find(r => r.id === b.roastLevel) || ROAST_LEVELS[0];
                                                     const isSelected = beanName === b.beanName;
                                                     return (
@@ -880,7 +912,7 @@
                                                                 setBeanName(b.beanName);
                                                                 setRoastLevel(b.roastLevel);
                                                                 setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
-                                                                setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 220);
+                                                                setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 440);
                                                             }}
                                                             className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] active:bg-amber-50 ${
                                                                 isSelected ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
@@ -891,6 +923,14 @@
                                                         </button>
                                                     );
                                                 })}
+                                                {hasMore && (
+                                                    <button
+                                                        onPointerDown={(e) => { e.preventDefault(); setSheetIsExpanded(true); }}
+                                                        className="w-full py-3 text-sm text-amber-600 font-medium text-center cursor-pointer touch-none active:opacity-60 border border-dashed border-amber-200 rounded-2xl"
+                                                    >
+                                                        查看全部 {recentBeans.length} 筆 ↑
+                                                    </button>
+                                                )}
                                             </>
                                         ) : (
                                             <div className="space-y-3">
@@ -940,7 +980,7 @@
                                                         setRoastLevel(sheetRoastLevel);
                                                         setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 93);
                                                         setAddingNewBean(false);
-                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 180);
+                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 360);
                                                     }}
                                                     className="w-full bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
@@ -959,7 +999,8 @@
                                     </div>
                                 </div>
                             </div>
-                        )}
+                            );
+                        })()}
 
                         {/* Dripper Bottom Sheet */}
                         {dripperSheetOpen && (
@@ -968,13 +1009,20 @@
                                     className={`absolute inset-0 bg-black/50 ${closingSheet === 'dripper' ? 'backdrop-exit' : 'backdrop-enter'}`}
                                     onPointerDown={() => closeBottomSheet('dripper', setDripperSheetOpen)}
                                 />
-                                <div className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'}`}>
+                                <div
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    style={closingSheet === 'dripper' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
+                                        transform: `translateY(${sheetDragOffset}px)`,
+                                        transition: sheetIsDragging ? 'none' : 'transform 0.32s cubic-bezier(0.32,0.72,0,1)'
+                                    } : undefined}
+                                >
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize"
-                                        onTouchStart={(e) => onHandleTouchStart(e, 'dripper')}
-                                        onTouchEnd={(e) => onHandleTouchEnd(e, 'dripper', setDripperSheetOpen)}
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none"
+                                        onTouchStart={(e) => onSheetTouchStart(e, 'dripper', setDripperSheetOpen)}
+                                        onTouchMove={onSheetTouchMove}
+                                        onTouchEnd={onSheetTouchEnd}
                                     >
-                                        <div className="w-10 h-1 bg-neutral-200 rounded-full" />
+                                        <div className={`w-10 h-1 rounded-full transition-colors ${sheetIsDragging ? 'bg-neutral-400' : 'bg-neutral-200'}`} />
                                     </div>
                                     <div className="px-5 pb-10">
                                         <p className="text-base font-bold text-neutral-800 mb-4">選擇濾杯</p>
@@ -992,7 +1040,7 @@
                                                                 setSelectedRecipeId(rid);
                                                                 setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
                                                             }
-                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 220);
+                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 440);
                                                         }}
                                                         className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-95 ${
                                                             isActive ? 'bg-neutral-900 border-neutral-900' : 'bg-neutral-50 border-neutral-100 active:bg-neutral-100'
@@ -1016,13 +1064,20 @@
                                     className={`absolute inset-0 bg-black/50 ${closingSheet === 'grinder' ? 'backdrop-exit' : 'backdrop-enter'}`}
                                     onPointerDown={() => closeBottomSheet('grinder', setGrinderSheetOpen)}
                                 />
-                                <div className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'}`}>
+                                <div
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    style={closingSheet === 'grinder' ? {} : (sheetIsDragging || sheetDragOffset !== 0) ? {
+                                        transform: `translateY(${sheetDragOffset}px)`,
+                                        transition: sheetIsDragging ? 'none' : 'transform 0.32s cubic-bezier(0.32,0.72,0,1)'
+                                    } : undefined}
+                                >
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize"
-                                        onTouchStart={(e) => onHandleTouchStart(e, 'grinder')}
-                                        onTouchEnd={(e) => onHandleTouchEnd(e, 'grinder', setGrinderSheetOpen)}
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none"
+                                        onTouchStart={(e) => onSheetTouchStart(e, 'grinder', setGrinderSheetOpen)}
+                                        onTouchMove={onSheetTouchMove}
+                                        onTouchEnd={onSheetTouchEnd}
                                     >
-                                        <div className="w-10 h-1 bg-neutral-200 rounded-full" />
+                                        <div className={`w-10 h-1 rounded-full transition-colors ${sheetIsDragging ? 'bg-neutral-400' : 'bg-neutral-200'}`} />
                                     </div>
                                     <div className="px-5 pb-10">
                                         <div className="flex items-center justify-between mb-4">
@@ -1039,7 +1094,7 @@
                                                         onPointerDown={(e) => {
                                                             e.preventDefault();
                                                             setSelectedGrinder(g.id);
-                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 220);
+                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 440);
                                                         }}
                                                         className={`px-3 py-3 rounded-xl border-2 text-left transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] ${
                                                             isActive ? 'border-amber-500 bg-amber-50 active:bg-amber-100' : 'border-neutral-100 bg-neutral-50 active:bg-neutral-100'
