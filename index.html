@@ -414,6 +414,7 @@
                     const timeStr = mins > 0 ? `${mins} 分 ${secs} 秒` : `${secs} 秒`;
                     if (!window.confirm(`還差 ${timeStr} 才到預設結束時間\n確定要提早完成沖煮？`)) return;
                 }
+                setFlowRate(currentTime >= totalTime - 5 ? 'good' : 'fast');
                 setTimerStatus('finished');
                 setEditingLogId(null);
                 setShowSaveModal(true);
@@ -813,11 +814,8 @@
                                             <div className="text-5xl font-bold text-neutral-800 tabular-nums tracking-tighter leading-none">
                                                 {Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}
                                             </div>
-                                            <div className={`text-sm font-bold font-mono tabular-nums transition-colors ${
-                                                Math.max(0, Math.ceil(step.endTime - currentTime)) <= 5
-                                                    ? 'text-red-500' : 'text-neutral-400'
-                                            }`}>
-                                                還剩 {Math.max(0, Math.ceil(step.endTime - currentTime))} 秒
+                                            <div className="text-sm font-mono text-neutral-400">
+                                                到 {Math.floor(step.endTime / 60)}:{(step.endTime % 60).toString().padStart(2, '0')}
                                             </div>
                                             <div className="px-3 py-1 bg-amber-50 rounded-xl text-sm font-bold text-amber-700 border border-amber-100 flex items-center gap-1.5">
                                                 <Droplet className="w-3.5 h-3.5 fill-amber-700" />
@@ -1021,18 +1019,6 @@
                                                             }`}>流速 {FLOW_OPTIONS.find(f => f.id === log.flowRate)?.label}</span>
                                                         </span>
                                                     )}
-                                                    {log.stability && (
-                                                        <span className="inline-flex items-center gap-1.5 text-xs">
-                                                            <span className={`w-1.5 h-1.5 rounded-sm flex-shrink-0 ${
-                                                                log.stability === 'stable' ? 'bg-neutral-300' :
-                                                                log.stability === 'shaky'  ? 'bg-amber-400' : 'bg-neutral-700'
-                                                            }`}/>
-                                                            <span className={`${
-                                                                log.stability === 'stable' ? 'text-neutral-400' :
-                                                                log.stability === 'shaky'  ? 'text-amber-600' : 'text-neutral-600'
-                                                            }`}>注水 {STABILITY_OPTIONS.find(s => s.id === log.stability)?.label}</span>
-                                                        </span>
-                                                    )}
                                                 </div>
                                             )}
 
@@ -1171,30 +1157,19 @@
                                         <p className="text-center text-xs text-neutral-300">往各方向拖曳調整</p>
                                     </div>
 
-                                    {/* 3 快選：流速 & 穩定度 */}
-                                    <div className="space-y-2">
-                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">這杯狀況</p>
-                                        <div>
-                                            <p className="text-xs text-neutral-500 mb-1.5">流速</p>
-                                            <div className="flex gap-2">
-                                                {FLOW_OPTIONS.map(opt => (
-                                                    <button key={opt.id} onClick={() => setFlowRate(opt.id)}
-                                                        className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                                                            flowRate === opt.id ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-neutral-50 text-neutral-500 border-neutral-100 hover:bg-neutral-100'
-                                                        }`}>{opt.label}</button>
-                                                ))}
-                                            </div>
+                                    {/* 流速 */}
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">流速</p>
+                                            {!editingLogId && <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-100 rounded-full px-2 py-0.5 font-medium">自動偵測，可覆蓋</span>}
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-neutral-500 mb-1.5">注水穩定</p>
-                                            <div className="flex gap-2">
-                                                {STABILITY_OPTIONS.map(opt => (
-                                                    <button key={opt.id} onClick={() => setStability(opt.id)}
-                                                        className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                                                            stability === opt.id ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-neutral-50 text-neutral-500 border-neutral-100 hover:bg-neutral-100'
-                                                        }`}>{opt.label}</button>
-                                                ))}
-                                            </div>
+                                        <div className="flex gap-2">
+                                            {FLOW_OPTIONS.map(opt => (
+                                                <button key={opt.id} onClick={() => setFlowRate(opt.id)}
+                                                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                                                        flowRate === opt.id ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-neutral-50 text-neutral-500 border-neutral-100 hover:bg-neutral-100'
+                                                    }`}>{opt.label}</button>
+                                            ))}
                                         </div>
                                     </div>
 
