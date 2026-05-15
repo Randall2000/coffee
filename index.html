@@ -1220,23 +1220,9 @@
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                             <div>
-                                <p className="text-xs text-neutral-400 uppercase tracking-widest font-medium">沖煮建議</p>
+                                <p className="text-xs text-neutral-400 uppercase tracking-widest font-medium">確認沖煮節奏</p>
                                 <p className="text-base font-bold text-neutral-800">{rec.name.split('(')[0].trim()}</p>
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-1.5" aria-label="沖煮流程進度">
-                            {[
-                                { label: '設定', active: false },
-                                { label: '建議', active: true },
-                                { label: '計時', active: false }
-                            ].map((step, idx) => (
-                                <div key={step.label} className={`h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
-                                    step.active ? 'bg-amber-600 text-white' : 'bg-white text-neutral-300 border border-neutral-100'
-                                }`}>
-                                    {idx + 1}. {step.label}
-                                </div>
-                            ))}
                         </div>
 
                         {/* Recipe switcher */}
@@ -1280,35 +1266,38 @@
                             </div>
                         </div>
 
-                        {/* Guidance summary */}
-                        <div className="bg-amber-600 rounded-2xl shadow-lg shadow-amber-200/60 p-5 text-white">
-                            <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-                                    <Droplet className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold uppercase tracking-widest text-amber-100">第一步先做這件事</p>
-                                    <p className="text-2xl font-bold mt-1 leading-tight">先注到 {firstPourMl} ml</p>
-                                    <p className="text-sm text-amber-50 mt-1">{rec.steps[0].desc}</p>
-                                </div>
+                        {/* Brew summary */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+                            <div className="px-5 py-4 border-b border-neutral-50">
+                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">沖煮摘要</p>
+                                <p className="text-sm font-semibold text-neutral-800 mt-1">{rec.description}</p>
                             </div>
-                            <div className="grid grid-cols-4 gap-2 mt-4">
+                            <div className="grid grid-cols-4 gap-2 px-4 py-3">
                                 {[
                                     { label: '粉量', value: `${coffeeGrams}g` },
                                     { label: '水量', value: `${waterTotal}ml` },
                                     { label: '水溫', value: `${waterTemp}°C` },
                                     { label: '時間', value: `${Math.floor(totalTime/60)}:${(totalTime%60).toString().padStart(2,'0')}` }
                                 ].map(item => (
-                                    <div key={item.label} className="rounded-xl bg-white/12 px-2 py-2 text-center">
-                                        <p className="text-[11px] text-amber-100">{item.label}</p>
-                                        <p className="text-sm font-bold tabular-nums mt-0.5">{item.value}</p>
+                                    <div key={item.label} className="rounded-xl bg-neutral-50 px-2 py-2 text-center">
+                                        <p className="text-[11px] text-neutral-400">{item.label}</p>
+                                        <p className="text-sm font-bold text-neutral-800 tabular-nums mt-0.5">{item.value}</p>
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-3 flex items-center justify-between rounded-xl bg-white/12 px-3 py-2">
-                                <span className="text-xs text-amber-100">粉水比</span>
-                                <span className="text-sm font-bold tabular-nums">1:{Math.round(ratio)}</span>
-                                <span className="text-xs text-amber-100">磨豆 {grindSetting}</span>
+                            <div className="px-4 pb-4 space-y-2">
+                                <div className="flex items-center justify-between gap-3 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5">
+                                    <span className="flex items-center gap-2 min-w-0">
+                                        <Droplet className="w-4 h-4 text-amber-600 shrink-0" />
+                                        <span className="text-xs font-bold text-amber-800">第一注目標</span>
+                                    </span>
+                                    <span className="text-sm font-bold text-amber-800 tabular-nums shrink-0">{firstPourMl} ml</span>
+                                </div>
+                                <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2">
+                                    <span className="text-xs text-neutral-400">粉水比</span>
+                                    <span className="text-sm font-bold text-neutral-800 tabular-nums">1:{Math.round(ratio)}</span>
+                                    <span className="text-xs text-neutral-400">磨豆 {grindSetting}</span>
+                                </div>
                             </div>
                         </div>
 
