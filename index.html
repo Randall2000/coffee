@@ -51,19 +51,24 @@
             from { opacity: 1; }
             to   { opacity: 0; }
         }
-        /* Smooth, iOS-like spring easing */
+        /* iOS-native bottom sheet — no persistent animation class after open */
         .sheet-panel {
             backface-visibility: hidden;
-            transform: translate3d(0, 0, 0);
             will-change: transform;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.10);
+            /* default: spring transition for snap-back and expand/collapse */
+            transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1),
+                        height   0.42s cubic-bezier(0.32, 0.72, 0, 1);
         }
-        .sheet-enter { animation: slideUp 0.45s cubic-bezier(0.32, 0.72, 0, 1) both; }
-        .sheet-exit  { transform: translate3d(0, 100%, 0) !important; transition: transform 0.35s cubic-bezier(0.32, 0, 0.67, 0); }
+        /* plays only once when sheet mounts */
+        .sheet-opening { animation: slideUp 0.42s cubic-bezier(0.32, 0.72, 0, 1) both; }
+        /* dismiss: fast accelerate off-screen */
+        .sheet-exit { transform: translate3d(0, 105%, 0) !important;
+                      transition: transform 0.32s cubic-bezier(0.4, 0, 1, 1) !important; }
+        /* while finger is touching: disable ALL transitions */
         .sheet-dragging { transition: none !important; }
-        .sheet-settle { transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1), height 0.45s cubic-bezier(0.32, 0.72, 0, 1); }
-        .backdrop-enter { animation: fadeIn 0.3s ease-out forwards; }
-        .backdrop-exit  { animation: fadeOut 0.3s ease-in forwards; }
+        .backdrop-enter { animation: fadeIn 0.28s ease-out forwards; }
+        .backdrop-exit  { animation: fadeOut 0.28s ease-in  forwards; }
     </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900 h-screen overflow-hidden">
@@ -474,84 +479,90 @@
             const sheetDragMeta = useRef(null); // { name, setOpen }
             const sheetRoastDateInputRef = useRef(null);
             const activeSheetRef = useRef(null);
+            const sheetOpenedRef = useRef(false); // track if opening anim is done
+
+            const springBack = () => {
+                const el = activeSheetRef.current;
+                if (!el) return;
+                // Re-enable the CSS spring transition, then reset transform
+                el.classList.remove('sheet-dragging');
+                el.style.transform = '';
+            };
 
             const closeBottomSheet = (name, setOpen) => {
                 sheetDragStartY.current = null;
                 sheetDragMeta.current = null;
+                sheetOpenedRef.current = false;
                 setClosingSheet(name);
                 setSheetIsExpanded(false);
                 if (activeSheetRef.current) {
+                    activeSheetRef.current.classList.remove('sheet-dragging', 'sheet-opening');
                     activeSheetRef.current.style.transform = '';
-                    activeSheetRef.current.style.transition = '';
                 }
-                // Wait for the .sheet-exit transition (0.35s) to finish before unmounting
-                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 350);
+                // Wait for .sheet-exit (0.32s) to finish
+                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 340);
             };
             const onSheetTouchStart = (e, name, setOpen) => {
                 const y = e.touches[0].clientY;
                 sheetDragStartY.current = y;
                 sheetLastTouch.current = { y, time: Date.now() };
                 sheetDragMeta.current = { name, setOpen };
-                if (activeSheetRef.current) {
-                    activeSheetRef.current.style.transition = 'none';
+                const el = activeSheetRef.current;
+                if (el) {
+                    // Kill ALL transitions — finger must win immediately
+                    el.classList.add('sheet-dragging');
+                    el.classList.remove('sheet-opening');
                 }
             };
             const onSheetTouchMove = (e) => {
                 if (sheetDragStartY.current === null) return;
-                const y = e.touches[0].clientY;
-                const now = Date.now();
-                sheetLastTouch.current = { y, time: now };
-                
+                const touch = e.touches[0];
+                const y = touch.clientY;
+                sheetLastTouch.current = { y, time: Date.now() };
+
                 let delta = y - sheetDragStartY.current;
-                
-                // iOS native rubber-banding resistance
+
+                // Rubber-band upward: logarithmic resistance
                 if (delta < 0) {
-                    delta = -1 * (Math.abs(delta) / (1 + Math.abs(delta) / 150));
+                    const d = Math.abs(delta);
+                    delta = -(d * 0.4 / (1 + d / 200));
                 }
-                
-                if (activeSheetRef.current) {
-                    // Direct DOM manipulation bypasses React render lag!
-                    activeSheetRef.current.style.transform = `translate3d(0, ${delta}px, 0)`;
-                }
+
+                const el = activeSheetRef.current;
+                if (el) el.style.transform = `translate3d(0,${delta}px,0)`;
             };
             const onSheetTouchEnd = (e) => {
                 if (sheetDragStartY.current === null) return;
                 const y = e.changedTouches[0].clientY;
                 const now = Date.now();
                 const delta = y - sheetDragStartY.current;
-                
+
                 const dt = now - sheetLastTouch.current.time;
                 const dy = y - sheetLastTouch.current.y;
-                const velocity = (dt > 0 && dt < 100) ? (dy / dt) : 0;
-                
+                // px/ms velocity — only trust if sample is recent
+                const velocity = (dt > 0 && dt < 80) ? (dy / dt) : 0;
+
                 const { name, setOpen } = sheetDragMeta.current || {};
                 sheetDragStartY.current = null;
-                
-                if (activeSheetRef.current) {
-                    activeSheetRef.current.style.transition = ''; // restore CSS transition
-                }
-                
-                if (!name) {
-                    if (activeSheetRef.current) activeSheetRef.current.style.transform = '';
-                    return;
-                }
-                
-                // Predict resting position based on momentum
-                const predictedDelta = delta + velocity * 150;
-                
+
+                if (!name) { springBack(); return; }
+
+                // Momentum-projected landing
+                const projected = delta + velocity * 120;
+
                 if (sheetIsExpanded) {
-                    if (predictedDelta > 200 || velocity > 1.2) { 
-                        closeBottomSheet(name, setOpen); 
-                    } else { 
-                        if (predictedDelta > 80 || velocity > 0.5) setSheetIsExpanded(false); 
-                        if (activeSheetRef.current) activeSheetRef.current.style.transform = '';
+                    if (projected > 180 || velocity > 1.0) {
+                        closeBottomSheet(name, setOpen);
+                    } else {
+                        if (projected > 70 || velocity > 0.4) setSheetIsExpanded(false);
+                        springBack();
                     }
                 } else {
-                    if (predictedDelta > 100 || velocity > 0.8) { 
-                        closeBottomSheet(name, setOpen); 
-                    } else { 
-                        if (predictedDelta < -60 || velocity < -0.6) setSheetIsExpanded(true); 
-                        if (activeSheetRef.current) activeSheetRef.current.style.transform = '';
+                    if (projected > 90 || velocity > 0.7) {
+                        closeBottomSheet(name, setOpen);
+                    } else {
+                        if (projected < -50 || velocity < -0.5) setSheetIsExpanded(true);
+                        springBack();
                     }
                 }
             };
@@ -1001,7 +1012,7 @@
                                     onPointerDown={() => { closeBottomSheet('bean', setBeanSheetOpen); setAddingNewBean(false); }}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden sheet-panel sheet-settle ${sheetIsExpanded ? 'h-[90vh]' : 'h-[68vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden sheet-panel ${sheetIsExpanded ? 'h-[90vh]' : 'h-[68vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-opening'}`}
                                     ref={activeSheetRef}
                                 >
                                     {/* Drag Handle & Header combined */}
@@ -1195,7 +1206,7 @@
                                     onPointerDown={() => closeBottomSheet('dripper', setDripperSheetOpen)}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel sheet-settle ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-opening'}`}
                                     ref={activeSheetRef}
                                 >
                                     <div
@@ -1248,7 +1259,7 @@
                                     onPointerDown={() => closeBottomSheet('grinder', setGrinderSheetOpen)}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel sheet-settle ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-opening'}`}
                                     ref={activeSheetRef}
                                 >
                                     <div
@@ -1531,7 +1542,7 @@
                                     onPointerDown={() => closeBottomSheet('recipe', setRecipeSheetOpen)}
                                 />
                                 <div
-                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel sheet-settle ${closingSheet === 'recipe' ? 'sheet-exit' : 'sheet-enter'}`}
+                                    className={`relative bg-white rounded-t-3xl overflow-hidden sheet-panel ${closingSheet === 'recipe' ? 'sheet-exit' : 'sheet-opening'}`}
                                     ref={activeSheetRef}
                                 >
                                     <div
