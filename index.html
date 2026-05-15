@@ -520,7 +520,10 @@
             const getBottomSheetStyle = () => (
                 closingSheet
                     ? undefined
-                    : { transform: `translate3d(0, ${sheetDragOffset}px, 0)` }
+                    : { 
+                        transform: `translate3d(0, ${sheetDragOffset}px, 0)`,
+                        transition: sheetIsDragging ? 'none' : undefined
+                      }
             );
 
             const handleSheetTouchStart = (e) => {
@@ -552,7 +555,7 @@
 
             const chooseRecipeAndCollapse = (recipeId) => {
                 updateRecipe(recipeId);
-                setTimeout(() => closeBottomSheet('recipe', setRecipeSheetOpen), 150);
+                setTimeout(() => closeBottomSheet('recipe', setRecipeSheetOpen), 350);
             };
             
             useEffect(() => {
@@ -973,7 +976,7 @@
                                 >
                                     {/* Drag handle */}
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize shrink-0 select-none touch-none"
+                                        className="py-4 flex justify-center cursor-ns-resize shrink-0 select-none touch-none"
                                         onTouchStart={(e) => onSheetTouchStart(e, 'bean', setBeanSheetOpen)}
                                         onTouchMove={onSheetTouchMove}
                                         onTouchEnd={onSheetTouchEnd}
@@ -1016,7 +1019,7 @@
                                                                     setBeanName(b.beanName);
                                                                     setRoastLevel(b.roastLevel);
                                                                     setWaterTemp(WATER_TEMPS[b.roastLevel] || 90);
-                                                                    setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 150);
+                                                                    setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 350);
                                                                 }}
                                                                 className="flex-1 flex items-center gap-3 px-4 py-3.5 cursor-pointer touch-none active:opacity-70 text-left"
                                                             >
@@ -1131,7 +1134,7 @@
                                                         setRoastLevel(sheetRoastLevel);
                                                         setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 90);
                                                         setAddingNewBean(false);
-                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 150);
+                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 350);
                                                     }}
                                                     className="w-full bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
@@ -1165,7 +1168,7 @@
                                     style={getBottomSheetStyle()}
                                 >
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none touch-none"
+                                        className="py-4 flex justify-center cursor-ns-resize select-none touch-none"
                                         onTouchStart={(e) => onSheetTouchStart(e, 'dripper', setDripperSheetOpen)}
                                         onTouchMove={onSheetTouchMove}
                                         onTouchEnd={onSheetTouchEnd}
@@ -1187,7 +1190,7 @@
                                                                 const rid = getRecommendedRecipeId('balanced', d.id);
                                                                 updateRecipe(rid);
                                                             }
-                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 150);
+                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 350);
                                                         }}
                                                         className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-95 ${
                                                             isActive ? 'bg-neutral-900 border-neutral-900' : 'bg-neutral-50 border-neutral-100 active:bg-neutral-100'
@@ -1216,7 +1219,7 @@
                                     style={getBottomSheetStyle()}
                                 >
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none touch-none"
+                                        className="py-4 flex justify-center cursor-ns-resize select-none touch-none"
                                         onTouchStart={(e) => onSheetTouchStart(e, 'grinder', setGrinderSheetOpen)}
                                         onTouchMove={onSheetTouchMove}
                                         onTouchEnd={onSheetTouchEnd}
@@ -1235,7 +1238,7 @@
                                                         onPointerDown={(e) => {
                                                             e.preventDefault();
                                                             setSelectedGrinder(g.id);
-                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 150);
+                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 350);
                                                         }}
                                                         className={`px-3 py-3 rounded-xl border-2 text-left transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] ${
                                                             isActive ? 'border-amber-500 bg-amber-50 active:bg-amber-100' : 'border-neutral-100 bg-neutral-50 active:bg-neutral-100'
@@ -1497,7 +1500,7 @@
                                     style={getBottomSheetStyle()}
                                 >
                                     <div
-                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize select-none touch-none"
+                                        className="py-4 flex justify-center cursor-ns-resize select-none touch-none"
                                         onTouchStart={(e) => onSheetTouchStart(e, 'recipe', setRecipeSheetOpen)}
                                         onTouchMove={onSheetTouchMove}
                                         onTouchEnd={onSheetTouchEnd}
