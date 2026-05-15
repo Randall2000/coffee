@@ -405,6 +405,7 @@
             const [dripperSheetOpen, setDripperSheetOpen] = useState(false);
             const [grinderSheetOpen, setGrinderSheetOpen] = useState(false);
             const [addingNewBean, setAddingNewBean] = useState(false);
+            const [isEditingBean, setIsEditingBean] = useState(false);
             const [sheetBeanName, setSheetBeanName] = useState('');
             const [sheetRoastDate, setSheetRoastDate] = useState('');
             const [sheetRoastLevel, setSheetRoastLevel] = useState('light');
@@ -885,10 +886,12 @@
                                     </div>
                                     {/* Header */}
                                     <div className="px-5 pb-3 flex items-center justify-between shrink-0">
-                                        <p className="text-base font-bold text-neutral-800">{addingNewBean ? '新增咖啡豆' : '選擇咖啡豆'}</p>
+                                        <p className="text-base font-bold text-neutral-800">
+                                            {addingNewBean ? (isEditingBean ? '編輯咖啡豆' : '新增咖啡豆') : '選擇咖啡豆'}
+                                        </p>
                                         {!addingNewBean && (
                                             <button
-                                                onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(true); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel('light'); }}
+                                                onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(true); setIsEditingBean(false); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel('light'); }}
                                                 className="flex items-center gap-1 text-sm text-amber-600 font-bold cursor-pointer touch-none active:opacity-60 transition-opacity"
                                             >
                                                 <Plus className="w-4 h-4" /> 新豆子
@@ -905,22 +908,39 @@
                                                     const roast = ROAST_LEVELS.find(r => r.id === b.roastLevel) || ROAST_LEVELS[0];
                                                     const isSelected = beanName === b.beanName;
                                                     return (
-                                                        <button
+                                                        <div
                                                             key={b.beanName}
-                                                            onPointerDown={(e) => {
-                                                                e.preventDefault();
-                                                                setBeanName(b.beanName);
-                                                                setRoastLevel(b.roastLevel);
-                                                                setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
-                                                                setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 440);
-                                                            }}
-                                                            className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] active:bg-amber-50 ${
+                                                            className={`w-full flex items-center rounded-2xl border-2 transition-all duration-150 overflow-hidden ${
                                                                 isSelected ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
                                                             }`}
                                                         >
-                                                            <span className="text-sm font-medium text-neutral-800">{b.beanName}</span>
-                                                            <span className={`text-xs px-2 py-0.5 rounded-full border ${roast.color}`}>{roast.label}</span>
-                                                        </button>
+                                                            <button
+                                                                onPointerDown={(e) => {
+                                                                    e.preventDefault();
+                                                                    setBeanName(b.beanName);
+                                                                    setRoastLevel(b.roastLevel);
+                                                                    setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
+                                                                    setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 440);
+                                                                }}
+                                                                className="flex-1 flex items-center gap-3 px-4 py-3.5 cursor-pointer touch-none active:opacity-70 text-left"
+                                                            >
+                                                                <span className="text-sm font-medium text-neutral-800 flex-1">{b.beanName}</span>
+                                                                <span className={`text-xs px-2 py-0.5 rounded-full border shrink-0 ${roast.color}`}>{roast.label}</span>
+                                                            </button>
+                                                            <button
+                                                                onPointerDown={(e) => {
+                                                                    e.preventDefault();
+                                                                    setSheetBeanName(b.beanName);
+                                                                    setSheetRoastLevel(b.roastLevel);
+                                                                    setSheetRoastDate('');
+                                                                    setIsEditingBean(true);
+                                                                    setAddingNewBean(true);
+                                                                }}
+                                                                className="px-3 py-3.5 text-neutral-300 active:text-amber-500 cursor-pointer touch-none transition-colors border-l border-neutral-100"
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
                                                     );
                                                 })}
                                                 {hasMore && (
@@ -988,7 +1008,7 @@
                                                 </button>
                                                 {recentBeans.length > 0 && (
                                                     <button
-                                                        onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(false); }}
+                                                        onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(false); setIsEditingBean(false); }}
                                                         className="w-full text-sm text-neutral-400 text-center py-1 cursor-pointer touch-none"
                                                     >
                                                         ← 返回選擇
