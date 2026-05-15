@@ -189,12 +189,7 @@
         const STORAGE_KEY = 'barista_flow_logs';
 
         const getRelativeDate = (timestamp) => {
-            const days = Math.floor((Date.now() - timestamp) / 86400000);
-            if (days === 0) return '今天';
-            if (days === 1) return '昨天';
-            if (days < 7) return `${days} 天前`;
-            if (days < 30) return `${Math.floor(days / 7)} 週前`;
-            return new Date(timestamp).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
+            return new Date(timestamp).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
         };
 
         function RadarChart({ data, onChange }) {
@@ -351,6 +346,22 @@
 
             const prevTimeRef = useRef(0);
             const contentRef = useRef(null);
+            const [sheetDragY, setSheetDragY] = useState(0);
+            const sheetDragStartRef = useRef(null);
+
+            const handleSheetTouchStart = (e) => {
+                sheetDragStartRef.current = e.touches[0].clientY;
+            };
+            const handleSheetTouchMove = (e) => {
+                if (sheetDragStartRef.current === null) return;
+                const delta = e.touches[0].clientY - sheetDragStartRef.current;
+                if (delta > 0) setSheetDragY(delta);
+            };
+            const handleSheetTouchEnd = () => {
+                if (sheetDragY > 100) setViewingLog(null);
+                setSheetDragY(0);
+                sheetDragStartRef.current = null;
+            };
 
             const recipe = RECIPES[selectedRecipeId];
             const waterTotal = Math.round(coffeeGrams * ratio);
@@ -757,6 +768,11 @@
                         {/* 步驟進度條 */}
                         {!isFinished && (
                             <div className="w-full px-6 mb-2 z-10">
+                                <div className="flex items-center justify-center gap-2 mb-0.5">
+                                    <span className="text-xs font-bold text-neutral-600">{recipe.name.split('(')[0].trim()}</span>
+                                    <span className="text-neutral-200 text-xs">·</span>
+                                    <span className="text-xs font-medium text-neutral-400">{selectedDripper.name}</span>
+                                </div>
                                 <div className="flex items-center justify-center gap-1.5 text-neutral-400 text-xs font-mono mb-2">
                                     <span>{coffeeGrams}g</span>
                                     <span className="text-neutral-200">·</span>
@@ -1088,7 +1104,18 @@
 
                                 {/* Header */}
                                 <div className="flex items-center justify-between px-5 py-2">
-                                    <h3 className="text-base font-bold text-neutral-800">{editingLogId ? '編輯紀錄' : '紀錄這杯'}</h3>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-base font-bold text-neutral-800">{editingLogId ? '編輯紀錄' : '紀錄這杯'}</h3>
+                                        {!editingLogId && (
+                                            <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium border ${
+                                                flowRate === 'fast' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                                flowRate === 'clog' ? 'bg-neutral-100 text-neutral-500 border-neutral-200' :
+                                                'bg-green-50 text-green-600 border-green-100'
+                                            }`}>
+                                                {flowRate === 'fast' ? '流速偏快' : flowRate === 'clog' ? '疑似堵塞' : '流速正常'}
+                                            </span>
+                                        )}
+                                    </div>
                                     <button onClick={handleCloseModalX} className="p-1.5 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer">
                                         <X className="w-5 h-5" />
                                     </button>
@@ -1186,9 +1213,18 @@
                         const vlSensory = vl.sensory || { acidity: 3, sweetness: 3, bitterness: 3, body: 3 };
                         return (
                             <div className="fixed inset-0 bg-black/50 z-[2000] flex items-end justify-center backdrop-blur-sm" onClick={() => setViewingLog(null)}>
-                                <div className="bg-white w-full max-w-md rounded-t-3xl shadow-2xl max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                                    <div className="flex justify-center pt-3 pb-1">
-                                        <div className="w-10 h-1 bg-neutral-200 rounded-full" />
+                                <div
+                                    className="bg-white w-full max-w-md rounded-t-3xl shadow-2xl max-h-[88vh] overflow-y-auto"
+                                    style={{ transform: `translateY(${sheetDragY}px)`, transition: sheetDragY === 0 ? 'transform 0.3s ease' : 'none' }}
+                                    onClick={e => e.stopPropagation()}
+                                >
+                                    <div
+                                        className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing touch-none"
+                                        onTouchStart={handleSheetTouchStart}
+                                        onTouchMove={handleSheetTouchMove}
+                                        onTouchEnd={handleSheetTouchEnd}
+                                    >
+                                        <div className="w-12 h-1.5 bg-neutral-200 rounded-full" />
                                     </div>
 
                                     <div className="flex items-start justify-between px-5 pt-3 pb-3">
@@ -1221,14 +1257,14 @@
 
                                         <div className="flex gap-2">
                                             {vl.flowRate && (
-                                                <div className="flex-1 bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
-                                                    <p className="text-xs text-blue-400 font-medium mb-1">流速</p>
-                                                    <p className="text-sm font-bold text-blue-700">{FLOW_OPTIONS.find(f => f.id === vl.flowRate)?.label || '—'}</p>
+                                                <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-xl p-3 text-center">
+                                                    <p className="text-xs text-neutral-400 font-medium mb-1">流速</p>
+                                                    <p className="text-sm font-bold text-neutral-700">{FLOW_OPTIONS.find(f => f.id === vl.flowRate)?.label || '—'}</p>
                                                 </div>
                                             )}
-                                            <div className="flex-1 bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
-                                                <p className="text-xs text-blue-400 font-medium mb-1">時間</p>
-                                                <p className="text-sm font-bold text-blue-700 font-mono">{Math.floor(vl.time/60)}:{(vl.time%60).toString().padStart(2,'0')}</p>
+                                            <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-xl p-3 text-center">
+                                                <p className="text-xs text-neutral-400 font-medium mb-1">時間</p>
+                                                <p className="text-sm font-bold text-neutral-700 font-mono">{Math.floor(vl.time/60)}:{(vl.time%60).toString().padStart(2,'0')}</p>
                                             </div>
                                         </div>
 
