@@ -34,6 +34,18 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to   { transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        .sheet-enter { animation: slideUp 0.32s cubic-bezier(0.32,0.72,0,1) forwards; }
+        .sheet-exit  { transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.32,0.72,0,1); }
+        .backdrop-enter { animation: fadeIn 0.25s ease forwards; }
+        .backdrop-exit  { opacity: 0; transition: opacity 0.28s ease; }
     </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900 h-screen overflow-hidden">
@@ -396,6 +408,26 @@
             const [sheetBeanName, setSheetBeanName] = useState('');
             const [sheetRoastDate, setSheetRoastDate] = useState('');
             const [sheetRoastLevel, setSheetRoastLevel] = useState('light');
+            const [closingSheet, setClosingSheet] = useState(null);
+            const [expandedSheet, setExpandedSheet] = useState(null);
+            const sheetHandleDragStart = useRef(null);
+            const sheetHandleDragSheet = useRef(null);
+
+            const closeBottomSheet = (name, setOpen) => {
+                setClosingSheet(name);
+                setTimeout(() => { setOpen(false); setClosingSheet(null); }, 290);
+            };
+            const onHandleTouchStart = (e, name) => {
+                sheetHandleDragStart.current = e.touches[0].clientY;
+                sheetHandleDragSheet.current = name;
+            };
+            const onHandleTouchEnd = (e, name, setOpen) => {
+                if (sheetHandleDragStart.current === null) return;
+                const delta = e.changedTouches[0].clientY - sheetHandleDragStart.current;
+                sheetHandleDragStart.current = null;
+                if (delta > 60) { closeBottomSheet(name, setOpen); setExpandedSheet(null); }
+                else if (delta < -60) { setExpandedSheet(prev => prev === name ? null : name); }
+            };
 
             const handleSheetTouchStart = (e) => {
                 sheetDragStartRef.current = e.touches[0].clientY;
@@ -710,10 +742,10 @@
                             <p className="text-base font-bold text-neutral-800">沖煮設定</p>
                         </div>
 
-                        {/* 風味偏好 - compact pills */}
+                        {/* 風味偏好 - vertical cards */}
                         <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
                             <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">風味偏好</p>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col gap-2">
                                 {FLAVOR_OPTIONS.map(f => {
                                     const isActive = selectedFlavor === f.id;
                                     return (
@@ -726,12 +758,18 @@
                                                 setSelectedRecipeId(rid);
                                                 setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
                                             }}
-                                            className={`flex-1 flex flex-col items-center py-3 px-2 rounded-xl border-2 transition-all cursor-pointer touch-none active:scale-95 ${
-                                                isActive ? 'border-amber-500 bg-amber-500' : 'border-neutral-100 bg-neutral-50'
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all cursor-pointer touch-none active:scale-[0.98] ${
+                                                isActive ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
                                             }`}
                                         >
-                                            <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-neutral-700'}`}>{f.label}</span>
-                                            <span className={`text-xs mt-0.5 leading-tight text-center ${isActive ? 'text-amber-100' : 'text-neutral-400'}`}>{f.desc.split('，')[0]}</span>
+                                            <div className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-amber-500' : 'bg-neutral-300'}`} />
+                                            <div className="flex-1 text-left">
+                                                <p className={`text-sm font-bold ${isActive ? 'text-amber-700' : 'text-neutral-800'}`}>{f.label}</p>
+                                                <p className="text-xs text-neutral-400 mt-0.5">{f.desc}</p>
+                                            </div>
+                                            {isActive && <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
+                                                <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                                            </div>}
                                         </button>
                                     );
                                 })}
@@ -800,111 +838,125 @@
                         {/* Bean Bottom Sheet */}
                         {beanSheetOpen && (
                             <div className="fixed inset-0 z-50 flex flex-col justify-end">
-                                <div className="absolute inset-0 bg-black/50" onPointerDown={() => { setBeanSheetOpen(false); setAddingNewBean(false); }} />
-                                <div className="relative bg-white rounded-t-3xl px-5 pt-4 pb-10 space-y-4 max-h-[80vh] overflow-y-auto">
-                                    <div className="w-10 h-1 bg-neutral-200 rounded-full mx-auto" />
-                                    <div className="flex items-center justify-between">
+                                <div
+                                    className={`absolute inset-0 bg-black/50 ${closingSheet === 'bean' ? 'backdrop-exit' : 'backdrop-enter'}`}
+                                    onPointerDown={() => { closeBottomSheet('bean', setBeanSheetOpen); setAddingNewBean(false); }}
+                                />
+                                <div className={`relative bg-white rounded-t-3xl flex flex-col overflow-hidden transition-[height] duration-300 ${expandedSheet === 'bean' ? 'h-[90vh]' : 'max-h-[72vh]'} ${closingSheet === 'bean' ? 'sheet-exit' : 'sheet-enter'}`}>
+                                    {/* Drag handle */}
+                                    <div
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize shrink-0"
+                                        onTouchStart={(e) => onHandleTouchStart(e, 'bean')}
+                                        onTouchEnd={(e) => onHandleTouchEnd(e, 'bean', setBeanSheetOpen)}
+                                    >
+                                        <div className="w-10 h-1 bg-neutral-200 rounded-full" />
+                                    </div>
+                                    {/* Header */}
+                                    <div className="px-5 pb-3 flex items-center justify-between shrink-0">
                                         <p className="text-base font-bold text-neutral-800">{addingNewBean ? '新增咖啡豆' : '選擇咖啡豆'}</p>
                                         {!addingNewBean && (
                                             <button
                                                 onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(true); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel('light'); }}
-                                                className="flex items-center gap-1 text-sm text-amber-600 font-bold cursor-pointer touch-none"
+                                                className="flex items-center gap-1 text-sm text-amber-600 font-bold cursor-pointer touch-none active:opacity-60 transition-opacity"
                                             >
                                                 <Plus className="w-4 h-4" /> 新豆子
                                             </button>
                                         )}
                                     </div>
-                                    {!addingNewBean ? (
-                                        <div className="space-y-2">
-                                            {recentBeans.length === 0 ? (
-                                                <p className="text-sm text-neutral-400 text-center py-6">尚無紀錄，點右上角新增咖啡豆</p>
-                                            ) : recentBeans.map(b => {
-                                                const roast = ROAST_LEVELS.find(r => r.id === b.roastLevel) || ROAST_LEVELS[0];
-                                                const isSelected = beanName === b.beanName;
-                                                return (
-                                                    <button
-                                                        key={b.beanName}
-                                                        onPointerDown={(e) => {
-                                                            e.preventDefault();
-                                                            setBeanName(b.beanName);
-                                                            setRoastLevel(b.roastLevel);
-                                                            setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
-                                                            setBeanSheetOpen(false);
-                                                        }}
-                                                        className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 transition-all cursor-pointer touch-none active:scale-[0.98] ${
-                                                            isSelected ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
-                                                        }`}
-                                                    >
-                                                        <span className="text-sm font-medium text-neutral-800">{b.beanName}</span>
-                                                        <span className={`text-xs px-2 py-0.5 rounded-full border ${roast.color}`}>{roast.label}</span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            <input
-                                                type="text"
-                                                placeholder="豆子名稱（選填）"
-                                                value={sheetBeanName}
-                                                onChange={(e) => setSheetBeanName(e.target.value)}
-                                                className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-neutral-50"
-                                            />
-                                            <div>
-                                                <label className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘豆日期</label>
-                                                <input
-                                                    type="date"
-                                                    value={sheetRoastDate}
-                                                    onChange={(e) => setSheetRoastDate(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-neutral-50 text-neutral-600"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘焙程度</label>
-                                                <div className="flex gap-2">
-                                                    {ROAST_LEVELS.map(level => (
+                                    {/* Scrollable content */}
+                                    <div className="flex-1 overflow-y-auto px-5 pb-10 space-y-2">
+                                        {!addingNewBean ? (
+                                            <>
+                                                {recentBeans.length === 0 ? (
+                                                    <p className="text-sm text-neutral-400 text-center py-6">尚無紀錄，點右上角新增咖啡豆</p>
+                                                ) : recentBeans.map(b => {
+                                                    const roast = ROAST_LEVELS.find(r => r.id === b.roastLevel) || ROAST_LEVELS[0];
+                                                    const isSelected = beanName === b.beanName;
+                                                    return (
                                                         <button
-                                                            key={level.id}
-                                                            onPointerDown={(e) => { e.preventDefault(); setSheetRoastLevel(level.id); }}
-                                                            className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all cursor-pointer touch-none ${
-                                                                sheetRoastLevel === level.id
-                                                                ? level.id === 'dark'
-                                                                    ? 'bg-neutral-900 text-white border-neutral-900'
-                                                                    : level.id === 'medium'
-                                                                        ? 'bg-white text-neutral-700 border-neutral-400 shadow-sm'
-                                                                        : 'bg-amber-50 text-amber-700 border-amber-400'
-                                                                : 'bg-neutral-50 text-neutral-400 border-neutral-200'
+                                                            key={b.beanName}
+                                                            onPointerDown={(e) => {
+                                                                e.preventDefault();
+                                                                setBeanName(b.beanName);
+                                                                setRoastLevel(b.roastLevel);
+                                                                setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
+                                                                setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 120);
+                                                            }}
+                                                            className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] active:bg-amber-50 ${
+                                                                isSelected ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
                                                             }`}
                                                         >
-                                                            {level.label}
+                                                            <span className="text-sm font-medium text-neutral-800">{b.beanName}</span>
+                                                            <span className={`text-xs px-2 py-0.5 rounded-full border ${roast.color}`}>{roast.label}</span>
                                                         </button>
-                                                    ))}
+                                                    );
+                                                })}
+                                            </>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <input
+                                                    type="text"
+                                                    placeholder="豆子名稱（選填）"
+                                                    value={sheetBeanName}
+                                                    onChange={(e) => setSheetBeanName(e.target.value)}
+                                                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-neutral-50"
+                                                />
+                                                <div>
+                                                    <label className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘豆日期</label>
+                                                    <input
+                                                        type="date"
+                                                        value={sheetRoastDate}
+                                                        onChange={(e) => setSheetRoastDate(e.target.value)}
+                                                        className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-neutral-50 text-neutral-600"
+                                                    />
                                                 </div>
-                                            </div>
-                                            <button
-                                                onPointerDown={(e) => {
-                                                    e.preventDefault();
-                                                    setBeanName(sheetBeanName);
-                                                    setRoastDate(sheetRoastDate);
-                                                    setRoastLevel(sheetRoastLevel);
-                                                    setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 93);
-                                                    setBeanSheetOpen(false);
-                                                    setAddingNewBean(false);
-                                                }}
-                                                className="w-full bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
-                                            >
-                                                儲存
-                                            </button>
-                                            {recentBeans.length > 0 && (
+                                                <div>
+                                                    <label className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘焙程度</label>
+                                                    <div className="flex gap-2">
+                                                        {ROAST_LEVELS.map(level => (
+                                                            <button
+                                                                key={level.id}
+                                                                onPointerDown={(e) => { e.preventDefault(); setSheetRoastLevel(level.id); }}
+                                                                className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all cursor-pointer touch-none active:scale-95 ${
+                                                                    sheetRoastLevel === level.id
+                                                                    ? level.id === 'dark'
+                                                                        ? 'bg-neutral-900 text-white border-neutral-900'
+                                                                        : level.id === 'medium'
+                                                                            ? 'bg-white text-neutral-700 border-neutral-400 shadow-sm'
+                                                                            : 'bg-amber-50 text-amber-700 border-amber-400'
+                                                                    : 'bg-neutral-50 text-neutral-400 border-neutral-200'
+                                                                }`}
+                                                            >
+                                                                {level.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                                 <button
-                                                    onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(false); }}
-                                                    className="w-full text-sm text-neutral-400 text-center py-1 cursor-pointer touch-none"
+                                                    onPointerDown={(e) => {
+                                                        e.preventDefault();
+                                                        setBeanName(sheetBeanName);
+                                                        setRoastDate(sheetRoastDate);
+                                                        setRoastLevel(sheetRoastLevel);
+                                                        setWaterTemp(WATER_TEMPS[sheetRoastLevel] || 93);
+                                                        setAddingNewBean(false);
+                                                        setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 80);
+                                                    }}
+                                                    className="w-full bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
-                                                    ← 返回選擇
+                                                    儲存
                                                 </button>
-                                            )}
-                                        </div>
-                                    )}
+                                                {recentBeans.length > 0 && (
+                                                    <button
+                                                        onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(false); }}
+                                                        className="w-full text-sm text-neutral-400 text-center py-1 cursor-pointer touch-none"
+                                                    >
+                                                        ← 返回選擇
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -912,35 +964,46 @@
                         {/* Dripper Bottom Sheet */}
                         {dripperSheetOpen && (
                             <div className="fixed inset-0 z-50 flex flex-col justify-end">
-                                <div className="absolute inset-0 bg-black/50" onPointerDown={() => setDripperSheetOpen(false)} />
-                                <div className="relative bg-white rounded-t-3xl px-5 pt-4 pb-10">
-                                    <div className="w-10 h-1 bg-neutral-200 rounded-full mx-auto mb-4" />
-                                    <p className="text-base font-bold text-neutral-800 mb-4">選擇濾杯</p>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {DRIPPERS.map(d => {
-                                            const isActive = selectedDripperId === d.id;
-                                            return (
-                                                <button
-                                                    key={d.id}
-                                                    onPointerDown={(e) => {
-                                                        e.preventDefault();
-                                                        setSelectedDripperId(d.id);
-                                                        if (selectedFlavor === 'balanced') {
-                                                            const rid = getRecommendedRecipeId('balanced', d.id);
-                                                            setSelectedRecipeId(rid);
-                                                            setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
-                                                        }
-                                                        setDripperSheetOpen(false);
-                                                    }}
-                                                    className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all cursor-pointer touch-none active:scale-95 ${
-                                                        isActive ? 'bg-neutral-900 border-neutral-900' : 'bg-neutral-50 border-neutral-100'
-                                                    }`}
-                                                >
-                                                    <div className="mb-0.5 scale-90">{getDripperIcon(d.id, isActive)}</div>
-                                                    <span className={`text-xs font-bold ${isActive ? 'text-white' : 'text-neutral-400'}`}>{d.name}</span>
-                                                </button>
-                                            );
-                                        })}
+                                <div
+                                    className={`absolute inset-0 bg-black/50 ${closingSheet === 'dripper' ? 'backdrop-exit' : 'backdrop-enter'}`}
+                                    onPointerDown={() => closeBottomSheet('dripper', setDripperSheetOpen)}
+                                />
+                                <div className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'dripper' ? 'sheet-exit' : 'sheet-enter'}`}>
+                                    <div
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize"
+                                        onTouchStart={(e) => onHandleTouchStart(e, 'dripper')}
+                                        onTouchEnd={(e) => onHandleTouchEnd(e, 'dripper', setDripperSheetOpen)}
+                                    >
+                                        <div className="w-10 h-1 bg-neutral-200 rounded-full" />
+                                    </div>
+                                    <div className="px-5 pb-10">
+                                        <p className="text-base font-bold text-neutral-800 mb-4">選擇濾杯</p>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {DRIPPERS.map(d => {
+                                                const isActive = selectedDripperId === d.id;
+                                                return (
+                                                    <button
+                                                        key={d.id}
+                                                        onPointerDown={(e) => {
+                                                            e.preventDefault();
+                                                            setSelectedDripperId(d.id);
+                                                            if (selectedFlavor === 'balanced') {
+                                                                const rid = getRecommendedRecipeId('balanced', d.id);
+                                                                setSelectedRecipeId(rid);
+                                                                setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
+                                                            }
+                                                            setTimeout(() => closeBottomSheet('dripper', setDripperSheetOpen), 120);
+                                                        }}
+                                                        className={`flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all duration-150 cursor-pointer touch-none active:scale-95 ${
+                                                            isActive ? 'bg-neutral-900 border-neutral-900' : 'bg-neutral-50 border-neutral-100 active:bg-neutral-100'
+                                                        }`}
+                                                    >
+                                                        <div className="mb-0.5 scale-90">{getDripperIcon(d.id, isActive)}</div>
+                                                        <span className={`text-xs font-bold ${isActive ? 'text-white' : 'text-neutral-400'}`}>{d.name}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -949,32 +1012,47 @@
                         {/* Grinder Bottom Sheet */}
                         {grinderSheetOpen && (
                             <div className="fixed inset-0 z-50 flex flex-col justify-end">
-                                <div className="absolute inset-0 bg-black/50" onPointerDown={() => setGrinderSheetOpen(false)} />
-                                <div className="relative bg-white rounded-t-3xl px-5 pt-4 pb-10">
-                                    <div className="w-10 h-1 bg-neutral-200 rounded-full mx-auto mb-4" />
-                                    <div className="flex items-center justify-between mb-4">
-                                        <p className="text-base font-bold text-neutral-800">選擇磨豆機</p>
-                                        <p className="text-xs text-neutral-400">刻數建議 · {ROAST_LEVELS.find(r=>r.id===roastLevel)?.label}</p>
+                                <div
+                                    className={`absolute inset-0 bg-black/50 ${closingSheet === 'grinder' ? 'backdrop-exit' : 'backdrop-enter'}`}
+                                    onPointerDown={() => closeBottomSheet('grinder', setGrinderSheetOpen)}
+                                />
+                                <div className={`relative bg-white rounded-t-3xl overflow-hidden ${closingSheet === 'grinder' ? 'sheet-exit' : 'sheet-enter'}`}>
+                                    <div
+                                        className="pt-3 pb-2 flex justify-center cursor-ns-resize"
+                                        onTouchStart={(e) => onHandleTouchStart(e, 'grinder')}
+                                        onTouchEnd={(e) => onHandleTouchEnd(e, 'grinder', setGrinderSheetOpen)}
+                                    >
+                                        <div className="w-10 h-1 bg-neutral-200 rounded-full" />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {GRINDERS.map(g => {
-                                            const isActive = selectedGrinder === g.id;
-                                            const hint = GRINDER_CLICKS[g.id]?.[roastLevel];
-                                            return (
-                                                <button
-                                                    key={g.id}
-                                                    onPointerDown={(e) => { e.preventDefault(); setSelectedGrinder(g.id); setGrinderSheetOpen(false); }}
-                                                    className={`px-3 py-3 rounded-xl border-2 text-left transition-all cursor-pointer touch-none active:scale-95 ${
-                                                        isActive ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
-                                                    }`}
-                                                >
-                                                    <p className="text-sm font-bold text-neutral-800">{g.short}</p>
-                                                    <p className={`text-xs font-mono mt-0.5 ${isActive ? 'text-amber-600 font-semibold' : 'text-neutral-400'}`}>
-                                                        {hint || g.label}
-                                                    </p>
-                                                </button>
-                                            );
-                                        })}
+                                    <div className="px-5 pb-10">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <p className="text-base font-bold text-neutral-800">選擇磨豆機</p>
+                                            <p className="text-xs text-neutral-400">刻數建議 · {ROAST_LEVELS.find(r=>r.id===roastLevel)?.label}</p>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {GRINDERS.map(g => {
+                                                const isActive = selectedGrinder === g.id;
+                                                const hint = GRINDER_CLICKS[g.id]?.[roastLevel];
+                                                return (
+                                                    <button
+                                                        key={g.id}
+                                                        onPointerDown={(e) => {
+                                                            e.preventDefault();
+                                                            setSelectedGrinder(g.id);
+                                                            setTimeout(() => closeBottomSheet('grinder', setGrinderSheetOpen), 120);
+                                                        }}
+                                                        className={`px-3 py-3 rounded-xl border-2 text-left transition-all duration-150 cursor-pointer touch-none active:scale-[0.97] ${
+                                                            isActive ? 'border-amber-500 bg-amber-50 active:bg-amber-100' : 'border-neutral-100 bg-neutral-50 active:bg-neutral-100'
+                                                        }`}
+                                                    >
+                                                        <p className="text-sm font-bold text-neutral-800">{g.short}</p>
+                                                        <p className={`text-xs font-mono mt-0.5 ${isActive ? 'text-amber-600 font-semibold' : 'text-neutral-400'}`}>
+                                                            {hint || g.label}
+                                                        </p>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
