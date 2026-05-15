@@ -1055,72 +1055,66 @@
                                                     onChange={(e) => setSheetBeanName(e.target.value)}
                                                     className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-neutral-50"
                                                 />
-                                                <div>
-                                                    <label htmlFor="sheet-roast-date" className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘豆日期</label>
-                                                    <div className="relative">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                if (sheetRoastDateInputRef.current?.showPicker) {
-                                                                    sheetRoastDateInputRef.current.showPicker();
-                                                                } else {
-                                                                    sheetRoastDateInputRef.current?.focus();
-                                                                    sheetRoastDateInputRef.current?.click();
-                                                                }
-                                                            }}
-                                                            className={`w-full min-h-[48px] px-4 py-3 rounded-xl border text-sm flex items-center justify-between gap-3 text-left ${
-                                                            sheetRoastDate
-                                                            ? 'bg-amber-50 border-amber-200 text-amber-900'
-                                                            : 'bg-neutral-50 border-neutral-200 text-neutral-400'
-                                                        } ${sheetRoastDate ? 'pr-11' : ''}`}
-                                                        >
-                                                            <span className="flex items-center gap-2 min-w-0">
-                                                                <Calendar className={`w-4 h-4 shrink-0 ${sheetRoastDate ? 'text-amber-600' : 'text-neutral-300'}`} />
-                                                                <span className="truncate">{formatRoastDate(sheetRoastDate) || '選擇烘豆日期（選填）'}</span>
-                                                            </span>
-                                                        </button>
-                                                        {sheetRoastDate && (
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <span className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘焙程度</span>
+                                                        <div className="flex bg-neutral-100 p-1 rounded-xl h-[48px]">
+                                                            {ROAST_LEVELS.map(level => (
+                                                                <button
+                                                                    key={level.id}
+                                                                    onPointerDown={(e) => { e.preventDefault(); setSheetRoastLevel(level.id); }}
+                                                                    className={`flex-1 flex items-center justify-center rounded-lg text-sm font-bold transition-all cursor-pointer touch-none ${
+                                                                        sheetRoastLevel === level.id
+                                                                        ? 'bg-white text-neutral-800 shadow-sm'
+                                                                        : 'text-neutral-400 active:bg-neutral-200'
+                                                                    }`}
+                                                                >
+                                                                    {level.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label htmlFor="sheet-roast-date" className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘豆日期</label>
+                                                        <div className="relative">
                                                             <button
                                                                 type="button"
-                                                                onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); setSheetRoastDate(''); }}
-                                                                aria-label="清除烘豆日期"
-                                                                className="absolute right-3 top-1/2 z-10 -translate-y-1/2 p-1 rounded-lg text-amber-500 active:bg-amber-100 cursor-pointer touch-none"
+                                                                onClick={() => {
+                                                                    if (sheetRoastDateInputRef.current?.showPicker) {
+                                                                        sheetRoastDateInputRef.current.showPicker();
+                                                                    } else {
+                                                                        sheetRoastDateInputRef.current?.focus();
+                                                                        sheetRoastDateInputRef.current?.click();
+                                                                    }
+                                                                }}
+                                                                className={`w-full h-[48px] px-3 py-2 rounded-xl border border-neutral-200 bg-neutral-50 text-sm flex items-center justify-between gap-2 text-left text-neutral-600 ${sheetRoastDate ? 'pr-9' : ''}`}
                                                             >
-                                                                <X className="w-4 h-4" />
+                                                                <span className="flex items-center gap-1.5 min-w-0">
+                                                                    <Calendar className="w-4 h-4 shrink-0 text-neutral-400" />
+                                                                    <span className="truncate">{formatRoastDate(sheetRoastDate) || '未指定'}</span>
+                                                                </span>
                                                             </button>
-                                                        )}
-                                                        <input
-                                                            ref={sheetRoastDateInputRef}
-                                                            id="sheet-roast-date"
-                                                            type="date"
-                                                            value={sheetRoastDate}
-                                                            onChange={(e) => setSheetRoastDate(e.target.value)}
-                                                            className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
-                                                            aria-label="烘豆日期"
-                                                            tabIndex={-1}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <span className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘焙程度</span>
-                                                    <div className="flex gap-2">
-                                                        {ROAST_LEVELS.map(level => (
-                                                            <button
-                                                                key={level.id}
-                                                                onPointerDown={(e) => { e.preventDefault(); setSheetRoastLevel(level.id); }}
-                                                                className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all cursor-pointer touch-none active:scale-95 ${
-                                                                    sheetRoastLevel === level.id
-                                                                    ? level.id === 'dark'
-                                                                        ? 'bg-neutral-900 text-white border-neutral-900'
-                                                                        : level.id === 'medium'
-                                                                            ? 'bg-amber-600 text-white border-amber-600'
-                                                                            : 'bg-amber-400 text-white border-amber-400'
-                                                                    : 'bg-neutral-50 text-neutral-400 border-neutral-200'
-                                                                }`}
-                                                            >
-                                                                {level.label}
-                                                            </button>
-                                                        ))}
+                                                            {sheetRoastDate && (
+                                                                <button
+                                                                    type="button"
+                                                                    onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); setSheetRoastDate(''); }}
+                                                                    aria-label="清除烘豆日期"
+                                                                    className="absolute right-2 top-1/2 z-10 -translate-y-1/2 p-1.5 rounded-lg text-neutral-400 active:bg-neutral-200 cursor-pointer touch-none"
+                                                                >
+                                                                    <X className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                            <input
+                                                                ref={sheetRoastDateInputRef}
+                                                                id="sheet-roast-date"
+                                                                type="date"
+                                                                value={sheetRoastDate}
+                                                                onChange={(e) => setSheetRoastDate(e.target.value)}
+                                                                className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
+                                                                aria-label="烘豆日期"
+                                                                tabIndex={-1}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <button
