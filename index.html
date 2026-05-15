@@ -1269,8 +1269,8 @@
                 const rec = RECIPES[selectedRecipeId];
                 const totalTime = rec.steps[rec.steps.length - 1].endTime;
                 const grindSetting = getGrindSetting(selectedGrinder);
-                const firstPourMl = getStepTargetWater(rec.steps[0], waterTotal, coffeeGrams);
                 const flavor = FLAVOR_OPTIONS.find(f => f.id === selectedFlavor);
+                const selectedBeanLabel = beanName || '尚未選擇豆子';
                 const recipeMeta = {
                     v60: {
                         label: '乾淨明亮',
@@ -1355,12 +1355,12 @@
                                 ))}
                             </div>
                             <div className="px-4 pb-4 space-y-2">
-                                <div className="flex items-center justify-between gap-3 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5">
+                                <div className="flex items-center justify-between gap-3 rounded-xl bg-neutral-50 border border-neutral-200 px-3 py-2.5">
                                     <span className="flex items-center gap-2 min-w-0">
-                                        <Droplet className="w-4 h-4 text-amber-600 shrink-0" />
-                                        <span className="text-xs font-bold text-amber-800">第一注目標</span>
+                                        <CoffeeBeanIcon className="w-4 h-4 text-neutral-400 shrink-0" />
+                                        <span className="text-xs font-bold text-neutral-500">豆子名稱</span>
                                     </span>
-                                    <span className="text-sm font-bold text-amber-800 tabular-nums shrink-0">{firstPourMl} ml</span>
+                                    <span className="text-sm font-bold text-neutral-800 tabular-nums shrink-0 truncate max-w-[55%] text-right">{selectedBeanLabel}</span>
                                 </div>
                                 <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2">
                                     <span className="text-xs text-neutral-400">粉水比</span>
