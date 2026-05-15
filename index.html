@@ -472,6 +472,7 @@
             const [sheetDragOffset, setSheetDragOffset] = useState(0);
             const [sheetIsDragging, setSheetIsDragging] = useState(false);
             const sheetDragStartY = useRef(null);
+            const sheetLastTouch = useRef({ y: 0, time: 0 });
             const sheetDragMeta = useRef(null); // { name, setOpen }
             const sheetRoastDateInputRef = useRef(null);
 
@@ -486,34 +487,60 @@
                 setTimeout(() => { setOpen(false); setClosingSheet(null); }, 350);
             };
             const onSheetTouchStart = (e, name, setOpen) => {
-                sheetDragStartY.current = e.touches[0].clientY;
+                const y = e.touches[0].clientY;
+                sheetDragStartY.current = y;
+                sheetLastTouch.current = { y, time: Date.now() };
                 sheetDragMeta.current = { name, setOpen };
                 setSheetIsDragging(true);
             };
             const onSheetTouchMove = (e) => {
                 if (sheetDragStartY.current === null) return;
                 e.preventDefault();
-                const delta = e.touches[0].clientY - sheetDragStartY.current;
-                if (sheetIsExpanded) {
-                    setSheetDragOffset(Math.max(0, delta));
-                } else {
-                    setSheetDragOffset(delta < 0 ? Math.max(delta * 0.15, -18) : Math.min(delta, 260));
+                const y = e.touches[0].clientY;
+                const now = Date.now();
+                sheetLastTouch.current = { y, time: now };
+                
+                let delta = y - sheetDragStartY.current;
+                
+                // iOS native rubber-banding resistance
+                if (delta < 0) {
+                    delta = -1 * (Math.abs(delta) / (1 + Math.abs(delta) / 150));
                 }
+                
+                setSheetDragOffset(delta);
             };
             const onSheetTouchEnd = (e) => {
                 if (sheetDragStartY.current === null) return;
-                const delta = e.changedTouches[0].clientY - sheetDragStartY.current;
+                const y = e.changedTouches[0].clientY;
+                const now = Date.now();
+                const delta = y - sheetDragStartY.current;
+                
+                const dt = now - sheetLastTouch.current.time;
+                const dy = y - sheetLastTouch.current.y;
+                const velocity = (dt > 0 && dt < 100) ? (dy / dt) : 0;
+                
                 const { name, setOpen } = sheetDragMeta.current || {};
                 sheetDragStartY.current = null;
                 setSheetIsDragging(false);
                 setSheetDragOffset(0);
+                
                 if (!name) return;
+                
+                // Predict resting position based on momentum (velocity * constant)
+                const predictedDelta = delta + velocity * 150;
+                
                 if (sheetIsExpanded) {
-                    if (delta > 220) { closeBottomSheet(name, setOpen); }
-                    else if (delta > 80) { setSheetIsExpanded(false); }
+                    if (predictedDelta > 200 || velocity > 1.2) { 
+                        closeBottomSheet(name, setOpen); 
+                    } else if (predictedDelta > 80 || velocity > 0.5) { 
+                        setSheetIsExpanded(false); 
+                    }
                 } else {
-                    if (delta > 110) { closeBottomSheet(name, setOpen); }
-                    else if (delta < -55) { setSheetIsExpanded(true); }
+                    if (predictedDelta > 100 || velocity > 0.8) { 
+                        closeBottomSheet(name, setOpen); 
+                    } else if (predictedDelta < -60 || velocity < -0.6) { 
+                        setSheetIsExpanded(true); 
+                    }
                 }
             };
 
