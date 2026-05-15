@@ -1005,7 +1005,7 @@
                                                 </div>
                                             </div>
 
-                                            {(log.flowRate || log.stability) && (
+                                            {log.flowRate && (
                                                 <div className="px-4 pb-3 flex gap-4">
                                                     {log.flowRate && (
                                                         <span className="inline-flex items-center gap-1.5 text-xs">
@@ -1247,12 +1247,6 @@
                                                 <div className="bg-neutral-50 rounded-xl p-3 text-center">
                                                     <p className="text-xs text-neutral-400 mb-1">流速</p>
                                                     <p className="text-sm font-bold text-neutral-700">{FLOW_OPTIONS.find(f => f.id === vl.flowRate)?.label || '—'}</p>
-                                                </div>
-                                            )}
-                                            {vl.stability && (
-                                                <div className="bg-neutral-50 rounded-xl p-3 text-center">
-                                                    <p className="text-xs text-neutral-400 mb-1">注水</p>
-                                                    <p className="text-sm font-bold text-neutral-700">{STABILITY_OPTIONS.find(s => s.id === vl.stability)?.label || '—'}</p>
                                                 </div>
                                             )}
                                             <div className="bg-neutral-50 rounded-xl p-3 text-center">
