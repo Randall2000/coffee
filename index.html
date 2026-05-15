@@ -1186,11 +1186,32 @@
                 const rec = RECIPES[selectedRecipeId];
                 const totalTime = rec.steps[rec.steps.length - 1].endTime;
                 const grindSetting = getGrindSetting(selectedGrinder);
+                const firstPourMl = Math.round(rec.steps[0].waterTargetPercentage * waterTotal);
+                const recipeMeta = {
+                    v60: {
+                        label: '乾淨明亮',
+                        cue: '分段拉高萃取',
+                        bestFor: '淺焙、花果香',
+                        accent: 'bg-amber-600'
+                    },
+                    fourSix: {
+                        label: '酸甜可控',
+                        cue: '五注調整風味',
+                        bestFor: '想調甜感與厚度',
+                        accent: 'bg-orange-500'
+                    },
+                    onePour: {
+                        label: '簡潔穩定',
+                        cue: '一次注到目標',
+                        bestFor: '日常快速複製',
+                        accent: 'bg-neutral-800'
+                    }
+                };
 
                 return (
-                    <div className="pb-24 select-none">
+                    <div className="pb-24 select-none space-y-3">
                         {/* Header */}
-                        <div className="flex items-center gap-3 mb-5">
+                        <div className="flex items-center gap-3">
                             <button
                                 onPointerDown={(e) => { e.preventDefault(); setBrewStep('config'); }}
                                 aria-label="返回沖煮設定"
@@ -1204,17 +1225,31 @@
                             </div>
                         </div>
 
-                        {/* Recipe switcher */}
-                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 mb-3">
-                            <div className="flex items-center justify-between gap-3 mb-3">
-                                <div>
-                                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">沖煮手法</p>
-                                    <p className="text-xs text-neutral-400 mt-0.5">{rec.description}</p>
+                        <div className="grid grid-cols-3 gap-1.5" aria-label="沖煮流程進度">
+                            {[
+                                { label: '設定', active: false },
+                                { label: '建議', active: true },
+                                { label: '計時', active: false }
+                            ].map((step, idx) => (
+                                <div key={step.label} className={`h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+                                    step.active ? 'bg-amber-600 text-white' : 'bg-white text-neutral-300 border border-neutral-100'
+                                }`}>
+                                    {idx + 1}. {step.label}
                                 </div>
+                            ))}
+                        </div>
+
+                        {/* Recipe switcher */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                            <div className="mb-3">
+                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">選擇沖煮手法</p>
+                                <p className="text-xs text-neutral-400 mt-0.5">先選節奏，下方水量與時間會立即更新</p>
                             </div>
-                            <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="選擇沖煮手法">
+                            <div className="space-y-2" role="radiogroup" aria-label="選擇沖煮手法">
                                 {Object.values(RECIPES).map(option => {
                                     const isActive = selectedRecipeId === option.id;
+                                    const meta = recipeMeta[option.id];
+                                    const optionTime = option.steps[option.steps.length - 1].endTime;
                                     return (
                                         <button
                                             key={option.id}
@@ -1222,65 +1257,91 @@
                                             role="radio"
                                             aria-checked={isActive}
                                             onPointerDown={(e) => { e.preventDefault(); updateRecipe(option.id); }}
-                                            className={`min-h-[52px] rounded-xl border-2 px-2 py-2 text-xs font-bold transition-all cursor-pointer touch-none active:scale-[0.97] ${
-                                                isActive ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-neutral-100 bg-neutral-50 text-neutral-500'
+                                            className={`w-full min-h-[68px] rounded-xl border-2 px-3 py-3 transition-all cursor-pointer touch-none active:scale-[0.98] ${
+                                                isActive ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
                                             }`}
                                         >
-                                            {option.name.split('(')[0].trim()}
+                                            <span className="flex items-center gap-3 text-left">
+                                                <span className={`w-2.5 h-10 rounded-full ${isActive ? meta.accent : 'bg-neutral-200'} shrink-0`} />
+                                                <span className="flex-1 min-w-0">
+                                                    <span className={`block text-sm font-bold ${isActive ? 'text-amber-800' : 'text-neutral-800'}`}>
+                                                        {option.name.split('(')[0].trim()}
+                                                    </span>
+                                                    <span className="block text-xs text-neutral-400 mt-0.5">{meta.label} · {meta.bestFor}</span>
+                                                </span>
+                                                <span className="text-right shrink-0">
+                                                    <span className={`block text-xs font-bold ${isActive ? 'text-amber-700' : 'text-neutral-500'}`}>{meta.cue}</span>
+                                                    <span className="block text-xs font-mono text-neutral-400 mt-0.5">{Math.floor(optionTime/60)}:{(optionTime%60).toString().padStart(2,'0')}</span>
+                                                </span>
+                                            </span>
                                         </button>
                                     );
                                 })}
                             </div>
                         </div>
 
-                        {/* Params grid */}
-                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5 mb-3">
-                            <div className="grid grid-cols-2 gap-y-5 gap-x-6">
-                                <div>
-                                    <p className="text-xs text-neutral-400 mb-1">粉量</p>
-                                    <p className="text-2xl font-bold text-neutral-800 tabular-nums">{coffeeGrams}<span className="text-sm font-medium text-neutral-400 ml-1">g</span></p>
+                        {/* Guidance summary */}
+                        <div className="bg-amber-600 rounded-2xl shadow-lg shadow-amber-200/60 p-5 text-white">
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                                    <Droplet className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-neutral-400 mb-1">總水量</p>
-                                    <p className="text-2xl font-bold text-neutral-800 tabular-nums">{waterTotal}<span className="text-sm font-medium text-neutral-400 ml-1">ml</span></p>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-amber-100">第一步先做這件事</p>
+                                    <p className="text-2xl font-bold mt-1 leading-tight">先注到 {firstPourMl} ml</p>
+                                    <p className="text-sm text-amber-50 mt-1">{rec.steps[0].desc}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-neutral-400 mb-1">水溫</p>
-                                    <p className="text-2xl font-bold text-neutral-800 tabular-nums">{waterTemp}<span className="text-sm font-medium text-neutral-400 ml-1">°C</span></p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-neutral-400 mb-1">磨豆刻數</p>
-                                    <p className="text-base font-bold text-neutral-800 leading-tight mt-1">{grindSetting}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-neutral-400 mb-1">預計時間</p>
-                                    <p className="text-2xl font-bold text-neutral-800 tabular-nums">{Math.floor(totalTime/60)}:{(totalTime%60).toString().padStart(2,'0')}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-neutral-400 mb-1">粉水比</p>
-                                    <p className="text-2xl font-bold text-neutral-800 tabular-nums">1:{Math.round(ratio)}</p>
-                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2 mt-4">
+                                {[
+                                    { label: '粉量', value: `${coffeeGrams}g` },
+                                    { label: '水量', value: `${waterTotal}ml` },
+                                    { label: '水溫', value: `${waterTemp}°C` },
+                                    { label: '時間', value: `${Math.floor(totalTime/60)}:${(totalTime%60).toString().padStart(2,'0')}` }
+                                ].map(item => (
+                                    <div key={item.label} className="rounded-xl bg-white/12 px-2 py-2 text-center">
+                                        <p className="text-[11px] text-amber-100">{item.label}</p>
+                                        <p className="text-sm font-bold tabular-nums mt-0.5">{item.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-3 flex items-center justify-between rounded-xl bg-white/12 px-3 py-2">
+                                <span className="text-xs text-amber-100">粉水比</span>
+                                <span className="text-sm font-bold tabular-nums">1:{Math.round(ratio)}</span>
+                                <span className="text-xs text-amber-100">磨豆 {grindSetting}</span>
                             </div>
                         </div>
 
                         {/* Steps */}
-                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm mb-3 overflow-hidden">
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
                             <div className="px-5 py-3 border-b border-neutral-50">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">每注時間</p>
-                                <p className="text-xs text-neutral-400 mt-1">依目前沖法與總水量動態計算</p>
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">注水時間線</p>
+                                        <p className="text-xs text-neutral-400 mt-1">照順序注水，計時器會用同一組節奏</p>
+                                    </div>
+                                    <span className="text-xs font-mono text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1 shrink-0">
+                                        {rec.steps.length} 段
+                                    </span>
+                                </div>
                             </div>
-                            <div className="px-4 py-2 space-y-0.5">
+                            <div className="px-4 py-3 space-y-2">
                                 {rec.steps.map((step, idx) => {
                                     const prevEnd = idx > 0 ? rec.steps[idx-1].endTime : 0;
                                     const tw = Math.round(step.waterTargetPercentage * waterTotal);
                                     const prevWater = idx > 0 ? Math.round(rec.steps[idx-1].waterTargetPercentage * waterTotal) : 0;
                                     const pourWater = Math.max(0, tw - prevWater);
                                     return (
-                                        <div key={idx} className="flex items-center gap-3 text-xs py-2.5">
-                                            <span className="w-5 h-5 flex items-center justify-center bg-neutral-100 text-neutral-500 rounded-full font-bold flex-shrink-0">{idx+1}</span>
-                                            <span className="text-neutral-600 flex-1">{step.name.split('(')[0].trim()}</span>
-                                            <span className="font-mono text-amber-600 font-medium w-16 text-right">+{pourWater}ml</span>
-                                            <span className="font-mono text-neutral-400 w-14 text-right">{prevEnd}s-{step.endTime}s</span>
+                                        <div key={idx} className="grid grid-cols-[28px_1fr_auto] gap-3 items-start rounded-xl bg-neutral-50 px-3 py-3">
+                                            <span className="w-7 h-7 flex items-center justify-center bg-white border border-neutral-200 text-neutral-500 rounded-full font-bold text-xs flex-shrink-0">{idx+1}</span>
+                                            <span className="min-w-0">
+                                                <span className="block text-sm font-bold text-neutral-800">{step.name.split('(')[0].trim()}</span>
+                                                <span className="block text-xs text-neutral-400 mt-0.5 leading-snug">{step.desc}</span>
+                                            </span>
+                                            <span className="text-right shrink-0">
+                                                <span className="block font-mono text-amber-700 font-bold text-sm">+{pourWater}ml</span>
+                                                <span className="block font-mono text-neutral-400 text-xs mt-0.5">{prevEnd}-{step.endTime}s</span>
+                                            </span>
                                         </div>
                                     );
                                 })}
