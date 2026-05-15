@@ -808,32 +808,27 @@
                                     <circle stroke="#d97706" strokeWidth={stroke} strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }} strokeLinecap="round" fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
                                 </svg>
                                 
-                                <div className="absolute inset-0 flex flex-col items-center text-center py-10 px-4 pointer-events-none">
-                                    <div className="flex flex-col items-center opacity-50 mb-auto">
-                                        <span className="text-xs tracking-widest uppercase">Total</span>
-                                        <span className="text-sm font-mono font-bold tabular-nums">{Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}</span>
-                                    </div>
-                                    
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pointer-events-none">
                                     {!isFinished ? (
-                                        <div className="flex flex-col items-center justify-center w-full mb-auto space-y-1">
-                                            <div className="text-amber-600 font-bold text-lg truncate w-full px-2 max-w-[200px] text-center">{step.name.split('(')[0]}</div>
-                                            <div className="text-neutral-400 text-xs px-6 text-center leading-snug">{step.desc}</div>
-                                            <div className="flex items-end leading-none">
-                                                <span className="text-6xl font-bold text-neutral-800 tabular-nums tracking-tighter">{Math.floor(timeInStep)}</span>
-                                                <span className="text-lg text-neutral-400 font-medium mb-1 ml-1 w-8 text-left">/ {duration}</span>
+                                        <div className="flex flex-col items-center space-y-2">
+                                            <div className="text-amber-600 font-bold text-sm tracking-wide truncate w-full px-4 text-center">
+                                                {step.name.split('(')[0].trim()}
                                             </div>
-                                            <div className="mt-2 px-4 py-1.5 bg-amber-50 rounded-2xl text-base font-bold text-amber-700 border border-amber-100 flex items-center gap-2 shadow-sm">
-                                                <Droplet className="w-4 h-4 fill-amber-700" />
-                                                <span>目標: {targetWater}</span>
+                                            <div className="text-5xl font-bold text-neutral-800 tabular-nums tracking-tighter leading-none">
+                                                {Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}
+                                            </div>
+                                            <div className="px-3 py-1 bg-amber-50 rounded-xl text-sm font-bold text-amber-700 border border-amber-100 flex items-center gap-1.5">
+                                                <Droplet className="w-3.5 h-3.5 fill-amber-700" />
+                                                <span>{targetWater} ml</span>
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center mb-auto">
-                                            <div className="text-amber-600 font-bold text-3xl animate-bounce">✨ 完成</div>
-                                            <p className="text-neutral-400 text-xs mt-2">享受您的咖啡</p>
+                                        <div className="flex flex-col items-center space-y-1">
+                                            <div className="text-amber-600 font-bold text-3xl animate-bounce">✨</div>
+                                            <div className="text-amber-600 font-bold text-lg">完成</div>
+                                            <p className="text-neutral-400 text-xs">享受您的咖啡</p>
                                         </div>
                                     )}
-                                    <div className="h-4"></div>
                                 </div>
                             </div>
                         </div>
