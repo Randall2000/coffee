@@ -600,33 +600,71 @@
 
             // --- Views ---
             // --- Home ---
+            const brewAgain = (log) => {
+                const dripper = DRIPPERS.find(d => d.fullName === log.dripperName) || DRIPPERS[0];
+                const rec = Object.values(RECIPES).find(r => r.name === log.recipeName);
+                const recipeId = rec ? rec.id : 'v60';
+                setSelectedDripperId(dripper.id);
+                setSelectedRecipeId(recipeId);
+                setCoffeeGrams(log.coffeeGrams);
+                setRatio(log.ratio);
+                setRecipeRatios(prev => ({ ...prev, [recipeId]: log.ratio }));
+                setRoastLevel(log.roastLevel);
+                setWaterTemp(WATER_TEMPS[log.roastLevel] || 93);
+                setBeanName(log.beanName !== '未命名咖啡豆' ? log.beanName : '');
+                setBrewStep('suggestion');
+            };
+
             const renderHomeView = () => {
                 const lastLog = logs[0];
+                const lastRoast = lastLog ? ROAST_LEVELS.find(r => r.id === lastLog.roastLevel) : null;
                 return (
-                    <div className="flex flex-col items-center justify-center h-full gap-8 select-none">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-24 h-24 bg-amber-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-amber-200">
-                                <Coffee className="w-12 h-12 text-white" />
+                    <div className="flex flex-col items-center justify-center h-full gap-6 select-none">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="w-20 h-20 bg-amber-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-amber-200">
+                                <Coffee className="w-10 h-10 text-white" />
                             </div>
                             <div className="text-center">
                                 <p className="text-2xl font-bold text-neutral-800 tracking-tight">Barista Flow</p>
-                                <p className="text-sm text-neutral-400 mt-1">手沖咖啡引導</p>
+                                <p className="text-sm text-neutral-400 mt-0.5">手沖咖啡引導</p>
                             </div>
                         </div>
 
                         <button
                             onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
-                            className="w-full max-w-xs bg-neutral-900 text-white py-5 rounded-2xl font-bold text-xl shadow-xl shadow-neutral-300/50 hover:bg-neutral-800 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
+                            className="w-full max-w-xs bg-neutral-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-neutral-300/50 hover:bg-neutral-800 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
                         >
-                            <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
+                            <Play className="w-5 h-5 fill-current ml-1" /> 開始沖煮
                         </button>
 
                         {lastLog && (
-                            <div className="text-center">
-                                <p className="text-xs text-neutral-400">上次沖煮</p>
-                                <p className="text-sm text-neutral-600 font-medium mt-0.5">
-                                    {lastLog.beanName || '未命名咖啡豆'} {'★'.repeat(lastLog.rating)}
-                                </p>
+                            <div className="w-full max-w-xs bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-3">
+                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">上次沖煮</p>
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1 min-w-0 pr-2">
+                                        <p className="font-bold text-neutral-800 truncate">{lastLog.beanName || '未命名咖啡豆'}</p>
+                                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                            {lastRoast && (
+                                                <span className={`text-xs px-2 py-0.5 rounded-full border ${lastRoast.color}`}>{lastRoast.label}</span>
+                                            )}
+                                            <span className="text-xs text-neutral-400">{lastLog.dripperName}</span>
+                                        </div>
+                                    </div>
+                                    <span className="text-sm text-amber-400 flex-shrink-0">{'★'.repeat(lastLog.rating)}</span>
+                                </div>
+                                <div className="flex gap-3 text-xs text-neutral-500 font-mono">
+                                    <span>{lastLog.coffeeGrams}g</span>
+                                    <span className="text-neutral-200">·</span>
+                                    <span>{lastLog.waterTotal}ml</span>
+                                    <span className="text-neutral-200">·</span>
+                                    <span>1:{Math.round(lastLog.ratio)}</span>
+                                </div>
+                                <button
+                                    onPointerDown={(e) => { e.preventDefault(); unlockAudio(); brewAgain(lastLog); }}
+                                    className="w-full py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 font-bold text-sm cursor-pointer touch-none active:scale-95 transition-all"
+                                >
+                                    再沖一次
+                                </button>
                             </div>
                         )}
                     </div>
@@ -1336,8 +1374,8 @@
                     )}
 
                     <div className="bg-white border-t border-neutral-100 flex justify-around items-center pt-4 px-6 w-full flex-shrink-0" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
-                        <button 
-                            onClick={() => setActiveTab('brew')}
+                        <button
+                            onClick={() => { setActiveTab('brew'); setBrewStep('home'); }}
                             className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <Droplet className="w-6 h-6" />
