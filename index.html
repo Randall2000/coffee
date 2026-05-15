@@ -1287,23 +1287,24 @@
                         {/* Brew summary */}
                         <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
                             <div className="px-5 py-4 border-b border-neutral-50">
-                                <div className="min-w-0">
-                                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">沖煮摘要</p>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRecipeSheetOpen(true)}
-                                        className="mt-1.5 flex min-h-[44px] items-center gap-1.5 rounded-xl text-left cursor-pointer touch-none active:scale-[0.98] transition-all"
-                                        aria-label="切換手沖法"
-                                    >
-                                        <span className="text-base font-bold text-neutral-800">{rec.name.split('(')[0].trim()}</span>
-                                        <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
-                                    </button>
-                                    <p className="text-xs text-neutral-400 mt-0.5">{rec.description}</p>
-                                    <p className={`text-xs mt-2 ${isUsingRecommendation ? 'text-amber-700' : 'text-neutral-500'}`}>
-                                        {isUsingRecommendation
-                                            ? `依你的風味偏好，建議先從這個沖法開始。`
-                                            : `依你的風味偏好，系統原本會推薦 ${recommendedRecipe.name.split('(')[0].trim()}。`}
-                                    </p>
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">沖煮摘要</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => setRecipeSheetOpen(true)}
+                                            className="mt-1.5 flex min-h-[44px] items-center gap-1.5 rounded-xl text-left cursor-pointer touch-none active:scale-[0.98] transition-all"
+                                            aria-label="切換手沖法"
+                                        >
+                                            <span className="text-base font-bold text-neutral-800">{rec.name.split('(')[0].trim()}</span>
+                                            <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
+                                        </button>
+                                    </div>
+                                    {isUsingRecommendation && (
+                                        <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
+                                            建議
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                             <div className="grid grid-cols-4 gap-2 px-4 py-3">
