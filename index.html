@@ -299,8 +299,8 @@
                         const lp = pt(a.angle, maxR + 20);
                         return (
                             <text key={a.key} x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="central" style={{ pointerEvents: 'none', userSelect: 'none' }}>
-                                <tspan fontSize="10" fill="#78716c" fontWeight="bold">{a.label} </tspan>
-                                <tspan fontSize="10" fill="#d97706" fontWeight="bold">{data[a.key]}</tspan>
+                                <tspan fontSize="13" fill="#78716c" fontWeight="bold">{a.label} </tspan>
+                                <tspan fontSize="13" fill="#d97706" fontWeight="bold">{data[a.key]}</tspan>
                             </text>
                         );
                     })}
@@ -1150,22 +1150,6 @@
                                         <p className="text-center text-xs text-neutral-300">往各方向拖曳調整</p>
                                     </div>
 
-                                    {/* 流速 */}
-                                    <div className="space-y-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">流速</p>
-                                            {!editingLogId && <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-100 rounded-full px-2 py-0.5 font-medium">自動偵測，可覆蓋</span>}
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {FLOW_OPTIONS.map(opt => (
-                                                <button key={opt.id} onClick={() => setFlowRate(opt.id)}
-                                                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                                                        flowRate === opt.id ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-neutral-50 text-neutral-500 border-neutral-100 hover:bg-neutral-100'
-                                                    }`}>{opt.label}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-
                                     {/* 備註 */}
                                     <textarea
                                         placeholder="備註（選填）"
@@ -1235,16 +1219,16 @@
                                             <RadarChart data={vlSensory} onChange={null} />
                                         </div>
 
-                                        <div className="grid grid-cols-3 gap-2">
+                                        <div className="flex gap-2">
                                             {vl.flowRate && (
-                                                <div className="bg-neutral-50 rounded-xl p-3 text-center">
-                                                    <p className="text-xs text-neutral-400 mb-1">流速</p>
-                                                    <p className="text-sm font-bold text-neutral-700">{FLOW_OPTIONS.find(f => f.id === vl.flowRate)?.label || '—'}</p>
+                                                <div className="flex-1 bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+                                                    <p className="text-xs text-blue-400 font-medium mb-1">流速</p>
+                                                    <p className="text-sm font-bold text-blue-700">{FLOW_OPTIONS.find(f => f.id === vl.flowRate)?.label || '—'}</p>
                                                 </div>
                                             )}
-                                            <div className="bg-neutral-50 rounded-xl p-3 text-center">
-                                                <p className="text-xs text-neutral-400 mb-1">時間</p>
-                                                <p className="text-sm font-bold text-neutral-700 font-mono">{Math.floor(vl.time/60)}:{(vl.time%60).toString().padStart(2,'0')}</p>
+                                            <div className="flex-1 bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+                                                <p className="text-xs text-blue-400 font-medium mb-1">時間</p>
+                                                <p className="text-sm font-bold text-blue-700 font-mono">{Math.floor(vl.time/60)}:{(vl.time%60).toString().padStart(2,'0')}</p>
                                             </div>
                                         </div>
 
