@@ -768,24 +768,25 @@
                         {/* 步驟進度條 */}
                         {!isFinished && (
                             <div className="w-full px-6 mb-2 z-10">
-                                <div className="flex items-center justify-center gap-2 mb-0.5">
-                                    <span className="text-xs font-bold text-neutral-600">{recipe.name.split('(')[0].trim()}</span>
-                                    <span className="text-neutral-200 text-xs">·</span>
-                                    <span className="text-xs font-medium text-neutral-400">{selectedDripper.name}</span>
-                                </div>
-                                <div className="flex items-center justify-center gap-1.5 text-neutral-400 text-xs font-mono mb-2">
-                                    <span>{coffeeGrams}g</span>
+                                {/* Row 1: 沖法 · 濾杯 / 參數 — 全壓一行 */}
+                                <div className="flex items-center justify-center gap-1.5 text-[11px] mb-2.5 flex-wrap">
+                                    <span className="font-semibold text-neutral-600">{recipe.name.split('(')[0].trim()}</span>
                                     <span className="text-neutral-200">·</span>
-                                    <span>{waterTotal}ml</span>
+                                    <span className="text-neutral-400">{selectedDripper.name}</span>
+                                    <span className="text-neutral-200 mx-0.5">/</span>
+                                    <span className="font-mono text-neutral-400">{coffeeGrams}g</span>
                                     <span className="text-neutral-200">·</span>
-                                    <span>1:{Math.round(ratio)}</span>
+                                    <span className="font-mono text-neutral-400">{waterTotal}ml</span>
+                                    <span className="text-neutral-200">·</span>
+                                    <span className="font-mono text-neutral-400">1:{Math.round(ratio)}</span>
                                 </div>
-                                <div className="flex gap-1.5 items-center mb-1">
+                                {/* Row 2: 進度條 — 加粗 */}
+                                <div className="flex gap-1 items-center mb-2">
                                     {recipe.steps.map((s, idx) => {
                                         const completed = currentTime >= s.endTime;
                                         const isCurrent = index === idx;
                                         return (
-                                            <div key={idx} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                                            <div key={idx} className={`h-2 flex-1 rounded-full transition-all duration-300 ${
                                                 completed ? 'bg-amber-500' :
                                                 isCurrent ? 'bg-amber-300' :
                                                 'bg-neutral-200'
@@ -793,14 +794,21 @@
                                         );
                                     })}
                                 </div>
-                                <div className="flex px-0.5">
+                                {/* Row 3: 步驟序號 — 當前以圓點標示 */}
+                                <div className="flex items-center">
                                     {recipe.steps.map((s, idx) => {
+                                        const completed = currentTime >= s.endTime;
                                         const isCurrent = index === idx;
-                                        const dur = s.endTime - (idx > 0 ? recipe.steps[idx - 1].endTime : 0);
                                         return (
-                                            <span key={idx} className={`flex-1 text-center text-[10px] font-mono transition-all ${
-                                                isCurrent ? 'text-amber-500 font-bold' : 'text-neutral-300'
-                                            }`}>{dur}s</span>
+                                            <div key={idx} className="flex-1 flex justify-center">
+                                                {isCurrent ? (
+                                                    <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                                                        <span className="text-[10px] font-bold text-white leading-none">{idx + 1}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className={`text-[11px] font-mono transition-all ${completed ? 'text-amber-400' : 'text-neutral-300'}`}>{idx + 1}</span>
+                                                )}
+                                            </div>
                                         );
                                     })}
                                 </div>
