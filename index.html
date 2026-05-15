@@ -418,6 +418,7 @@
             const [roastDate, setRoastDate] = useState('');
             const [waterTemp, setWaterTemp] = useState(93);
             const [showAdjust, setShowAdjust] = useState(false);
+            const [showRecipeOptions, setShowRecipeOptions] = useState(false);
             const [isNewBean, setIsNewBean] = useState(false);
             const [beanSheetOpen, setBeanSheetOpen] = useState(false);
             const [dripperSheetOpen, setDripperSheetOpen] = useState(false);
@@ -1187,26 +1188,34 @@
                 const totalTime = rec.steps[rec.steps.length - 1].endTime;
                 const grindSetting = getGrindSetting(selectedGrinder);
                 const firstPourMl = Math.round(rec.steps[0].waterTargetPercentage * waterTotal);
+                const flavor = FLAVOR_OPTIONS.find(f => f.id === selectedFlavor);
                 const recipeMeta = {
                     v60: {
                         label: '乾淨明亮',
                         cue: '分段拉高萃取',
                         bestFor: '淺焙、花果香',
-                        accent: 'bg-amber-600'
+                        accent: 'bg-amber-600',
+                        reason: '能拉出較清楚的香氣與乾淨度'
                     },
                     fourSix: {
                         label: '酸甜可控',
                         cue: '五注調整風味',
                         bestFor: '想調甜感與厚度',
-                        accent: 'bg-orange-500'
+                        accent: 'bg-orange-500',
+                        reason: '用分注比例調整酸甜與醇厚'
                     },
                     onePour: {
                         label: '簡潔穩定',
                         cue: '一次注到目標',
                         bestFor: '日常快速複製',
-                        accent: 'bg-neutral-800'
+                        accent: 'bg-neutral-800',
+                        reason: '步驟少，容易維持穩定節奏'
                     }
                 };
+                const currentMeta = recipeMeta[selectedRecipeId];
+                const recommendedRecipeId = getRecommendedRecipeId(selectedFlavor, selectedDripperId);
+                const isUsingRecommendation = selectedRecipeId === recommendedRecipeId;
+                const otherRecipes = Object.values(RECIPES).filter(option => option.id !== selectedRecipeId);
 
                 return (
                     <div className="pb-24 select-none space-y-3">
@@ -1220,50 +1229,93 @@
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                             <div>
-                                <p className="text-xs text-neutral-400 uppercase tracking-widest font-medium">確認沖煮節奏</p>
+                                <p className="text-xs text-neutral-400 uppercase tracking-widest font-medium">依風味偏好推薦</p>
                                 <p className="text-base font-bold text-neutral-800">{rec.name.split('(')[0].trim()}</p>
                             </div>
                         </div>
 
-                        {/* Recipe switcher */}
+                        {/* Recommendation */}
                         <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
                             <div className="mb-3">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">選擇沖煮手法</p>
-                                <p className="text-xs text-neutral-400 mt-0.5">先選節奏，下方水量與時間會立即更新</p>
+                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                                    {isUsingRecommendation ? '建議沖法' : '實驗沖法'}
+                                </p>
+                                <p className="text-xs text-neutral-400 mt-0.5">
+                                    {isUsingRecommendation
+                                        ? (flavor ? `你選了「${flavor.label}」，先用這個做第一杯` : '先用預設建議完成第一杯，再依結果微調')
+                                        : '目前正在嘗試不同手法；下方時間線會跟著更新'}
+                                </p>
                             </div>
-                            <div className="space-y-2" role="radiogroup" aria-label="選擇沖煮手法">
-                                {Object.values(RECIPES).map(option => {
-                                    const isActive = selectedRecipeId === option.id;
-                                    const meta = recipeMeta[option.id];
-                                    const optionTime = option.steps[option.steps.length - 1].endTime;
-                                    return (
-                                        <button
-                                            key={option.id}
-                                            type="button"
-                                            role="radio"
-                                            aria-checked={isActive}
-                                            onPointerDown={(e) => { e.preventDefault(); updateRecipe(option.id); }}
-                                            className={`w-full min-h-[68px] rounded-xl border-2 px-3 py-3 transition-all cursor-pointer touch-none active:scale-[0.98] ${
-                                                isActive ? 'border-amber-500 bg-amber-50' : 'border-neutral-100 bg-neutral-50'
-                                            }`}
-                                        >
-                                            <span className="flex items-center gap-3 text-left">
-                                                <span className={`w-2.5 h-10 rounded-full ${isActive ? meta.accent : 'bg-neutral-200'} shrink-0`} />
-                                                <span className="flex-1 min-w-0">
-                                                    <span className={`block text-sm font-bold ${isActive ? 'text-amber-800' : 'text-neutral-800'}`}>
-                                                        {option.name.split('(')[0].trim()}
-                                                    </span>
-                                                    <span className="block text-xs text-neutral-400 mt-0.5">{meta.label} · {meta.bestFor}</span>
-                                                </span>
-                                                <span className="text-right shrink-0">
-                                                    <span className={`block text-xs font-bold ${isActive ? 'text-amber-700' : 'text-neutral-500'}`}>{meta.cue}</span>
-                                                    <span className="block text-xs font-mono text-neutral-400 mt-0.5">{Math.floor(optionTime/60)}:{(optionTime%60).toString().padStart(2,'0')}</span>
-                                                </span>
+                            <div className="rounded-2xl border-2 border-amber-500 bg-amber-50 px-4 py-4">
+                                <div className="flex items-start gap-3">
+                                    <span className={`w-2.5 h-12 rounded-full ${currentMeta.accent} shrink-0`} />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <p className="text-lg font-bold text-amber-900 leading-tight">{rec.name.split('(')[0].trim()}</p>
+                                                <p className="text-xs text-amber-700 mt-1">{currentMeta.label} · {currentMeta.bestFor}</p>
+                                            </div>
+                                            <span className="rounded-lg bg-white px-2 py-1 text-xs font-mono font-bold text-amber-700 border border-amber-100 shrink-0">
+                                                {Math.floor(totalTime/60)}:{(totalTime%60).toString().padStart(2,'0')}
                                             </span>
-                                        </button>
-                                    );
-                                })}
+                                        </div>
+                                        <p className="text-sm text-amber-900 mt-3 leading-snug">{currentMeta.reason}</p>
+                                    </div>
+                                </div>
                             </div>
+
+                            {!isUsingRecommendation && (
+                                <button
+                                    type="button"
+                                    onPointerDown={(e) => { e.preventDefault(); updateRecipe(recommendedRecipeId); setShowRecipeOptions(false); }}
+                                    className="mt-3 w-full rounded-xl border border-amber-200 bg-white py-3 text-sm font-bold text-amber-700 cursor-pointer touch-none active:scale-[0.98] transition-all"
+                                >
+                                    回到系統推薦沖法
+                                </button>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={() => setShowRecipeOptions(!showRecipeOptions)}
+                                className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 py-3 text-sm font-bold text-neutral-600 cursor-pointer active:scale-[0.98] transition-all"
+                                aria-expanded={showRecipeOptions}
+                            >
+                                想實驗其他沖法
+                                {showRecipeOptions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+
+                            {showRecipeOptions && (
+                                <div className="mt-2 space-y-2" role="radiogroup" aria-label="實驗其他沖煮手法">
+                                    {otherRecipes.map(option => {
+                                        const meta = recipeMeta[option.id];
+                                        const optionTime = option.steps[option.steps.length - 1].endTime;
+                                        return (
+                                            <button
+                                                key={option.id}
+                                                type="button"
+                                                role="radio"
+                                                aria-checked={false}
+                                                onPointerDown={(e) => { e.preventDefault(); updateRecipe(option.id); setShowRecipeOptions(false); }}
+                                                className="w-full min-h-[68px] rounded-xl border-2 border-neutral-100 bg-neutral-50 px-3 py-3 transition-all cursor-pointer touch-none active:scale-[0.98]"
+                                            >
+                                                <span className="flex items-center gap-3 text-left">
+                                                    <span className="w-2.5 h-10 rounded-full bg-neutral-200 shrink-0" />
+                                                    <span className="flex-1 min-w-0">
+                                                        <span className="block text-sm font-bold text-neutral-800">
+                                                            {option.name.split('(')[0].trim()}
+                                                        </span>
+                                                        <span className="block text-xs text-neutral-400 mt-0.5">{meta.label} · {meta.bestFor}</span>
+                                                    </span>
+                                                    <span className="text-right shrink-0">
+                                                        <span className="block text-xs font-bold text-neutral-500">{meta.cue}</span>
+                                                        <span className="block text-xs font-mono text-neutral-400 mt-0.5">{Math.floor(optionTime/60)}:{(optionTime%60).toString().padStart(2,'0')}</span>
+                                                    </span>
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Brew summary */}
