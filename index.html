@@ -801,13 +801,10 @@
                                         const isCurrent = index === idx;
                                         return (
                                             <div key={idx} className="flex-1 flex justify-center">
-                                                {isCurrent ? (
-                                                    <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
-                                                        <span className="text-[10px] font-bold text-white leading-none">{idx + 1}</span>
-                                                    </div>
-                                                ) : (
-                                                    <span className={`text-[11px] font-mono transition-all ${completed ? 'text-amber-400' : 'text-neutral-300'}`}>{idx + 1}</span>
-                                                )}
+                                                <span className={`text-[11px] font-mono transition-all ${
+                                                    isCurrent ? 'text-amber-500 font-bold text-sm' :
+                                                    completed ? 'text-amber-400' : 'text-neutral-300'
+                                                }`}>{idx + 1}</span>
                                             </div>
                                         );
                                     })}
