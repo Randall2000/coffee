@@ -1536,11 +1536,12 @@
                 const progress = Math.min((currentTime / totalTime) * 100, 100);
                 const { step, index, duration, timeInStep, targetWater } = currentStepInfo;
 
-                const radius = 120;
+                const radius = 136;
                 const stroke = 6;
                 const normalizedRadius = radius - stroke * 2;
                 const circumference = normalizedRadius * 2 * Math.PI;
                 const strokeDashoffset = circumference - (progress / 100) * circumference;
+                const centerContentWidth = Math.floor((normalizedRadius - 10) * Math.sqrt(2));
 
                 return (
                     <div className="flex flex-col h-full items-center py-4 relative select-none">
@@ -1598,24 +1599,24 @@
                                     <circle stroke="#d97706" strokeWidth={stroke} strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }} strokeLinecap="round" fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
                                 </svg>
                                 
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-16 py-16 pointer-events-none">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 py-6 pointer-events-none">
                                     {!isFinished ? (
-                                        <div className="flex max-w-[96px] flex-col items-center space-y-1.5">
-                                            <div className="text-amber-600 font-bold text-sm tracking-wide truncate w-full text-center">
+                                        <div className="flex flex-col items-center space-y-1.5" style={{ width: `${centerContentWidth}px`, maxWidth: `${centerContentWidth}px` }}>
+                                            <div className="w-full text-center text-[13px] font-bold leading-tight tracking-wide text-amber-600 break-words">
                                                 {step.name.split('(')[0].trim()}
                                             </div>
-                                            <div className="text-5xl font-bold text-neutral-800 tabular-nums tracking-tighter leading-none">
+                                            <div className="text-[42px] font-bold text-neutral-800 tabular-nums tracking-tighter leading-none">
                                                 {Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}
                                             </div>
                                             <div className="text-sm font-mono text-neutral-400">
                                                 到 {Math.floor(step.endTime / 60)}:{(step.endTime % 60).toString().padStart(2, '0')}
                                             </div>
-                                            <div className="px-3 py-1 bg-amber-50 rounded-xl text-sm font-bold text-amber-700 border border-amber-100 flex items-center gap-1.5">
+                                            <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-xl border border-amber-100 bg-amber-50 px-2.5 py-1 text-xs font-bold leading-tight text-amber-700">
                                                 <Droplet className="w-3.5 h-3.5 fill-amber-700" />
                                                 <span>{index > 0 ? `${Math.round(recipe.steps[index-1].waterTargetPercentage * waterTotal)} → ` : ''}{targetWater} ml</span>
                                             </div>
                                             {step.desc && (
-                                                <div className="text-xs text-neutral-500 text-center px-6 leading-snug line-clamp-2">
+                                                <div className="w-full text-center text-[11px] leading-snug text-neutral-500 break-words">
                                                     {step.desc}
                                                 </div>
                                             )}
