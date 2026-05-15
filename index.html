@@ -619,52 +619,45 @@
                 const lastLog = logs[0];
                 const lastRoast = lastLog ? ROAST_LEVELS.find(r => r.id === lastLog.roastLevel) : null;
                 return (
-                    <div className="flex flex-col items-center justify-center h-full gap-6 select-none">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="w-20 h-20 bg-amber-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-amber-200">
-                                <Coffee className="w-10 h-10 text-white" />
-                            </div>
-                            <div className="text-center">
-                                <p className="text-2xl font-bold text-neutral-800 tracking-tight">Barista Flow</p>
-                                <p className="text-sm text-neutral-400 mt-0.5">手沖咖啡引導</p>
-                            </div>
+                    <div className="flex flex-col justify-center h-full gap-5 select-none">
+
+                        {/* Primary CTA — visual focal point */}
+                        <div>
+                            <button
+                                onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
+                                className="w-full bg-amber-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
+                            >
+                                <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
+                            </button>
+                            <p className="text-center text-xs text-neutral-400 mt-2">選擇風味、豆子、濾杯、磨豆機</p>
                         </div>
 
-                        <button
-                            onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
-                            className="w-full max-w-xs bg-neutral-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-neutral-300/50 hover:bg-neutral-800 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
-                        >
-                            <Play className="w-5 h-5 fill-current ml-1" /> 開始沖煮
-                        </button>
-
+                        {/* Last brew — clearly secondary */}
                         {lastLog && (
-                            <div className="w-full max-w-xs bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 space-y-3">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">上次沖煮</p>
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1 min-w-0 pr-2">
-                                        <p className="font-bold text-neutral-800 truncate">{lastLog.beanName || '未命名咖啡豆'}</p>
+                            <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+                                <div className="px-4 py-2.5 border-b border-neutral-50 flex items-center justify-between">
+                                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">上次沖煮</p>
+                                    <span className="text-xs text-amber-400">{'★'.repeat(lastLog.rating)}</span>
+                                </div>
+                                <div className="px-4 py-3 flex items-center gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-neutral-800 text-sm truncate">{lastLog.beanName || '未命名咖啡豆'}</p>
                                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                                             {lastRoast && (
-                                                <span className={`text-xs px-2 py-0.5 rounded-full border ${lastRoast.color}`}>{lastRoast.label}</span>
+                                                <span className={`text-xs px-1.5 py-0.5 rounded-full border ${lastRoast.color}`}>{lastRoast.label}</span>
                                             )}
                                             <span className="text-xs text-neutral-400">{lastLog.dripperName}</span>
+                                            <span className="text-xs text-neutral-300">·</span>
+                                            <span className="text-xs text-neutral-400 font-mono">{lastLog.coffeeGrams}g · 1:{Math.round(lastLog.ratio)}</span>
                                         </div>
                                     </div>
-                                    <span className="text-sm text-amber-400 flex-shrink-0">{'★'.repeat(lastLog.rating)}</span>
+                                    <button
+                                        onPointerDown={(e) => { e.preventDefault(); unlockAudio(); brewAgain(lastLog); }}
+                                        className="flex-shrink-0 px-3 py-2 rounded-xl border border-amber-200 text-amber-600 font-bold text-xs cursor-pointer touch-none active:scale-95 transition-all hover:bg-amber-50"
+                                    >
+                                        再沖一次
+                                    </button>
                                 </div>
-                                <div className="flex gap-3 text-xs text-neutral-500 font-mono">
-                                    <span>{lastLog.coffeeGrams}g</span>
-                                    <span className="text-neutral-200">·</span>
-                                    <span>{lastLog.waterTotal}ml</span>
-                                    <span className="text-neutral-200">·</span>
-                                    <span>1:{Math.round(lastLog.ratio)}</span>
-                                </div>
-                                <button
-                                    onPointerDown={(e) => { e.preventDefault(); unlockAudio(); brewAgain(lastLog); }}
-                                    className="w-full py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 font-bold text-sm cursor-pointer touch-none active:scale-95 transition-all"
-                                >
-                                    再沖一次
-                                </button>
                             </div>
                         )}
                     </div>
@@ -1395,7 +1388,7 @@
                         <div className="px-4 pt-2 pb-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent flex-shrink-0">
                             <button
                                 onPointerDown={(e) => { e.preventDefault(); setBrewStep('suggestion'); if (contentRef.current) contentRef.current.scrollTop = 0; }}
-                                className="w-full bg-neutral-900 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-neutral-300/50 hover:bg-neutral-800 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-95"
+                                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-200/50 hover:bg-amber-700 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-95"
                             >
                                 查看沖煮建議 <ChevronRight className="w-5 h-5" />
                             </button>
