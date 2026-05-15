@@ -308,6 +308,87 @@
             );
         }
 
+        function SwipeToDeleteCard({ onDelete, onClick, children }) {
+            const [offset, setOffset] = useState(0);
+            const [transitioning, setTransitioning] = useState(true);
+            const startXRef = useRef(null);
+            const startOffsetRef = useRef(0);
+            const currentOffsetRef = useRef(0);
+            const isDraggingRef = useRef(false);
+            const DELETE_WIDTH = 80;
+            const containerRef = useRef(null);
+
+            const handlePointerDown = (e) => {
+                startXRef.current = e.clientX;
+                startOffsetRef.current = currentOffsetRef.current;
+                isDraggingRef.current = false;
+                setTransitioning(false);
+                containerRef.current?.setPointerCapture(e.pointerId);
+            };
+
+            const handlePointerMove = (e) => {
+                if (startXRef.current === null) return;
+                const dx = startXRef.current - e.clientX;
+                if (Math.abs(dx) > 8) isDraggingRef.current = true;
+                const newOffset = Math.max(0, Math.min(DELETE_WIDTH, startOffsetRef.current + dx));
+                currentOffsetRef.current = newOffset;
+                setOffset(newOffset);
+            };
+
+            const handlePointerUp = (e) => {
+                if (startXRef.current === null) return;
+                setTransitioning(true);
+                if (!isDraggingRef.current) {
+                    if (startOffsetRef.current > 0) {
+                        currentOffsetRef.current = 0;
+                        setOffset(0);
+                    } else {
+                        onClick && onClick(e);
+                    }
+                } else {
+                    const finalOffset = currentOffsetRef.current > DELETE_WIDTH / 2 ? DELETE_WIDTH : 0;
+                    currentOffsetRef.current = finalOffset;
+                    setOffset(finalOffset);
+                }
+                startXRef.current = null;
+            };
+
+            return (
+                <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '1rem' }}>
+                    <div style={{
+                        position: 'absolute', right: 0, top: 0, bottom: 0,
+                        width: DELETE_WIDTH, background: '#ef4444',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        borderRadius: '0 1rem 1rem 0',
+                    }}>
+                        <button
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(); }}
+                            style={{ color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+                        >
+                            <Trash2 style={{ width: 20, height: 20 }} />
+                            <span style={{ fontSize: '11px', fontWeight: 700 }}>刪除</span>
+                        </button>
+                    </div>
+                    <div
+                        ref={containerRef}
+                        style={{
+                            transform: `translateX(-${offset}px)`,
+                            transition: transitioning ? 'transform 0.25s ease' : 'none',
+                            touchAction: 'pan-y',
+                            willChange: 'transform',
+                        }}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onPointerCancel={() => { setTransitioning(true); currentOffsetRef.current = 0; setOffset(0); startXRef.current = null; }}
+                    >
+                        {children}
+                    </div>
+                </div>
+            );
+        }
+
         function BaristaFlow() {
             const [activeTab, setActiveTab] = useState('brew');
             
@@ -490,7 +571,7 @@
 
             const deleteLog = async () => {
                 if (!editingLogId) return;
-                
+
                 if (confirm('確定要刪除這筆紀錄嗎？')) {
                     const updatedLogs = logs.filter(l => l.id !== editingLogId);
                     setLogs(updatedLogs);
@@ -500,6 +581,16 @@
                         console.error("Failed to update local storage", e);
                     }
                     closeModal();
+                }
+            };
+
+            const deleteLogById = (id) => {
+                const updatedLogs = logs.filter(l => l.id !== id);
+                setLogs(updatedLogs);
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+                } catch (e) {
+                    console.error("Failed to update local storage", e);
                 }
             };
 
@@ -965,7 +1056,8 @@
                                 {filteredLogs.map(log => {
                                     const roastInfo = ROAST_LEVELS.find(r => r.id === log.roastLevel) || ROAST_LEVELS[0];
                                     return (
-                                        <div key={log.id} className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden cursor-pointer active:opacity-75 transition-opacity" onClick={() => handleEditLog(log)}>
+                                        <SwipeToDeleteCard key={log.id} onDelete={() => deleteLogById(log.id)} onClick={() => handleEditLog(log)}>
+                                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden cursor-pointer active:opacity-75 transition-opacity">
                                             <div className="p-4 pb-3">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex-1 min-w-0">
@@ -1039,6 +1131,7 @@
                                                 </div>
                                             )}
                                         </div>
+                                        </SwipeToDeleteCard>
                                     );
                                 })}
                             </div>
