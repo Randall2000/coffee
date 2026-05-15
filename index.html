@@ -146,10 +146,10 @@
                 description: '強調高萃取率與乾淨度，適合淺焙豆。',
                 ratio: 16.7,
                 steps: [
-                    { name: '悶蒸 (Bloom)', desc: '從中心緩慢繞圈，確保粉層均勻濕潤', endTime: 45, waterTargetPercentage: 0.2 },
-                    { name: '第一段注水', desc: '細水流由中心向外繞，勿沖到濾紙邊緣', endTime: 75, waterTargetPercentage: 0.6 },
-                    { name: '第二段注水', desc: '維持穩定小水流，保持水位不要落差太大', endTime: 105, waterTargetPercentage: 1.0 },
-                    { name: '攪拌與濾乾', desc: '輕輕繞圈搖晃濾杯，讓粉層平整後靜待', endTime: 210, waterTargetPercentage: 1.0 }
+                    { name: '悶蒸 (Bloom)', desc: '以咖啡粉重量 2 倍的水量充分潤濕，悶蒸 45 秒', endTime: 45, waterTargetCoffeeMultiple: 2 },
+                    { name: '主注水', desc: '在 1:15 前穩定注到總水量 60%，維持水位與熱量', endTime: 75, waterTargetPercentage: 0.6 },
+                    { name: '補足總水量', desc: '在 1:45 前續注到 100%，完成主體萃取', endTime: 105, waterTargetPercentage: 1.0 },
+                    { name: '攪拌與濾乾', desc: '輕攪兩下再小幅繞圈整平粉床，目標總時長約 3:30', endTime: 210, waterTargetPercentage: 1.0 }
                 ]
             },
             fourSix: {
@@ -158,22 +158,21 @@
                 description: '前40%決定風味，後60%決定醇厚度。',
                 ratio: 15,
                 steps: [
-                    { name: '第1注 (酸值)', desc: '輕柔小水流繞圈，決定最終酸感明亮度', endTime: 45, waterTargetPercentage: 0.2 },
-                    { name: '第2注 (甜感)', desc: '相同手法，與第1注共同建立甜感平衡', endTime: 90, waterTargetPercentage: 0.4 },
-                    { name: '第3注 (層次)', desc: '穩定繞圈，開始堆疊醇厚層次', endTime: 135, waterTargetPercentage: 0.6 },
-                    { name: '第4注 (強度)', desc: '保持一致節奏，強化濃度與厚實感', endTime: 180, waterTargetPercentage: 0.8 },
-                    { name: '第5注 (結尾)', desc: '最後注水後靜待濾乾，勿搖晃（約30秒）', endTime: 210, waterTargetPercentage: 1.0 }
+                    { name: '第1注', desc: '第 1 注 20%，建立前段風味；與第 2 注合計為前 40%', endTime: 45, waterTargetPercentage: 0.2 },
+                    { name: '第2注', desc: '第 2 注補到 40%，平衡酸值與甜感', endTime: 90, waterTargetPercentage: 0.4 },
+                    { name: '第3注', desc: '第 3 注補到 60%，開始建立醇厚與強度', endTime: 135, waterTargetPercentage: 0.6 },
+                    { name: '第4注', desc: '第 4 注補到 80%，維持每 45 秒一次的節奏', endTime: 180, waterTargetPercentage: 0.8 },
+                    { name: '第5注', desc: '第 5 注補到 100%，等候濾乾；總時長約 3:15 至 3:30', endTime: 225, waterTargetPercentage: 1.0 }
                 ]
             },
             onePour: {
                 id: 'onePour',
-                name: '一刀流',
-                description: '悶蒸後一次注到目標水量，流程簡潔、節奏穩定。',
-                ratio: 15.5,
+                name: 'MUGEN 一次注水',
+                description: 'HARIO MUGEN 的單次注水配方，不另外悶蒸。',
+                ratio: 12,
                 steps: [
-                    { name: '悶蒸', desc: '用少量熱水完整潤濕粉層，等待排氣', endTime: 30, waterTargetPercentage: 0.2 },
-                    { name: '一刀注水', desc: '穩定繞圈一次注到總水量，避免沖到濾紙', endTime: 75, waterTargetPercentage: 1.0 },
-                    { name: '濾乾', desc: '輕晃整平粉床後靜待流完，觀察落水速度', endTime: 150, waterTargetPercentage: 1.0 }
+                    { name: '一次注水', desc: '以中心小圈穩定連續注水到總量，不另外悶蒸', endTime: 40, waterTargetPercentage: 1.0 },
+                    { name: '濾乾', desc: '維持單次注水後自然濾乾，完成 20g 對 240mL 的標準流程', endTime: 150, waterTargetPercentage: 1.0 }
                 ]
             }
         };
@@ -260,6 +259,23 @@
                 month: 'long',
                 day: 'numeric'
             });
+        };
+
+        const formatTimerDisplay = (seconds) => {
+            const totalSeconds = Math.max(0, Math.floor(seconds || 0));
+            const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const remainingSeconds = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${minutes}:${remainingSeconds}`;
+        };
+
+        const getStepTargetWater = (step, waterTotal, coffeeGrams) => {
+            if (typeof step.waterTargetCoffeeMultiple === 'number') {
+                return Math.round(step.waterTargetCoffeeMultiple * coffeeGrams);
+            }
+            if (typeof step.waterTargetMl === 'number') {
+                return step.waterTargetMl;
+            }
+            return Math.round((step.waterTargetPercentage ?? 0) * waterTotal);
         };
 
         function RadarChart({ data, onChange }) {
@@ -725,7 +741,7 @@
                     index, 
                     duration, 
                     timeInStep: Math.min(Math.max(timeInStep, 0), duration),
-                    targetWater: Math.round(step.waterTargetPercentage * waterTotal)
+                    targetWater: getStepTargetWater(step, waterTotal, coffeeGrams)
                 };
             };
 
@@ -1239,7 +1255,7 @@
                 const rec = RECIPES[selectedRecipeId];
                 const totalTime = rec.steps[rec.steps.length - 1].endTime;
                 const grindSetting = getGrindSetting(selectedGrinder);
-                const firstPourMl = Math.round(rec.steps[0].waterTargetPercentage * waterTotal);
+                const firstPourMl = getStepTargetWater(rec.steps[0], waterTotal, coffeeGrams);
                 const flavor = FLAVOR_OPTIONS.find(f => f.id === selectedFlavor);
                 const recipeMeta = {
                     v60: {
@@ -1316,7 +1332,7 @@
                                     { label: '粉量', value: `${coffeeGrams}g` },
                                     { label: '水量', value: `${waterTotal}ml` },
                                     { label: '水溫', value: `${waterTemp}°C` },
-                                    { label: '時間', value: `${Math.floor(totalTime/60)}:${(totalTime%60).toString().padStart(2,'0')}` }
+                                    { label: '時間', value: formatTimerDisplay(totalTime) }
                                 ].map(item => (
                                     <div key={item.label} className="rounded-xl bg-neutral-50 px-2 py-2 text-center">
                                         <p className="text-[11px] text-neutral-400">{item.label}</p>
@@ -1355,7 +1371,7 @@
                             </div>
                             <div className="px-4 py-3 space-y-2">
                                 {rec.steps.map((step, idx) => {
-                                    const tw = Math.round(step.waterTargetPercentage * waterTotal);
+                                    const tw = getStepTargetWater(step, waterTotal, coffeeGrams);
                                     return (
                                         <div key={idx} className="grid grid-cols-[28px_1fr_auto] gap-3 items-start rounded-xl bg-neutral-50 px-3 py-3">
                                             <span className="w-7 h-7 flex items-center justify-center bg-white border border-neutral-200 text-neutral-500 rounded-full font-bold text-xs flex-shrink-0">{idx+1}</span>
@@ -1365,7 +1381,7 @@
                                             </span>
                                             <span className="text-right shrink-0">
                                                 <span className="block font-mono text-amber-700 font-bold text-sm">{tw}ml</span>
-                                                <span className="block font-mono text-neutral-400 text-xs mt-0.5">{step.endTime}s</span>
+                                                <span className="block font-mono text-neutral-400 text-xs mt-0.5">{formatTimerDisplay(step.endTime)}</span>
                                             </span>
                                         </div>
                                     );
@@ -1515,7 +1531,7 @@
                                                                 </span>
                                                             </span>
                                                             <span className={`text-sm font-mono font-bold shrink-0 ${isActive ? 'text-amber-700' : 'text-neutral-600'}`}>
-                                                                {Math.floor(optionTime/60)}:{(optionTime%60).toString().padStart(2,'0')}
+                                                                {formatTimerDisplay(optionTime)}
                                                             </span>
                                                         </button>
                                                     </div>
@@ -1606,14 +1622,14 @@
                                                 {step.name.split('(')[0].trim()}
                                             </div>
                                             <div className="text-[42px] font-bold text-neutral-800 tabular-nums tracking-tighter leading-none">
-                                                {Math.floor(currentTime / 60)}:{(Math.floor(currentTime) % 60).toString().padStart(2, '0')}
+                                                {formatTimerDisplay(currentTime)}
                                             </div>
                                             <div className="text-sm font-mono text-neutral-400">
-                                                到 {Math.floor(step.endTime / 60)}:{(step.endTime % 60).toString().padStart(2, '0')}
+                                                到 {formatTimerDisplay(step.endTime)}
                                             </div>
                                             <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-xl border border-amber-100 bg-amber-50 px-2.5 py-1 text-xs font-bold leading-tight text-amber-700">
                                                 <Droplet className="w-3.5 h-3.5 fill-amber-700" />
-                                                <span>{index > 0 ? `${Math.round(recipe.steps[index-1].waterTargetPercentage * waterTotal)} → ` : ''}{targetWater} ml</span>
+                                                <span>{index > 0 ? `${getStepTargetWater(recipe.steps[index - 1], waterTotal, coffeeGrams)} → ` : ''}{targetWater} ml</span>
                                             </div>
                                             {step.desc && (
                                                 <div className="w-full text-center text-[11px] leading-snug text-neutral-500 break-words">
@@ -1833,7 +1849,7 @@
                                                 <span className="text-neutral-200">·</span>
                                                 <span>{log.waterTotal}ml</span>
                                                 <span className="text-neutral-200">·</span>
-                                                <span>{Math.floor(log.time / 60)}:{(log.time % 60).toString().padStart(2, '0')}</span>
+                                                <span>{formatTimerDisplay(log.time)}</span>
                                             </div>
 
                                             {log.notes && (
@@ -2102,7 +2118,7 @@
                                             )}
                                             <div className="flex-1 bg-neutral-50 border border-neutral-100 rounded-xl p-3 text-center">
                                                 <p className="text-xs text-neutral-400 font-medium mb-1">時間</p>
-                                                <p className="text-sm font-bold text-neutral-700 font-mono">{Math.floor(vl.time/60)}:{(vl.time%60).toString().padStart(2,'0')}</p>
+                                                <p className="text-sm font-bold text-neutral-700 font-mono">{formatTimerDisplay(vl.time)}</p>
                                             </div>
                                         </div>
 
