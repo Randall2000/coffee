@@ -142,11 +142,6 @@
             }
         };
 
-        const ROAST_TIPS = {
-            light:  { temp: '90–93°C', grind: '偏細（細砂糖）' },
-            medium: { temp: '86–90°C', grind: '中等（粗砂糖）' },
-            dark:   { temp: '82–86°C', grind: '偏粗（粗砂糖）' },
-        };
 
         const FLOW_OPTIONS      = [{ id: 'fast', label: '太快' }, { id: 'good', label: '剛好' }, { id: 'clog', label: '堵塞' }];
         const STABILITY_OPTIONS = [{ id: 'shaky', label: '手抖' }, { id: 'stable', label: '穩定' }, { id: 'bypass', label: '穿流' }];
@@ -620,15 +615,6 @@
                             />
                         </div>
 
-                        {ROAST_TIPS[roastLevel] && (
-                            <div className="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
-                                <span className="text-base">🌡️</span>
-                                <span className="text-xs text-amber-800 font-medium">{ROAST_TIPS[roastLevel].temp}</span>
-                                <span className="text-amber-200 text-xs">·</span>
-                                <span className="text-base">⚙️</span>
-                                <span className="text-xs text-amber-800 font-medium">研磨 {ROAST_TIPS[roastLevel].grind}</span>
-                            </div>
-                        )}
 
                         {(() => {
                             const seen = new Set();
