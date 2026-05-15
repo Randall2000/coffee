@@ -327,30 +327,19 @@
         }
 
         const PourOverIllustration = () => (
-            <svg viewBox="0 0 160 150" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width:'160px',height:'150px'}}>
-                {/* Water stream */}
-                <path d="M80 2 C77 12 83 20 80 30" stroke="#d97706" strokeWidth="3" strokeLinecap="round"/>
-                <circle cx="80" cy="8" r="2.5" fill="#fbbf24" opacity="0.5"/>
-                <circle cx="80" cy="19" r="2" fill="#fbbf24" opacity="0.35"/>
-                {/* Dripper top rim */}
-                <rect x="32" y="30" width="96" height="9" rx="4.5" fill="#d97706"/>
-                {/* Dripper body */}
-                <path d="M36 39 L80 90 L124 39 Z" fill="#fef3c7" stroke="#d97706" strokeWidth="2" strokeLinejoin="round"/>
-                {/* Rib lines */}
-                <line x1="62" y1="42" x2="69" y2="78" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.45"/>
-                <line x1="80" y1="42" x2="80" y2="85" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.45"/>
-                <line x1="98" y1="42" x2="91" y2="78" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.45"/>
-                {/* Drip */}
-                <path d="M80 90 L80 97" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round"/>
-                <ellipse cx="80" cy="101" rx="4" ry="5" fill="#d97706"/>
-                {/* Cup body */}
-                <path d="M50 110 L55 135 L105 135 L110 110 Z" fill="white" stroke="#d97706" strokeWidth="2.5" strokeLinejoin="round"/>
+            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width:'140px',height:'140px'}}>
+                {/* Steam */}
+                <path d="M38 32 Q34 24 38 16" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M60 29 Q56 21 60 13" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M82 32 Q78 24 82 16" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round"/>
                 {/* Cup rim */}
-                <rect x="46" y="106" width="68" height="8" rx="4" fill="#d97706"/>
+                <line x1="18" y1="44" x2="102" y2="44" stroke="#d97706" strokeWidth="3" strokeLinecap="round"/>
+                {/* Cup body */}
+                <path d="M24 44 L30 88 Q60 96 90 88 L96 44" stroke="#d97706" strokeWidth="2.5" strokeLinejoin="round"/>
                 {/* Handle */}
-                <path d="M110 114 Q130 114 130 122 Q130 130 110 130" stroke="#d97706" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                {/* Coffee surface */}
-                <path d="M58 122 Q80 119 102 122" stroke="#92400e" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
+                <path d="M96 56 Q114 56 114 68 Q114 80 96 80" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round"/>
+                {/* Saucer top */}
+                <path d="M10 98 Q60 108 110 98" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round"/>
             </svg>
         );
 
