@@ -598,34 +598,6 @@
             const getGrindSetting = (grinderId, roastLvl) =>
                 grinderId ? (GRINDER_CLICKS[grinderId]?.[roastLvl] || '—') : '—';
 
-            // --- Wizard Step Header ---
-            const renderStepHeader = (stepNum, title) => {
-                const steps = ['home', 'flavor', 'bean', 'dripper', 'grinder', 'suggestion'];
-                const idx = steps.indexOf(brewStep);
-                const goBack = () => {
-                    if (brewStep === 'bean') setIsNewBean(false);
-                    if (idx > 0) setBrewStep(steps[idx - 1]);
-                };
-                return (
-                    <div className="flex items-center gap-3 mb-6">
-                        <button
-                            onPointerDown={(e) => { e.preventDefault(); goBack(); }}
-                            className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
-                        >
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <div className="flex-1">
-                            <div className="flex gap-1 mb-1.5">
-                                {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= stepNum ? 'bg-amber-500' : 'bg-neutral-200'}`} />
-                                ))}
-                            </div>
-                            <p className="text-base font-bold text-neutral-800">{title}</p>
-                        </div>
-                    </div>
-                );
-            };
-
             // --- Views ---
             // --- Home ---
             const renderHomeView = () => {
@@ -643,7 +615,7 @@
                         </div>
 
                         <button
-                            onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('flavor'); }}
+                            onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
                             className="w-full max-w-xs bg-neutral-900 text-white py-5 rounded-2xl font-bold text-xl shadow-xl shadow-neutral-300/50 hover:bg-neutral-800 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
                         >
                             <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
@@ -661,205 +633,200 @@
                 );
             };
 
-            // --- Step 1: Flavor ---
-            const renderFlavorStep = () => (
-                <div className="pb-4 select-none">
-                    {renderStepHeader(1, '想要什麼風味？')}
-                    <div className="space-y-3">
-                        {FLAVOR_OPTIONS.map(f => (
-                            <button
-                                key={f.id}
-                                onPointerDown={(e) => {
-                                    e.preventDefault();
-                                    setSelectedFlavor(f.id);
-                                    const rid = getRecommendedRecipeId(f.id, selectedDripperId);
-                                    setSelectedRecipeId(rid);
-                                    setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
-                                    setBrewStep('bean');
-                                }}
-                                className={`w-full p-5 rounded-2xl border-2 text-left transition-all cursor-pointer touch-none active:scale-[0.98] ${
-                                    selectedFlavor === f.id
-                                    ? 'border-amber-500 bg-amber-50'
-                                    : 'border-neutral-100 bg-white hover:border-amber-200'
-                                }`}
-                            >
-                                <p className="text-lg font-bold text-neutral-800">{f.label}</p>
-                                <p className="text-sm text-neutral-400 mt-0.5">{f.desc}</p>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            );
-
-            // --- Step 2: Bean ---
-            const renderBeanStep = () => {
+            // --- Config View (全部選項在同一頁) ---
+            const renderConfigView = () => {
                 const seen = new Set();
                 const recentBeans = logs
                     .filter(l => l.beanName && l.beanName !== '未命名咖啡豆')
                     .filter(l => { if (seen.has(l.beanName)) return false; seen.add(l.beanName); return true; })
-                    .slice(0, 4);
-                const showForm = isNewBean || recentBeans.length === 0;
+                    .slice(0, 3);
+                const showBeanForm = isNewBean || recentBeans.length === 0;
 
                 return (
-                    <div className="pb-4 select-none">
-                        {renderStepHeader(2, '使用哪支豆子？')}
+                    <div className="pb-24 select-none space-y-3">
+                        {/* Header */}
+                        <div className="flex items-center gap-3 mb-1">
+                            <button
+                                onPointerDown={(e) => { e.preventDefault(); setBrewStep('home'); }}
+                                className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <p className="text-base font-bold text-neutral-800">沖煮設定</p>
+                        </div>
 
-                        {recentBeans.length > 0 && !showForm && (
-                            <div className="space-y-2">
-                                {recentBeans.map(b => {
-                                    const roast = ROAST_LEVELS.find(r => r.id === b.roastLevel) || ROAST_LEVELS[0];
+                        {/* 1. 風味 */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">風味</p>
+                            <div className="flex gap-2">
+                                {FLAVOR_OPTIONS.map(f => (
+                                    <button
+                                        key={f.id}
+                                        onPointerDown={(e) => {
+                                            e.preventDefault();
+                                            setSelectedFlavor(f.id);
+                                            const rid = getRecommendedRecipeId(f.id, selectedDripperId);
+                                            setSelectedRecipeId(rid);
+                                            setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
+                                        }}
+                                        className={`flex-1 py-3 px-1 rounded-xl border-2 text-center transition-all cursor-pointer touch-none active:scale-95 ${
+                                            selectedFlavor === f.id
+                                            ? 'border-amber-500 bg-amber-50'
+                                            : 'border-neutral-100 bg-neutral-50 hover:border-amber-200'
+                                        }`}
+                                    >
+                                        <p className="text-sm font-bold text-neutral-800">{f.label}</p>
+                                        <p className="text-xs text-neutral-400 mt-0.5 leading-tight">{f.desc.split('，')[0]}</p>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 2. 豆子 */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">豆子</p>
+                            {!showBeanForm ? (
+                                <div>
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        {recentBeans.map(b => {
+                                            const roast = ROAST_LEVELS.find(r => r.id === b.roastLevel) || ROAST_LEVELS[0];
+                                            const isSelected = beanName === b.beanName;
+                                            return (
+                                                <button
+                                                    key={b.beanName}
+                                                    onPointerDown={(e) => {
+                                                        e.preventDefault();
+                                                        setBeanName(b.beanName);
+                                                        setRoastLevel(b.roastLevel);
+                                                        setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
+                                                    }}
+                                                    className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all cursor-pointer touch-none flex items-center gap-2 ${
+                                                        isSelected
+                                                        ? 'border-amber-500 bg-amber-50 text-neutral-800'
+                                                        : 'border-neutral-200 bg-neutral-50 text-neutral-600 hover:border-amber-200'
+                                                    }`}
+                                                >
+                                                    {b.beanName}
+                                                    <span className={`text-xs px-1.5 py-0.5 rounded-full border ${roast.color}`}>{roast.label}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <button
+                                        onPointerDown={(e) => { e.preventDefault(); setIsNewBean(true); setBeanName(''); setRoastDate(''); }}
+                                        className="text-xs text-amber-600 font-medium cursor-pointer touch-none"
+                                    >
+                                        + 新豆子
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <input
+                                        type="text"
+                                        placeholder="豆子名稱（選填）"
+                                        value={beanName}
+                                        onChange={(e) => setBeanName(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-neutral-50"
+                                    />
+                                    <input
+                                        type="date"
+                                        value={roastDate}
+                                        onChange={(e) => setRoastDate(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-neutral-50 text-neutral-600"
+                                    />
+                                    <div className="flex gap-2">
+                                        {ROAST_LEVELS.map(level => (
+                                            <button
+                                                key={level.id}
+                                                onPointerDown={(e) => {
+                                                    e.preventDefault();
+                                                    setRoastLevel(level.id);
+                                                    setWaterTemp(WATER_TEMPS[level.id] || 93);
+                                                }}
+                                                className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all cursor-pointer touch-none ${
+                                                    roastLevel === level.id
+                                                    ? level.id === 'dark'
+                                                        ? 'bg-neutral-900 text-white border-neutral-900'
+                                                        : level.id === 'medium'
+                                                            ? 'bg-white text-neutral-700 border-neutral-400 shadow-sm'
+                                                            : 'bg-white text-neutral-500 border-neutral-300 shadow-sm'
+                                                    : 'bg-neutral-50 text-neutral-400 border-neutral-200'
+                                                }`}
+                                            >
+                                                {level.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {recentBeans.length > 0 && (
+                                        <button
+                                            onPointerDown={(e) => { e.preventDefault(); setIsNewBean(false); }}
+                                            className="text-xs text-neutral-400 cursor-pointer touch-none"
+                                        >
+                                            ← 返回選擇
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 3. 濾杯 */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">濾杯</p>
+                            <div className="grid grid-cols-4 gap-2">
+                                {DRIPPERS.map(d => {
+                                    const isActive = selectedDripperId === d.id;
                                     return (
                                         <button
-                                            key={b.beanName}
+                                            key={d.id}
                                             onPointerDown={(e) => {
                                                 e.preventDefault();
-                                                setBeanName(b.beanName);
-                                                setRoastLevel(b.roastLevel);
-                                                setWaterTemp(WATER_TEMPS[b.roastLevel] || 93);
-                                                setBrewStep('dripper');
+                                                setSelectedDripperId(d.id);
+                                                if (selectedFlavor === 'balanced') {
+                                                    const rid = getRecommendedRecipeId('balanced', d.id);
+                                                    setSelectedRecipeId(rid);
+                                                    setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
+                                                }
                                             }}
-                                            className="w-full p-4 rounded-2xl border border-neutral-100 bg-white text-left hover:border-amber-200 transition-all cursor-pointer touch-none active:scale-[0.98] flex items-center gap-3"
+                                            className={`flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all cursor-pointer touch-none active:scale-95 ${
+                                                isActive
+                                                ? 'bg-neutral-900 border-neutral-900'
+                                                : 'bg-neutral-50 border-neutral-100 hover:border-amber-200'
+                                            }`}
                                         >
-                                            <div className="flex-1">
-                                                <p className="font-bold text-neutral-800">{b.beanName}</p>
-                                            </div>
-                                            <span className={`text-xs px-2 py-1 rounded-full border ${roast.color}`}>{roast.label}</span>
-                                            <ChevronRight className="w-4 h-4 text-neutral-300" />
+                                            <div className="mb-0.5 scale-90">{getDripperIcon(d.id, isActive)}</div>
+                                            <span className={`text-xs font-bold ${isActive ? 'text-white' : 'text-neutral-400'}`}>{d.name}</span>
                                         </button>
                                     );
                                 })}
-                                <button
-                                    onPointerDown={(e) => { e.preventDefault(); setIsNewBean(true); setBeanName(''); setRoastDate(''); }}
-                                    className="w-full p-4 rounded-2xl border-2 border-dashed border-neutral-200 text-neutral-400 text-sm font-medium hover:border-neutral-300 transition-all cursor-pointer touch-none"
-                                >
-                                    + 新豆子
-                                </button>
                             </div>
-                        )}
+                        </div>
 
-                        {showForm && (
-                            <div className="space-y-3">
-                                <input
-                                    type="text"
-                                    placeholder="豆子名稱"
-                                    value={beanName}
-                                    onChange={(e) => setBeanName(e.target.value)}
-                                    className="w-full px-4 py-3.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white"
-                                />
-                                <input
-                                    type="date"
-                                    value={roastDate}
-                                    onChange={(e) => setRoastDate(e.target.value)}
-                                    className="w-full px-4 py-3.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white text-neutral-600"
-                                />
-                                <div className="flex gap-2">
-                                    {ROAST_LEVELS.map(level => (
+                        {/* 4. 磨豆機 */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">磨豆機</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {GRINDERS.map(g => {
+                                    const isActive = selectedGrinder === g.id;
+                                    return (
                                         <button
-                                            key={level.id}
-                                            onPointerDown={(e) => {
-                                                e.preventDefault();
-                                                setRoastLevel(level.id);
-                                                setWaterTemp(WATER_TEMPS[level.id] || 93);
-                                            }}
-                                            className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all cursor-pointer touch-none ${
-                                                roastLevel === level.id
-                                                ? level.id === 'dark'
-                                                    ? 'bg-neutral-900 text-white border-neutral-900'
-                                                    : level.id === 'medium'
-                                                        ? 'bg-white text-neutral-700 border-neutral-400 shadow-sm'
-                                                        : 'bg-white text-neutral-500 border-neutral-300 shadow-sm'
-                                                : 'bg-white text-neutral-400 border-neutral-200'
+                                            key={g.id}
+                                            onPointerDown={(e) => { e.preventDefault(); setSelectedGrinder(g.id); }}
+                                            className={`px-4 py-3 rounded-xl border-2 text-left transition-all cursor-pointer touch-none active:scale-95 ${
+                                                isActive
+                                                ? 'border-amber-500 bg-amber-50'
+                                                : 'border-neutral-100 bg-neutral-50 hover:border-amber-200'
                                             }`}
                                         >
-                                            {level.label}
+                                            <p className="text-sm font-bold text-neutral-800">{g.short}</p>
+                                            {g.id !== 'other' && <p className="text-xs text-neutral-400 truncate">{g.label}</p>}
                                         </button>
-                                    ))}
-                                </div>
-                                <button
-                                    onPointerDown={(e) => { e.preventDefault(); setIsNewBean(false); setBrewStep('dripper'); }}
-                                    className="w-full py-4 bg-neutral-900 text-white font-bold rounded-xl cursor-pointer touch-none active:scale-95 transition-all text-base"
-                                >
-                                    下一步
-                                </button>
-                                {recentBeans.length > 0 && (
-                                    <button
-                                        onPointerDown={(e) => { e.preventDefault(); setIsNewBean(false); }}
-                                        className="w-full py-2 text-neutral-400 text-sm cursor-pointer touch-none"
-                                    >
-                                        ← 返回選擇
-                                    </button>
-                                )}
+                                    );
+                                })}
                             </div>
-                        )}
+                        </div>
                     </div>
                 );
             };
-
-            // --- Step 3: Dripper ---
-            const renderDripperStep = () => (
-                <div className="pb-4 select-none">
-                    {renderStepHeader(3, '使用哪個濾杯？')}
-                    <div className="grid grid-cols-4 gap-2">
-                        {DRIPPERS.map(d => {
-                            const isActive = selectedDripperId === d.id;
-                            return (
-                                <button
-                                    key={d.id}
-                                    onPointerDown={(e) => {
-                                        e.preventDefault();
-                                        setSelectedDripperId(d.id);
-                                        if (selectedFlavor === 'balanced') {
-                                            const rid = getRecommendedRecipeId('balanced', d.id);
-                                            setSelectedRecipeId(rid);
-                                            setRatio(recipeRatios[rid] ?? RECIPES[rid].ratio);
-                                        }
-                                        setBrewStep('grinder');
-                                    }}
-                                    className={`flex flex-col items-center justify-center py-4 rounded-2xl border-2 transition-all cursor-pointer touch-none active:scale-95 ${
-                                        isActive
-                                        ? 'bg-neutral-900 border-neutral-900'
-                                        : 'bg-white border-neutral-100 hover:border-amber-200'
-                                    }`}
-                                >
-                                    <div className="mb-1">{getDripperIcon(d.id, isActive)}</div>
-                                    <span className={`text-xs font-bold ${isActive ? 'text-white' : 'text-neutral-400'}`}>{d.name}</span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
-
-            // --- Step 4: Grinder ---
-            const renderGrinderStep = () => (
-                <div className="pb-4 select-none">
-                    {renderStepHeader(4, '使用哪款磨豆機？')}
-                    <div className="space-y-2">
-                        {GRINDERS.map(g => {
-                            const isActive = selectedGrinder === g.id;
-                            const hint = GRINDER_CLICKS[g.id]?.[roastLevel];
-                            return (
-                                <button
-                                    key={g.id}
-                                    onPointerDown={(e) => {
-                                        e.preventDefault();
-                                        setSelectedGrinder(g.id);
-                                        setBrewStep('suggestion');
-                                    }}
-                                    className={`w-full px-5 py-4 rounded-2xl border-2 text-left transition-all cursor-pointer touch-none active:scale-[0.98] flex items-center justify-between ${
-                                        isActive
-                                        ? 'border-amber-500 bg-amber-50'
-                                        : 'border-neutral-100 bg-white hover:border-amber-200'
-                                    }`}
-                                >
-                                    <span className="font-bold text-neutral-800">{g.label}</span>
-                                    {hint && <span className="text-xs text-neutral-400 ml-2 flex-shrink-0">{hint}</span>}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
 
             // --- Suggestion View ---
             const renderSuggestionView = () => {
@@ -872,7 +839,7 @@
                         {/* Header */}
                         <div className="flex items-center gap-3 mb-5">
                             <button
-                                onPointerDown={(e) => { e.preventDefault(); setBrewStep('grinder'); }}
+                                onPointerDown={(e) => { e.preventDefault(); setBrewStep('config'); }}
                                 className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
                             >
                                 <ChevronLeft className="w-5 h-5" />
@@ -1335,21 +1302,28 @@
 
                     <div ref={contentRef} className={`flex-1 scroll-smooth ${
                         (activeTab === 'brew' && timerStatus !== 'idle') ? 'overflow-hidden' :
-                        (activeTab === 'brew' && brewStep === 'home') ? 'overflow-hidden p-6' :
+                        (activeTab === 'brew' && brewStep === 'home')    ? 'overflow-hidden p-6' :
                         'overflow-y-auto p-6'
                     }`} style={{overscrollBehavior:'contain'}}>
                         {activeTab === 'brew' && timerStatus !== 'idle' && renderTimerView()}
                         {activeTab === 'brew' && timerStatus === 'idle' && (
                             brewStep === 'home'       ? renderHomeView() :
-                            brewStep === 'flavor'     ? renderFlavorStep() :
-                            brewStep === 'bean'       ? renderBeanStep() :
-                            brewStep === 'dripper'    ? renderDripperStep() :
-                            brewStep === 'grinder'    ? renderGrinderStep() :
+                            brewStep === 'config'     ? renderConfigView() :
                             renderSuggestionView()
                         )}
                         {activeTab === 'journal' && renderJournalView()}
                     </div>
 
+                    {activeTab === 'brew' && timerStatus === 'idle' && brewStep === 'config' && (
+                        <div className="px-4 pt-2 pb-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent flex-shrink-0">
+                            <button
+                                onPointerDown={(e) => { e.preventDefault(); setBrewStep('suggestion'); if (contentRef.current) contentRef.current.scrollTop = 0; }}
+                                className="w-full bg-neutral-900 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-neutral-300/50 hover:bg-neutral-800 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-95"
+                            >
+                                查看沖煮建議 <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    )}
                     {activeTab === 'brew' && timerStatus === 'idle' && brewStep === 'suggestion' && (
                         <div className="px-4 pt-2 pb-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent flex-shrink-0">
                             <button
