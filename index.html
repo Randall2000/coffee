@@ -1538,7 +1538,7 @@
 
                 const radius = 120;
                 const stroke = 6;
-                const normalizedRadius = radius - stroke * 2 - 18;
+                const normalizedRadius = radius - stroke * 2;
                 const circumference = normalizedRadius * 2 * Math.PI;
                 const strokeDashoffset = circumference - (progress / 100) * circumference;
 
@@ -1598,10 +1598,10 @@
                                     <circle stroke="#d97706" strokeWidth={stroke} strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }} strokeLinecap="round" fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
                                 </svg>
                                 
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-10 py-10 pointer-events-none">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-12 py-12 pointer-events-none">
                                     {!isFinished ? (
-                                        <div className="flex flex-col items-center space-y-1.5">
-                                            <div className="text-amber-600 font-bold text-sm tracking-wide truncate w-full px-4 text-center">
+                                        <div className="flex max-w-[150px] flex-col items-center space-y-1.5">
+                                            <div className="text-amber-600 font-bold text-sm tracking-wide truncate w-full text-center">
                                                 {step.name.split('(')[0].trim()}
                                             </div>
                                             <div className="text-5xl font-bold text-neutral-800 tabular-nums tracking-tighter leading-none">
