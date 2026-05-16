@@ -1371,56 +1371,74 @@
                             </div>
                         </div>
 
-                        {/* Brew summary */}
+                        {/* Brew summary — 三層資訊階層：主軸 → 關鍵數字 → 輔助設定 */}
                         <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
-                            <div className="px-5 py-4 border-b border-neutral-50">
+
+                            {/* ── 層級 1：配方主軸（最大視覺重量）── */}
+                            <div className="px-5 pt-5 pb-4">
                                 <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">沖煮摘要</p>
+                                    <div className="min-w-0 flex-1">
+                                        {/* 配方選擇器 — 主標題 */}
                                         <button
                                             type="button"
                                             onClick={() => setRecipeSheetOpen(true)}
-                                            className="mt-1.5 flex min-h-[44px] items-center gap-1.5 rounded-xl text-left cursor-pointer touch-none active:scale-[0.98] transition-all"
+                                            className="group flex items-center gap-2 cursor-pointer touch-none active:scale-[0.98] transition-all"
                                             aria-label="切換手沖法"
                                         >
-                                            <span className="text-base font-bold text-neutral-800">{rec.name.split('(')[0].trim()}</span>
-                                            <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
+                                            <span className="text-2xl font-black text-neutral-900 leading-tight tracking-tight">
+                                                {rec.name.split('(')[0].trim()}
+                                            </span>
+                                            <span className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-neutral-100 group-hover:bg-amber-50 transition-colors">
+                                                <ChevronDown className="w-3.5 h-3.5 text-neutral-400 group-hover:text-amber-600 transition-colors" />
+                                            </span>
                                         </button>
-                                        <p className="text-xs text-neutral-400 mt-0.5">{rec.description}</p>
+                                        {/* 配方說明 — 輔助文字 */}
+                                        <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">{rec.description}</p>
                                     </div>
                                     {isUsingRecommendation && (
-                                        <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
+                                        <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700 mt-1">
                                             建議
                                         </span>
                                     )}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-4 gap-2 px-4 py-3">
+
+                            {/* ── 層級 2：關鍵數字（4 個 KPI）── */}
+                            <div className="mx-4 mb-4 grid grid-cols-4 gap-1.5 bg-neutral-50 rounded-2xl p-1.5">
                                 {[
-                                    { label: '粉量', value: `${coffeeGrams}g` },
-                                    { label: '水量', value: `${waterTotal}ml` },
-                                    { label: '水溫', value: `${waterTemp}°C` },
-                                    { label: '時間', value: formatTimerDisplay(totalTime) }
+                                    { label: '粉量', value: `${coffeeGrams}g`, highlight: true },
+                                    { label: '水量', value: `${waterTotal}ml`, highlight: true },
+                                    { label: '水溫', value: `${waterTemp}°C`, highlight: false },
+                                    { label: '時間', value: formatTimerDisplay(totalTime), highlight: false }
                                 ].map(item => (
-                                    <div key={item.label} className="rounded-xl bg-neutral-50 px-2 py-2 text-center">
-                                        <p className="text-[11px] text-neutral-400">{item.label}</p>
-                                        <p className="text-sm font-bold text-neutral-800 tabular-nums mt-0.5">{item.value}</p>
+                                    <div key={item.label} className={`rounded-xl px-2 py-2.5 text-center ${item.highlight ? 'bg-white shadow-sm' : ''}`}>
+                                        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wide">{item.label}</p>
+                                        <p className={`text-sm font-bold tabular-nums mt-1 ${item.highlight ? 'text-amber-700' : 'text-neutral-600'}`}>{item.value}</p>
                                     </div>
                                 ))}
                             </div>
-                            <div className="px-4 pb-4 space-y-2">
-                                <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2">
-                                    <span className="text-xs text-neutral-400">豆子名稱</span>
-                                    <span className="text-sm font-bold text-neutral-800 tabular-nums shrink-0 truncate max-w-[70%] text-right">{selectedBeanLabel}</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2">
-                                        <span className="text-xs text-neutral-400">粉水比</span>
-                                        <span className="text-sm font-bold text-neutral-800 tabular-nums">1:{Math.round(ratio)}</span>
+
+                            {/* ── 層級 3：輔助設定（豆子 / 比例 / 磨豆）── */}
+                            <div className="border-t border-neutral-50">
+                                {/* 豆子 — 最重要的輔助資訊，獨佔一行 */}
+                                <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-50">
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                                        <span className="text-xs font-medium text-neutral-400">豆子</span>
                                     </div>
-                                    <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2">
-                                        <span className="text-xs text-neutral-400">磨豆</span>
-                                        <span className="text-sm font-bold text-neutral-800 tabular-nums">{grindSetting}</span>
+                                    <span className={`text-sm font-semibold shrink-0 truncate max-w-[65%] text-right ${selectedBeanLabel === '尚未選擇豆子' ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                        {selectedBeanLabel}
+                                    </span>
+                                </div>
+                                {/* 粉水比 + 磨豆 — 次要，橫排對比 */}
+                                <div className="grid grid-cols-2 divide-x divide-neutral-50">
+                                    <div className="flex items-center justify-between px-5 py-3">
+                                        <span className="text-xs font-medium text-neutral-400">粉水比</span>
+                                        <span className="text-sm font-bold text-neutral-700 tabular-nums">1:{Math.round(ratio)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between px-5 py-3">
+                                        <span className="text-xs font-medium text-neutral-400">磨豆</span>
+                                        <span className="text-sm font-bold text-neutral-700 tabular-nums">{grindSetting}</span>
                                     </div>
                                 </div>
                             </div>
