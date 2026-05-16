@@ -743,6 +743,7 @@
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
                 setTimerStatus('idle');
+                setBrewStep('home');
                 setNotes('');
                 setBeanName('');
                 setRoastLevel('light');
@@ -2212,7 +2213,13 @@
 
                     <div className="bg-white border-t border-neutral-100 flex justify-around items-center pt-4 px-6 w-full flex-shrink-0" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
                         <button
-                            onClick={() => { setActiveTab('brew'); }}
+                            onClick={() => {
+                                if (activeTab === 'brew' && timerStatus === 'idle') {
+                                    setBrewStep('home');
+                                } else {
+                                    setActiveTab('brew');
+                                }
+                            }}
                             className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <Droplet className="w-6 h-6" />
