@@ -715,7 +715,7 @@
                     const mins = Math.floor(remaining / 60);
                     const secs = remaining % 60;
                     const timeStr = mins > 0 ? `${mins} 分 ${secs} 秒` : `${secs} 秒`;
-                    if (!window.confirm(`還差 ${timeStr} 才到預設結束時間\n確定要提早完成沖煮？`)) return;
+                    if (!window.confirm(`還差 ${timeStr}，確定提早結束？`)) return;
                 }
                 setFlowRate(currentTime >= totalTime - 5 ? 'good' : 'fast');
                 setTimerStatus('finished');
@@ -929,7 +929,7 @@
                                     {/* CTA */}
                                     <button
                                         onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
-                                        className="w-full bg-amber-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
+                                        className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
                                     >
                                         <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
                                     </button>
@@ -996,7 +996,7 @@
                                     {/* 主 CTA — 唯一的大按鈕，無競爭 */}
                                     <button
                                         onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
-                                        className="w-full bg-amber-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
+                                        className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
                                     >
                                         <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
                                     </button>
@@ -1307,7 +1307,7 @@
                                                         setAddingNewBean(false);
                                                         setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 600);
                                                     }}
-                                                    className="w-full bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
+                                                    className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
                                                     儲存
                                                 </button>
@@ -1894,7 +1894,7 @@
                                 <button
                                     onPointerDown={handleStartStop}
                                     aria-label="開始計時"
-                                    className="w-full py-4 bg-amber-600 text-white font-bold rounded-2xl shadow-xl shadow-amber-200/50 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer touch-none text-lg"
+                                    className="w-full py-4 bg-amber-600 text-white font-bold rounded-xl shadow-xl shadow-amber-200/50 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer touch-none text-lg"
                                 >
                                     <Play className="w-5 h-5 fill-current ml-1" /> 開始計時
                                 </button>
@@ -1903,7 +1903,10 @@
                             {/* running: Pause (主) + 完成 (次) */}
                             {isRunning && (
                                 <div className="flex items-center justify-center gap-5">
-                                    <div className="w-14 h-14" />
+                                    <div className="flex flex-col items-center gap-2 opacity-0 pointer-events-none">
+                                        <div className="w-14 h-14" />
+                                        <span className="text-xs">x</span>
+                                    </div>
                                     <button
                                         onPointerDown={handleStartStop}
                                         aria-label="暫停計時器"
@@ -1914,10 +1917,12 @@
                                     <button
                                         onPointerDown={handleFinish}
                                         aria-label="結束沖煮"
-                                        className="group w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:text-neutral-600 shadow-sm cursor-pointer touch-none"
-                                        title="結束沖煮"
+                                        className="group flex flex-col items-center gap-2 cursor-pointer touch-none"
                                     >
-                                        <Save className="w-5 h-5" />
+                                        <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm">
+                                            <Save className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">結束</span>
                                     </button>
                                 </div>
                             )}
