@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barista Flow</title>
     
     <!-- 1. 引入 Tailwind CSS (樣式庫) -->
@@ -23,10 +23,38 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
+        /* ── RWD 基礎 ── */
         body {
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             overscroll-behavior: contain;
+            min-height: 100dvh;
+        }
+        /* 平板/桌面：顯示手機外框居中效果 */
+        @media (min-width: 640px) {
+            body {
+                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 40%, #fef9ee 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+            }
+            #root {
+                width: 390px;
+                height: min(844px, calc(100dvh - 48px));
+                border-radius: 44px;
+                box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(255,255,255,0.6);
+                overflow: hidden;
+                position: relative;
+                flex-shrink: 0;
+            }
+        }
+        /* 大桌面：稍微放大外框 */
+        @media (min-width: 1024px) {
+            #root {
+                width: 430px;
+                height: min(932px, calc(100dvh - 48px));
+            }
         }
         :focus-visible {
             outline: 3px solid rgba(217, 119, 6, 0.45);
@@ -71,8 +99,8 @@
         .backdrop-exit  { animation: fadeOut 0.28s ease-in  forwards; }
     </style>
 </head>
-<body class="bg-neutral-50 text-neutral-900 h-screen overflow-hidden">
-    <div id="root"></div>
+<body class="bg-neutral-50 text-neutral-900">
+    <div id="root" class="h-[100dvh] overflow-hidden sm:h-auto sm:overflow-visible"></div>
 
     <!-- 4. 主要程式邏輯 -->
     <script type="text/babel" data-type="module">
@@ -2016,7 +2044,7 @@
             };
 
             return (
-                <div className="max-w-md mx-auto h-[100dvh] bg-neutral-50 flex flex-col font-sans text-neutral-800 overflow-hidden">
+                <div className="w-full h-[100dvh] sm:h-full bg-neutral-50 flex flex-col font-sans text-neutral-800 overflow-hidden relative">
                     <div className="bg-white px-6 py-4 shadow-sm z-10 flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white shadow-sm">
@@ -2029,8 +2057,8 @@
 
                     <div ref={contentRef} className={`flex-1 scroll-smooth ${
                         (activeTab === 'brew' && timerStatus !== 'idle') ? 'overflow-hidden' :
-                        (activeTab === 'brew' && brewStep === 'home')    ? 'overflow-hidden p-6' :
-                        'overflow-y-auto p-6'
+                        (activeTab === 'brew' && brewStep === 'home')    ? 'overflow-hidden px-5 py-5' :
+                        'overflow-y-auto px-5 py-5'
                     }`} style={{overscrollBehavior:'contain'}}>
                         {activeTab === 'brew' && timerStatus !== 'idle' && renderTimerView()}
                         {activeTab === 'brew' && timerStatus === 'idle' && (
