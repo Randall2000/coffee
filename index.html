@@ -1139,6 +1139,96 @@
                             </button>
                         </div>
 
+                        {/* Bean brew insight — shows when a bean with history is selected */}
+                        {(() => {
+                            if (!beanName) return null;
+                            const beanLogs = logs.filter(l => l.beanName === beanName && l.rating > 0);
+                            if (beanLogs.length === 0) return null;
+
+                            // Group by recipe → find best
+                            const byRecipe = {};
+                            beanLogs.forEach(l => {
+                                const rid = Object.values(RECIPES).find(r => r.name === l.recipeName)?.id || 'v60';
+                                if (!byRecipe[rid]) byRecipe[rid] = { id: rid, displayName: (l.recipeName || '').split('(')[0].trim(), logs: [] };
+                                byRecipe[rid].logs.push(l);
+                            });
+                            const recipeGroups = Object.values(byRecipe).map(g => ({
+                                ...g,
+                                avgRating: g.logs.reduce((s, l) => s + l.rating, 0) / g.logs.length,
+                                count: g.logs.length
+                            })).sort((a, b) => b.avgRating - a.avgRating);
+                            const bestGroup = recipeGroups[0];
+
+                            // Best ratio from top-3 rated brews of best recipe
+                            const topBrews = [...bestGroup.logs].sort((a, b) => b.rating - a.rating).slice(0, 3);
+                            const bestRatio = Math.round(topBrews.reduce((s, l) => s + (l.ratio || 15), 0) / topBrews.length);
+                            const topBrew = topBrews[0];
+
+                            const isMulti = beanLogs.length > 1;
+                            const allAvg = beanLogs.reduce((s, l) => s + l.rating, 0) / beanLogs.length;
+
+                            return (
+                                <div className="rounded-2xl border border-amber-200 bg-amber-50 overflow-hidden">
+                                    {/* Header */}
+                                    <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold text-amber-700 uppercase tracking-widest">
+                                                {isMulti ? '沖煮建議' : '上次紀錄'}
+                                            </span>
+                                            <span className="text-xs text-amber-600">{beanLogs.length} 次</span>
+                                        </div>
+                                        <div className="flex items-center gap-0.5">
+                                            {[1,2,3,4,5].map(s => (
+                                                <Star key={s} className={`w-3 h-3 fill-current ${Math.round(allAvg) >= s ? 'text-amber-400' : 'text-amber-200'}`} />
+                                            ))}
+                                            <span className="text-xs text-amber-700 font-bold ml-1 tabular-nums">{allAvg.toFixed(1)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Insight rows */}
+                                    <div className="px-4 pb-3 space-y-2">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="bg-white rounded-xl px-3 py-2.5">
+                                                <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-wide mb-1">
+                                                    {isMulti ? '最佳手沖法' : '使用手沖法'}
+                                                </p>
+                                                <div className="flex items-center justify-between gap-1">
+                                                    <p className="text-xs font-bold text-neutral-800 truncate">{bestGroup.displayName || 'V60'}</p>
+                                                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                                                        {[1,2,3,4,5].map(s => (
+                                                            <Star key={s} className={`w-2.5 h-2.5 fill-current ${Math.round(bestGroup.avgRating) >= s ? 'text-amber-400' : 'text-neutral-200'}`} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="bg-white rounded-xl px-3 py-2.5">
+                                                <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-wide mb-1">
+                                                    {isMulti ? '建議比例' : '使用比例'}
+                                                </p>
+                                                <p className="text-xs font-bold text-amber-700 tabular-nums">1:{bestRatio}</p>
+                                            </div>
+                                        </div>
+
+                                        {topBrew?.notes && (
+                                            <p className="text-xs text-amber-800 italic px-1">「{topBrew.notes}」</p>
+                                        )}
+
+                                        <button
+                                            onPointerDown={(e) => {
+                                                e.preventDefault();
+                                                updateRecipe(bestGroup.id);
+                                                setRatio(bestRatio);
+                                                setRecipeRatios(prev => ({ ...prev, [bestGroup.id]: bestRatio }));
+                                            }}
+                                            className="w-full py-2.5 bg-amber-600 text-white text-xs font-bold rounded-xl cursor-pointer touch-none active:scale-[0.98] transition-all hover:bg-amber-700"
+                                        >
+                                            套用這個建議
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
                         {/* 粉水比 */}
                         <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
                             <div className="flex items-center justify-between">
