@@ -467,6 +467,7 @@
             const [editingLogId, setEditingLogId] = useState(null);
             const [searchQuery, setSearchQuery] = useState('');
             const [sortBy, setSortBy] = useState('newest');
+            const [viewMode, setViewMode] = useState('timeline'); // 'timeline' | 'byBean'
             const [hiddenBeans, setHiddenBeans] = useState(() => {
                 try {
                     const saved = localStorage.getItem('barista_flow_hidden_beans');
@@ -2073,43 +2074,86 @@
                         )}
 
                         {logs.length > 0 && (
-                            <div className="flex gap-2 items-center">
-                                <div className="relative flex-1 min-w-0">
-                                    <label htmlFor="journal-search" className="sr-only">搜尋豆子名稱</label>
-                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    <input
-                                        id="journal-search"
-                                        type="text"
-                                        placeholder="搜尋豆子名稱..."
-                                        autoComplete="off"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-9 pr-9 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-neutral-300"
-                                    />
-                                    {searchQuery && (
-                                        <button onClick={() => setSearchQuery('')} aria-label="清除搜尋" className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500">
-                                            <X className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="relative flex-shrink-0">
-                                    <label htmlFor="journal-sort" className="sr-only">排序日誌</label>
-                                    <select
-                                        id="journal-sort"
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value)}
-                                        className="appearance-none bg-white border border-neutral-200 rounded-xl pl-3 pr-7 py-2 text-xs font-bold text-neutral-700 cursor-pointer outline-none focus:ring-2 focus:ring-amber-500"
+                            <div className="space-y-2">
+                                {/* View toggle */}
+                                <div className="flex bg-neutral-100 rounded-xl p-0.5">
+                                    <button
+                                        onClick={() => { setViewMode('timeline'); setSearchQuery(''); }}
+                                        className={`flex-1 py-1.5 rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${viewMode === 'timeline' ? 'bg-white shadow-sm text-neutral-800' : 'text-neutral-400 hover:text-neutral-600'}`}
                                     >
-                                        <option value="newest">最新在前</option>
-                                        <option value="oldest">最舊在前</option>
-                                        <option value="month">本月</option>
-                                        <option value="week">本週</option>
-                                        <option value="rating">評分高低</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
+                                        時間軸
+                                    </button>
+                                    <button
+                                        onClick={() => { setViewMode('byBean'); setSearchQuery(''); }}
+                                        className={`flex-1 py-1.5 rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${viewMode === 'byBean' ? 'bg-white shadow-sm text-neutral-800' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                    >
+                                        按豆子
+                                    </button>
                                 </div>
+
+                                {/* Search + sort (timeline only) */}
+                                {viewMode === 'timeline' && (
+                                    <div className="flex gap-2 items-center">
+                                        <div className="relative flex-1 min-w-0">
+                                            <label htmlFor="journal-search" className="sr-only">搜尋豆子名稱</label>
+                                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                            <input
+                                                id="journal-search"
+                                                type="text"
+                                                placeholder="搜尋豆子名稱..."
+                                                autoComplete="off"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                className="w-full pl-9 pr-9 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-neutral-300"
+                                            />
+                                            {searchQuery && (
+                                                <button onClick={() => setSearchQuery('')} aria-label="清除搜尋" className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 cursor-pointer">
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="relative flex-shrink-0">
+                                            <label htmlFor="journal-sort" className="sr-only">排序日誌</label>
+                                            <select
+                                                id="journal-sort"
+                                                value={sortBy}
+                                                onChange={(e) => setSortBy(e.target.value)}
+                                                className="appearance-none bg-white border border-neutral-200 rounded-xl pl-3 pr-7 py-2 text-xs font-bold text-neutral-700 cursor-pointer outline-none focus:ring-2 focus:ring-amber-500"
+                                            >
+                                                <option value="newest">最新在前</option>
+                                                <option value="oldest">最舊在前</option>
+                                                <option value="month">本月</option>
+                                                <option value="week">本週</option>
+                                                <option value="rating">評分高低</option>
+                                            </select>
+                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Bean search (byBean mode) */}
+                                {viewMode === 'byBean' && (
+                                    <div className="relative">
+                                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                        <input
+                                            type="text"
+                                            placeholder="搜尋豆子..."
+                                            autoComplete="off"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-full pl-9 pr-9 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-neutral-300"
+                                        />
+                                        {searchQuery && (
+                                            <button onClick={() => setSearchQuery('')} aria-label="清除搜尋" className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 cursor-pointer">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -2119,7 +2163,76 @@
                                 <p className="font-medium text-neutral-600 mb-1">還沒有紀錄</p>
                                 <p className="text-sm text-neutral-400">沖完一杯後儲存，就會出現在這裡</p>
                             </div>
-                        ) : filteredLogs.length === 0 ? (
+                        ) : viewMode === 'byBean' ? (() => {
+                            // 按豆子分組
+                            const beanMap = {};
+                            logs.forEach(log => {
+                                const key = log.beanName || '未命名咖啡豆';
+                                if (!beanMap[key]) beanMap[key] = { beanName: key, roastLevel: log.roastLevel, logs: [] };
+                                beanMap[key].logs.push(log);
+                            });
+                            const beanList = Object.values(beanMap)
+                                .filter(g => !searchQuery || g.beanName.toLowerCase().includes(searchQuery.toLowerCase()))
+                                .map(g => {
+                                    const rated = g.logs.filter(l => l.rating > 0);
+                                    const avgRating = rated.length ? rated.reduce((s, l) => s + l.rating, 0) / rated.length : 0;
+                                    const lastLog = [...g.logs].sort((a, b) => b.createdAt - a.createdAt)[0];
+                                    return { ...g, avgRating, lastLog, lastDate: lastLog.createdAt };
+                                })
+                                .sort((a, b) => b.lastDate - a.lastDate);
+
+                            if (beanList.length === 0) return (
+                                <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-neutral-200">
+                                    <p className="text-neutral-400 text-sm">找不到「{searchQuery}」的豆子</p>
+                                </div>
+                            );
+
+                            return (
+                                <div className="space-y-3">
+                                    {beanList.map(g => {
+                                        const roastInfo = ROAST_LEVELS.find(r => r.id === g.roastLevel) || ROAST_LEVELS[0];
+                                        const filledStars = Math.round(g.avgRating);
+                                        return (
+                                            <div key={g.beanName}
+                                                className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden cursor-pointer hover:border-neutral-200 active:opacity-75 transition-all"
+                                                onClick={() => { setSearchQuery(g.beanName); setViewMode('timeline'); }}
+                                            >
+                                                <div className="p-4">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="font-bold text-neutral-800 text-base leading-tight truncate">{g.beanName}</h3>
+                                                            <div className="flex items-center gap-1.5 mt-1.5">
+                                                                <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{roastInfo.label}</span>
+                                                                <span className="text-neutral-200 text-xs">·</span>
+                                                                <span className="text-xs text-neutral-400">最近：{getRelativeDate(g.lastDate)}</span>
+                                                            </div>
+                                                        </div>
+                                                        <ChevronRight className="w-4 h-4 text-neutral-300 flex-shrink-0 mt-1" />
+                                                    </div>
+                                                    <div className="flex items-center justify-between mt-3">
+                                                        {/* 平均星級 */}
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="flex items-center gap-0.5">
+                                                                {[1,2,3,4,5].map(s => (
+                                                                    <Star key={s} className={`w-3.5 h-3.5 fill-current ${filledStars >= s ? 'text-amber-400' : 'text-neutral-200'}`} />
+                                                                ))}
+                                                            </div>
+                                                            {g.avgRating > 0 && (
+                                                                <span className="text-xs text-neutral-400 tabular-nums">{g.avgRating.toFixed(1)}</span>
+                                                            )}
+                                                        </div>
+                                                        {/* 沖煮次數 */}
+                                                        <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full">
+                                                            {g.logs.length} 次沖煮
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })() : filteredLogs.length === 0 ? (
                             <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-neutral-200">
                                 <p className="text-neutral-400 text-sm">找不到「{searchQuery}」的紀錄</p>
                             </div>
@@ -2128,59 +2241,47 @@
                                 {filteredLogs.map(log => {
                                     const roastInfo = ROAST_LEVELS.find(r => r.id === log.roastLevel) || ROAST_LEVELS[0];
                                     return (
-                                        <div key={log.id} className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden cursor-pointer active:opacity-75 transition-opacity" onClick={() => handleViewLog(log)}>
+                                        <div key={log.id} className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden cursor-pointer hover:border-neutral-200 active:opacity-75 transition-all" onClick={() => handleViewLog(log)}>
+                                            {/* 主要資訊：豆名 + 星級 */}
                                             <div className="p-4 pb-3">
-                                                <div className="flex items-start justify-between gap-2">
+                                                <div className="flex items-start justify-between gap-3">
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="font-bold text-neutral-800 text-base leading-tight truncate">
                                                             {log.beanName || '未命名咖啡豆'}
                                                         </h3>
-                                                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                                                            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${roastInfo.color}`}>
-                                                                {roastInfo.label}
-                                                            </span>
-                                                            <span className="text-xs text-neutral-400">{log.dripperName || 'V60'}</span>
-                                                            <span className="text-xs text-neutral-300">·</span>
-                                                            <span className="text-xs text-neutral-400">{getRelativeDate(log.createdAt)}</span>
+                                                        <div className="flex items-center gap-1.5 mt-1.5">
+                                                            <span className="text-xs text-neutral-500">{getRelativeDate(log.createdAt)}</span>
+                                                            <span className="text-neutral-200 text-xs">·</span>
+                                                            <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{roastInfo.label}</span>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                                        <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1.5 rounded-lg">
-                                                            <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
-                                                            <span className="text-amber-800 font-bold text-sm">{log.rating}</span>
+                                                    {/* 星級視覺化 */}
+                                                    {log.rating > 0 ? (
+                                                        <div className="flex items-center gap-0.5 flex-shrink-0 pt-0.5">
+                                                            {[1,2,3,4,5].map(s => (
+                                                                <Star key={s} className={`w-3.5 h-3.5 fill-current ${log.rating >= s ? 'text-amber-400' : 'text-neutral-200'}`} />
+                                                            ))}
                                                         </div>
-                                                    </div>
+                                                    ) : (
+                                                        <span className="text-[11px] text-neutral-300 flex-shrink-0 pt-1">未評分</span>
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            {log.flowRate && (
-                                                <div className="px-4 pb-3 flex gap-4">
-                                                    {log.flowRate && (
-                                                        <span className="inline-flex items-center gap-1.5 text-xs">
-                                                            <span className={`w-1.5 h-1.5 rounded-sm flex-shrink-0 ${
-                                                                log.flowRate === 'good' ? 'bg-neutral-300' :
-                                                                log.flowRate === 'fast' ? 'bg-amber-400' : 'bg-neutral-700'
-                                                            }`}/>
-                                                            <span className={`${
-                                                                log.flowRate === 'good' ? 'text-neutral-400' :
-                                                                log.flowRate === 'fast' ? 'text-amber-600' : 'text-neutral-600'
-                                                            }`}>流速 {FLOW_OPTIONS.find(f => f.id === log.flowRate)?.label}</span>
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            <div className="px-4 py-2.5 bg-neutral-50 border-t border-neutral-100 flex items-center gap-3 text-xs text-neutral-400 font-mono">
-                                                <span>{log.coffeeGrams}g</span>
+                                            {/* 沖煮參數：食譜 · 比例 · 克重 / 水量 · 時間 */}
+                                            <div className="px-4 py-2.5 bg-neutral-50 border-t border-neutral-100 flex items-center gap-2 text-xs text-neutral-400 flex-wrap">
+                                                <span className="font-medium text-neutral-600">{(log.recipeName || 'V60').split('(')[0].trim()}</span>
                                                 <span className="text-neutral-200">·</span>
-                                                <span>{log.waterTotal}ml</span>
+                                                <span>1:{log.ratio}</span>
+                                                <span className="text-neutral-200">·</span>
+                                                <span>{log.coffeeGrams}g / {log.waterTotal}ml</span>
                                                 <span className="text-neutral-200">·</span>
                                                 <span>{formatTimerDisplay(log.time)}</span>
                                             </div>
 
                                             {log.notes && (
                                                 <div className="px-4 py-2.5 border-t border-neutral-50">
-                                                    <p className="text-xs text-neutral-500 italic">"{log.notes}"</p>
+                                                    <p className="text-xs text-neutral-500 italic line-clamp-1">"{log.notes}"</p>
                                                 </div>
                                             )}
                                         </div>
