@@ -403,7 +403,7 @@
         }
 
         const PourOverIllustration = () => (
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width:'140px',height:'140px'}} strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width:'200px',height:'200px'}} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 8h1a4 4 0 1 1 0 8h-1" stroke="#d97706" strokeWidth="2"/>
                 <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" stroke="#d97706" strokeWidth="2"/>
                 <line x1="6" x2="6" y1="2" y2="4" stroke="#fbbf24" strokeWidth="2"/>
@@ -2072,7 +2072,7 @@
                                                 className="w-full pl-9 pr-4 py-2.5 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
                                             />
                                         </div>
-                                        <div className="flex gap-2" role="radiogroup" aria-label="烘焙程度">
+                                        <div className="flex bg-neutral-100 p-1 rounded-xl h-[44px]" role="radiogroup" aria-label="烘焙程度">
                                             {ROAST_LEVELS.map(level => (
                                                 <button
                                                     key={level.id}
@@ -2080,10 +2080,10 @@
                                                     role="radio"
                                                     aria-checked={roastLevel === level.id}
                                                     onClick={() => setRoastLevel(level.id)}
-                                                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                                                    className={`flex-1 flex items-center justify-center rounded-lg text-sm font-bold transition-all cursor-pointer ${
                                                         roastLevel === level.id
-                                                        ? `${level.color} shadow-sm`
-                                                        : 'bg-white text-neutral-500 border-neutral-200 hover:bg-neutral-50'
+                                                        ? 'bg-white text-neutral-800 shadow-sm'
+                                                        : 'text-neutral-400'
                                                     }`}
                                                 >
                                                     {level.label}
