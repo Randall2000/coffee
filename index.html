@@ -840,80 +840,105 @@
                 return (
                     <div className="flex flex-col h-full select-none">
 
-                        {/* Hero — illustration + brand identity */}
-                        <div className="flex flex-col items-center justify-center gap-3 pt-2" style={{flex:'0 1 240px', minHeight:'160px'}}>
-                            <PourOverIllustration />
-                            {isNewUser && (
-                                <div className="text-center px-4">
+                        {isNewUser ? (
+                            /* ── 新用戶佈局：三個獨立 zone，各自有呼吸空間 ── */
+                            <>
+                                {/* Zone A: 插圖 — 固定高度，不壓縮 */}
+                                <div className="flex items-center justify-center" style={{height:'180px', flexShrink:0}}>
+                                    <PourOverIllustration />
+                                </div>
+
+                                {/* Zone B: 標題文字 — 與插圖分隔清楚 */}
+                                <div className="text-center px-6 pb-1" style={{flexShrink:0}}>
                                     <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">手沖咖啡，一步一步</h1>
-                                    <p className="text-sm text-neutral-400 mt-1">選豆、調參數、跟著計時器完成每一注</p>
+                                    <p className="text-sm text-neutral-400 mt-1.5">選豆、調參數、跟著計時器完成每一注</p>
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Lower section */}
-                        <div className="space-y-3 pb-2">
-
-                            {/* New user: 3 feature hints */}
-                            {isNewUser && (
-                                <div className="grid grid-cols-3 gap-2">
-                                    {[
-                                        { icon: <Droplet className="w-5 h-5 text-amber-500" />, label: '選風味', desc: '明亮 · 平衡 · 醇厚' },
-                                        { icon: <Timer className="w-5 h-5 text-amber-500" />, label: '跟著計時', desc: '注水節奏全掌握' },
-                                        { icon: <BookOpen className="w-5 h-5 text-amber-500" />, label: '記錄日誌', desc: '每杯都能回顧' },
-                                    ].map(f => (
-                                        <div key={f.label} className="bg-white rounded-2xl border border-neutral-100 px-3 py-3 text-center shadow-sm">
-                                            <div className="flex justify-center mb-1.5">{f.icon}</div>
-                                            <p className="text-xs font-bold text-neutral-700">{f.label}</p>
-                                            <p className="text-[10px] text-neutral-400 mt-0.5 leading-tight">{f.desc}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Main CTA */}
-                            <button
-                                onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
-                                className="w-full bg-amber-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
-                            >
-                                <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
-                            </button>
-                            <p className="text-center text-xs text-neutral-400">
-                                {isNewUser ? '第一次使用？依照步驟引導，2 分鐘上手' : '選擇風味、豆子、濾杯、磨豆機'}
-                            </p>
-
-                            {/* Returning user: last brew card */}
-                            {lastLog && (
-                                <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
-                                    <div className="px-4 py-2.5 border-b border-neutral-50 flex items-center justify-between">
-                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">上次沖煮</p>
-                                        <span className="text-xs text-amber-400">{'★'.repeat(lastLog.rating)}</span>
-                                    </div>
-                                    <div className="px-4 py-3 flex items-center gap-3">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-neutral-800 text-sm truncate">{lastLog.beanName || '未命名咖啡豆'}</p>
-                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                                {lastRoast && (
-                                                    <span className={`text-xs px-1.5 py-0.5 rounded-full border ${lastRoast.color}`}>{lastRoast.label}</span>
-                                                )}
-                                                <span className="text-xs text-neutral-400">{lastLog.dripperName}</span>
-                                                <span className="text-xs text-neutral-300">·</span>
-                                                <span className="text-xs text-neutral-400 font-mono">{lastLog.coffeeGrams}g · 1:{Math.round(lastLog.ratio)}</span>
+                                {/* Zone C: Feature chips — flex 撐開剩餘空間，內容底部對齊 CTA */}
+                                <div className="flex-1 flex flex-col justify-end gap-3 pb-2">
+                                    <div className="grid grid-cols-3 gap-2.5">
+                                        {[
+                                            { icon: <Droplet className="w-5 h-5 text-amber-500" />, label: '選風味', desc: '明亮 · 平衡 · 醇厚' },
+                                            { icon: <Timer className="w-5 h-5 text-amber-500" />, label: '跟著計時', desc: '注水節奏全掌握' },
+                                            { icon: <BookOpen className="w-5 h-5 text-amber-500" />, label: '記錄日誌', desc: '每杯都能回顧' },
+                                        ].map(f => (
+                                            <div key={f.label} className="bg-white rounded-2xl border border-neutral-100 px-3 py-3.5 text-center shadow-sm">
+                                                <div className="flex justify-center mb-2">{f.icon}</div>
+                                                <p className="text-xs font-bold text-neutral-700">{f.label}</p>
+                                                <p className="text-[10px] text-neutral-400 mt-0.5 leading-snug">{f.desc}</p>
                                             </div>
-                                        </div>
-                                        <button
-                                            onPointerDown={(e) => { e.preventDefault(); unlockAudio(); brewAgain(lastLog); }}
-                                            className="flex-shrink-0 px-3 py-2 rounded-xl border border-amber-200 text-amber-600 font-bold text-xs cursor-pointer touch-none active:scale-95 transition-all hover:bg-amber-50"
-                                        >
-                                            再沖一次
-                                        </button>
+                                        ))}
                                     </div>
+
+                                    {/* CTA */}
+                                    <button
+                                        onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
+                                        className="w-full bg-amber-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
+                                    >
+                                        <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
+                                    </button>
+                                    <p className="text-center text-xs text-neutral-400">第一次使用？依照步驟引導，2 分鐘上手</p>
                                 </div>
-                            )}
-                        </div>
+                            </>
+                        ) : (
+                            /* ── 回訪用戶佈局：插圖居中 + 上次沖煮卡升級 + CTA ── */
+                            <>
+                                {/* 插圖 */}
+                                <div className="flex items-center justify-center" style={{flex:'0 1 220px', minHeight:'150px'}}>
+                                    <PourOverIllustration />
+                                </div>
+
+                                {/* 底部操作區 */}
+                                <div className="flex-1 flex flex-col justify-end gap-3 pb-2">
+
+                                    {/* 上次沖煮卡 — 升級版：大標、突出行動 */}
+                                    {lastLog && (
+                                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+                                            {/* 卡片頂部：標籤 + 評分 */}
+                                            <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+                                                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">上次沖煮</span>
+                                                <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-full">
+                                                    <Star className="w-3 h-3 text-amber-500 fill-current" />
+                                                    <span className="text-xs font-bold text-amber-700">{lastLog.rating}</span>
+                                                </div>
+                                            </div>
+                                            {/* 主資訊：豆子名稱大字 + 標籤列 */}
+                                            <div className="px-4 pb-3">
+                                                <p className="text-base font-bold text-neutral-800 truncate leading-tight">{lastLog.beanName || '未命名咖啡豆'}</p>
+                                                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                                    {lastRoast && (
+                                                        <span className={`text-[11px] px-2 py-0.5 rounded-full border font-medium ${lastRoast.color}`}>{lastRoast.label}</span>
+                                                    )}
+                                                    <span className="text-xs text-neutral-400">{lastLog.dripperName}</span>
+                                                    <span className="text-xs text-neutral-300">·</span>
+                                                    <span className="text-xs text-neutral-500 font-mono">{lastLog.coffeeGrams}g · 1:{Math.round(lastLog.ratio)}</span>
+                                                </div>
+                                            </div>
+                                            {/* 快速行動：全寬按鈕，amber 填充 */}
+                                            <button
+                                                onPointerDown={(e) => { e.preventDefault(); unlockAudio(); brewAgain(lastLog); }}
+                                                className="w-full flex items-center justify-center gap-2 py-3 bg-amber-50 border-t border-amber-100 text-amber-700 font-bold text-sm cursor-pointer touch-none active:bg-amber-100 transition-colors"
+                                            >
+                                                <RotateCcw className="w-4 h-4" /> 再沖一次
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* 主 CTA */}
+                                    <button
+                                        onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
+                                        className="w-full bg-amber-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
+                                    >
+                                        <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
+                                    </button>
+                                    <p className="text-center text-xs text-neutral-400">選擇風味、豆子、濾杯、磨豆機</p>
+                                </div>
+                            </>
+                        )}
                     </div>
                 );
             };
+
 
             // --- Config View ---
             const renderConfigView = () => {
