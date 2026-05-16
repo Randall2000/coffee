@@ -1811,56 +1811,55 @@
                 return (
                     <div className="flex flex-col h-full items-center py-4 relative select-none">
 
-                        {/* ── Header: 返回 + 配方參數 + 步驟進度 ── */}
+                        {/* ── Header ── */}
                         {!isFinished && (
                             <div className="w-full px-4 mb-1 z-10">
-                                {/* Row 0: 返回 ← + 配方一行 */}
-                                <div className="flex items-center gap-2 mb-2.5">
+                                {/* Row 0: ← (ghost) + recipe · ratio + step X/N badge */}
+                                <div className="flex items-center justify-between mb-3">
                                     <button
                                         onPointerDown={handleTimerBack}
                                         aria-label="放棄沖煮並返回"
-                                        className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
+                                        className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-300 hover:text-neutral-500 cursor-pointer touch-none flex-shrink-0 transition-colors"
                                     >
                                         <ChevronLeft className="w-5 h-5" />
                                     </button>
-                                    <div className="flex-1 flex items-center justify-center gap-1.5 text-[11px] flex-wrap min-w-0">
-                                        <span className="font-semibold text-neutral-600">{recipe.name.split('(')[0].trim()}</span>
-                                        <span className="text-neutral-200">·</span>
-                                        <span className="text-neutral-400">{selectedDripper.name}</span>
-                                        <span className="text-neutral-200 mx-0.5">/</span>
-                                        <span className="font-mono text-neutral-400">{coffeeGrams}g</span>
-                                        <span className="text-neutral-200">·</span>
-                                        <span className="font-mono text-neutral-400">{waterTotal}ml</span>
-                                        <span className="text-neutral-200">·</span>
-                                        <span className="font-mono text-neutral-400">{waterTemp}°C</span>
-                                    </div>
-                                    <div className="w-9 flex-shrink-0" />
+                                    <span className="text-[12px] text-neutral-400 font-medium tracking-wide">
+                                        {recipe.name.split('(')[0].trim()}
+                                        <span className="mx-1.5 text-neutral-200">·</span>
+                                        1:{ratio}
+                                    </span>
+                                    <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full tabular-nums">
+                                        {index + 1} / {recipe.steps.length}
+                                    </span>
                                 </div>
                                 {/* Row 1: 步驟進度條 */}
-                                <div className="flex gap-1 items-center mb-2">
+                                <div className="flex gap-1 items-center mb-1.5">
                                     {recipe.steps.map((s, idx) => {
                                         const completed = currentTime >= s.endTime;
                                         const isCurrent = index === idx;
                                         return (
-                                            <div key={idx} className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+                                            <div key={idx} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
                                                 completed ? 'bg-amber-500' :
                                                 isCurrent ? (isRunning ? 'bg-amber-300' : 'bg-amber-200') :
-                                                'bg-neutral-200'
+                                                'bg-neutral-100'
                                             }`} />
                                         );
                                     })}
                                 </div>
-                                {/* Row 2: 步驟序號 */}
-                                <div className="flex items-center">
+                                {/* Row 2: 當前步驟名稱 (顯示真實名稱)，其餘顯示小點 */}
+                                <div className="flex items-center h-4">
                                     {recipe.steps.map((s, idx) => {
                                         const completed = currentTime >= s.endTime;
                                         const isCurrent = index === idx;
                                         return (
-                                            <div key={idx} className="flex-1 flex justify-center">
-                                                <span className={`text-[11px] font-mono transition-all ${
-                                                    isCurrent ? 'text-amber-500 font-bold text-sm' :
-                                                    completed ? 'text-amber-400' : 'text-neutral-300'
-                                                }`}>{idx + 1}</span>
+                                            <div key={idx} className="flex-1 flex justify-center items-center">
+                                                {isCurrent ? (
+                                                    <span className="text-[11px] font-bold text-amber-500 leading-none truncate max-w-[60px]">
+                                                        {s.name.split('(')[0].trim()}
+                                                    </span>
+                                                ) : (
+                                                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${completed ? 'bg-amber-300' : 'bg-neutral-200'}`} />
+                                                )}
                                             </div>
                                         );
                                     })}
