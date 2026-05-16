@@ -1750,17 +1750,17 @@
                                             </div>
                                             {/* Description — what to do */}
                                             <p className="text-xs text-neutral-500 leading-relaxed px-4 pb-3">{step.desc}</p>
-                                            {/* Key numbers footer */}
-                                            <div className={`flex border-t border-neutral-100 ${isPour ? 'divide-x divide-neutral-100' : ''}`}>
+                                            {/* Key numbers footer — left-aligned inline, consistent with header/desc */}
+                                            <div className="flex items-center gap-4 border-t border-neutral-100 px-4 py-2.5">
                                                 {isPour && (
-                                                    <div className="flex-1 px-4 py-2.5 text-center">
-                                                        <p className="text-[10px] text-neutral-400 font-medium mb-0.5">注水量</p>
-                                                        <p className="text-sm font-bold text-amber-700 tabular-nums">+{pourAmount}ml</p>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-[10px] text-neutral-400 font-medium">注水量</span>
+                                                        <span className="text-sm font-bold text-amber-700 tabular-nums">+{pourAmount}ml</span>
                                                     </div>
                                                 )}
-                                                <div className="flex-1 px-4 py-2.5 text-center">
-                                                    <p className="text-[10px] text-neutral-400 font-medium mb-0.5">完成時間</p>
-                                                    <p className="text-sm font-bold text-neutral-700 tabular-nums">{formatTimerDisplay(step.endTime)}</p>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[10px] text-neutral-400 font-medium">完成時間</span>
+                                                    <span className="text-sm font-bold text-neutral-700 tabular-nums">{formatTimerDisplay(step.endTime)}</span>
                                                 </div>
                                             </div>
                                         </div>
