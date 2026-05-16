@@ -30,6 +30,10 @@
             overscroll-behavior: contain;
             min-height: 100dvh;
         }
+        /* Prevent iOS Safari auto-zoom on input focus (requires ≥16px) */
+        input, textarea, select {
+            font-size: 16px !important;
+        }
         /* 平板/桌面：顯示手機外框居中效果 */
         @media (min-width: 640px) {
             body {
@@ -1398,23 +1402,22 @@
                                                     <div>
                                                         <label htmlFor="sheet-roast-date" className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘豆日期</label>
                                                         <div className="relative">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    if (sheetRoastDateInputRef.current?.showPicker) {
-                                                                        sheetRoastDateInputRef.current.showPicker();
-                                                                    } else {
-                                                                        sheetRoastDateInputRef.current?.focus();
-                                                                        sheetRoastDateInputRef.current?.click();
-                                                                    }
-                                                                }}
-                                                                className={`w-full h-[48px] px-3 py-2 rounded-xl border border-neutral-200 bg-neutral-50 text-sm flex items-center justify-between gap-2 text-left text-neutral-600 ${sheetRoastDate ? 'pr-9' : ''}`}
-                                                            >
-                                                                <span className="flex items-center gap-1.5 min-w-0">
-                                                                    <Calendar className="w-4 h-4 shrink-0 text-neutral-400" />
-                                                                    <span className="truncate">{formatRoastDate(sheetRoastDate) || '未指定'}</span>
-                                                                </span>
-                                                            </button>
+                                                            {/* Visual display — pointer-events-none so tap goes to the real input below */}
+                                                            <div className={`w-full h-[48px] px-3 py-2 rounded-xl border border-neutral-200 bg-neutral-50 flex items-center gap-2 text-neutral-600 pointer-events-none ${sheetRoastDate ? 'pr-9' : ''}`}>
+                                                                <Calendar className="w-4 h-4 shrink-0 text-neutral-400" />
+                                                                <span className="truncate text-sm">{formatRoastDate(sheetRoastDate) || '未指定'}</span>
+                                                            </div>
+                                                            {/* Real date input — full overlay, opacity-0 but interactive, opens native picker on tap */}
+                                                            <input
+                                                                ref={sheetRoastDateInputRef}
+                                                                id="sheet-roast-date"
+                                                                type="date"
+                                                                value={sheetRoastDate}
+                                                                onChange={(e) => setSheetRoastDate(e.target.value)}
+                                                                className="absolute inset-0 h-full w-full opacity-0 cursor-pointer"
+                                                                aria-label="烘豆日期"
+                                                            />
+                                                            {/* Clear button — z-10 above the date input */}
                                                             {sheetRoastDate && (
                                                                 <button
                                                                     type="button"
@@ -1425,16 +1428,6 @@
                                                                     <X className="w-4 h-4" />
                                                                 </button>
                                                             )}
-                                                            <input
-                                                                ref={sheetRoastDateInputRef}
-                                                                id="sheet-roast-date"
-                                                                type="date"
-                                                                value={sheetRoastDate}
-                                                                onChange={(e) => setSheetRoastDate(e.target.value)}
-                                                                className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
-                                                                aria-label="烘豆日期"
-                                                                tabIndex={-1}
-                                                            />
                                                         </div>
                                                     </div>
                                                 </div>
