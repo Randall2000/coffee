@@ -467,6 +467,12 @@
             const [editingLogId, setEditingLogId] = useState(null);
             const [searchQuery, setSearchQuery] = useState('');
             const [sortBy, setSortBy] = useState('newest');
+            const [hiddenBeans, setHiddenBeans] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('barista_flow_hidden_beans');
+                    return saved ? new Set(JSON.parse(saved)) : new Set();
+                } catch (e) { return new Set(); }
+            });
             const [flowRate, setFlowRate] = useState('good');
             const [stability, setStability] = useState('stable');
 
@@ -760,6 +766,16 @@
                 closeModal();
             };
 
+            const handleDeleteBean = (beanNameToDelete) => {
+                const updated = new Set(hiddenBeans);
+                updated.add(beanNameToDelete);
+                setHiddenBeans(updated);
+                try { localStorage.setItem('barista_flow_hidden_beans', JSON.stringify([...updated])); } catch (e) {}
+                if (beanName === beanNameToDelete) setBeanName('');
+                setAddingNewBean(false);
+                setIsEditingBean(false);
+            };
+
             const handleViewLog = (log) => {
                 setViewingLog(log);
             };
@@ -1014,7 +1030,7 @@
             const renderConfigView = () => {
                 const seen = new Set();
                 const recentBeans = logs
-                    .filter(l => l.beanName && l.beanName !== '未命名咖啡豆')
+                    .filter(l => l.beanName && l.beanName !== '未命名咖啡豆' && !hiddenBeans.has(l.beanName))
                     .filter(l => { if (seen.has(l.beanName)) return false; seen.add(l.beanName); return true; })
                     .slice(0, 20);
                 const selectedRoast = ROAST_LEVELS.find(r => r.id === roastLevel);
@@ -1312,6 +1328,19 @@
                                                 >
                                                     儲存
                                                 </button>
+                                                {isEditingBean && (
+                                                    <button
+                                                        onPointerDown={(e) => {
+                                                            e.preventDefault();
+                                                            if (window.confirm(`刪除「${sheetBeanName}」？`)) {
+                                                                handleDeleteBean(sheetBeanName);
+                                                            }
+                                                        }}
+                                                        className="w-full flex items-center justify-center gap-2 text-sm text-red-500 py-3 rounded-xl border border-red-100 bg-red-50 cursor-pointer touch-none active:opacity-70 transition-opacity"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" /> 刪除這個豆子
+                                                    </button>
+                                                )}
                                                 {recentBeans.length > 0 && (
                                                     <button
                                                         onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(false); setIsEditingBean(false); }}
