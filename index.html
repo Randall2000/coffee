@@ -410,11 +410,11 @@
                 <svg
                     ref={svgRef}
                     viewBox="-22 -16 244 232"
-                    style={{ width: '100%', maxWidth: '260px', display: 'block', margin: '0 auto', touchAction: 'none', cursor: onChange ? 'crosshair' : 'default' }}
-                    onPointerDown={onDown}
-                    onPointerMove={onMove}
-                    onPointerUp={onUp}
-                    onPointerLeave={onUp}
+                    style={{ width: '100%', maxWidth: '260px', display: 'block', margin: '0 auto', touchAction: onChange ? 'none' : 'auto', cursor: onChange ? 'crosshair' : 'default' }}
+                    onPointerDown={onChange ? onDown : undefined}
+                    onPointerMove={onChange ? onMove : undefined}
+                    onPointerUp={onChange ? onUp : undefined}
+                    onPointerLeave={onChange ? onUp : undefined}
                 >
                     {[1,2,3,4,5].map(l => (
                         <path key={l} d={gridPath((l/5)*maxR)} fill="none" stroke={l===5?"#d1d5db":"#e5e7eb"} strokeWidth={l===5?1.5:1} />
