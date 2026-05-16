@@ -695,6 +695,19 @@
                 playBeep(600, 'triangle', 0.1);
             };
 
+            const handleTimerBack = (e) => {
+                if (e) e.preventDefault();
+                if (currentTime === 0) {
+                    setTimerStatus('idle');
+                    return;
+                }
+                if (window.confirm('放棄目前的沖煮進度？')) {
+                    setCurrentTime(0);
+                    prevTimeRef.current = 0;
+                    setTimerStatus('idle');
+                }
+            };
+
             const handleFinish = (e) => {
                 if(e) e.preventDefault();
                 const totalTime = recipe.steps[recipe.steps.length - 1].endTime;
@@ -728,7 +741,9 @@
             const closeModal = () => {
                 setShowSaveModal(false);
                 setEditingLogId(null);
-                handleReset();
+                setCurrentTime(0);
+                prevTimeRef.current = 0;
+                setTimerStatus('idle');
                 setNotes('');
                 setBeanName('');
                 setRoastLevel('light');
@@ -1761,6 +1776,18 @@
 
                 return (
                     <div className="flex flex-col h-full items-center py-4 relative select-none">
+                        {/* 返回按鈕列 */}
+                        {!isFinished && (
+                            <div className="w-full px-4 flex items-center mb-1">
+                                <button
+                                    onPointerDown={handleTimerBack}
+                                    aria-label="放棄沖煮並返回"
+                                    className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                            </div>
+                        )}
                         {/* 步驟進度條 */}
                         {!isFinished && (
                             <div className="w-full px-6 mb-2 z-10">
