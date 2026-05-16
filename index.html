@@ -2086,8 +2086,8 @@
                                     </div>
                                 )}
 
-                                {/* Search + sort (timeline only) */}
-                                {viewMode === 'timeline' && (
+                                {/* Search + sort (timeline only, not in bean drilldown) */}
+                                {viewMode === 'timeline' && !beanDrilldown && (
                                     <div className="flex gap-2 items-center">
                                         <div className="relative flex-1 min-w-0">
                                             <label htmlFor="journal-search" className="sr-only">搜尋豆子名稱</label>
@@ -2151,6 +2151,30 @@
                                 )}
                             </div>
                         )}
+
+                        {/* Bean drilldown summary strip */}
+                        {beanDrilldown && (() => {
+                            const beanLogs = logs.filter(l => (l.beanName || '未命名咖啡豆') === beanDrilldown);
+                            const rated = beanLogs.filter(l => l.rating > 0);
+                            const avgRating = rated.length ? rated.reduce((s, l) => s + l.rating, 0) / rated.length : 0;
+                            const roastInfo = ROAST_LEVELS.find(r => r.id === beanLogs[0]?.roastLevel) || ROAST_LEVELS[0];
+                            return (
+                                <div className="flex items-center justify-between bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{roastInfo.label}</span>
+                                        {avgRating > 0 && (
+                                            <div className="flex items-center gap-0.5">
+                                                {[1,2,3,4,5].map(s => (
+                                                    <Star key={s} className={`w-3 h-3 fill-current ${Math.round(avgRating) >= s ? 'text-amber-400' : 'text-amber-200'}`} />
+                                                ))}
+                                                <span className="text-xs text-amber-700 font-bold ml-1 tabular-nums">{avgRating.toFixed(1)}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-amber-600 font-semibold">{beanLogs.length} 次沖煮紀錄</span>
+                                </div>
+                            );
+                        })()}
 
                         {logs.length === 0 ? (
                             <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-neutral-200">
@@ -2531,11 +2555,15 @@
                                     </div>
 
                                     <div className="px-5 pb-8 space-y-4">
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex items-center gap-1.5">
                                             {[1,2,3,4,5].map(star => (
-                                                <Star key={star} className={`w-6 h-6 ${vl.rating >= star ? 'text-amber-400 fill-current' : 'text-neutral-200 fill-current'}`} />
+                                                <Star key={star} className={`w-6 h-6 fill-current ${vl.rating >= star ? 'text-amber-400' : 'text-neutral-200'}`} />
                                             ))}
-                                            <span className="ml-1.5 text-sm font-bold text-amber-700">{vl.rating} / 5</span>
+                                            {vl.rating > 0 && (
+                                                <span className="ml-1 text-sm text-neutral-400">
+                                                    {['','還要加油','普通','不錯喝','很好喝','完美'][vl.rating]}
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div>
