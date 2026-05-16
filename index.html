@@ -1835,34 +1835,16 @@
                                     </span>
                                 </div>
                                 {/* Row 1: 步驟進度條 */}
-                                <div className="flex gap-1 items-center mb-1.5">
+                                <div className="flex gap-1 items-center">
                                     {recipe.steps.map((s, idx) => {
                                         const completed = currentTime >= s.endTime;
                                         const isCurrent = index === idx;
                                         return (
-                                            <div key={idx} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                                                completed ? 'bg-amber-500' :
-                                                isCurrent ? (isRunning ? 'bg-amber-300' : 'bg-amber-200') :
+                                            <div key={idx} className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                                                completed ? 'bg-amber-400' :
+                                                isCurrent ? 'bg-amber-200' :
                                                 'bg-neutral-100'
                                             }`} />
-                                        );
-                                    })}
-                                </div>
-                                {/* Row 2: 當前步驟名稱 (顯示真實名稱)，其餘顯示小點 */}
-                                <div className="flex items-center h-4">
-                                    {recipe.steps.map((s, idx) => {
-                                        const completed = currentTime >= s.endTime;
-                                        const isCurrent = index === idx;
-                                        return (
-                                            <div key={idx} className="flex-1 flex justify-center items-center">
-                                                {isCurrent ? (
-                                                    <span className="text-[11px] font-bold text-amber-500 leading-none truncate max-w-[60px]">
-                                                        {s.name.split('(')[0].trim()}
-                                                    </span>
-                                                ) : (
-                                                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${completed ? 'bg-amber-300' : 'bg-neutral-200'}`} />
-                                                )}
-                                            </div>
                                         );
                                     })}
                                 </div>
