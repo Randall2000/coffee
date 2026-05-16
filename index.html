@@ -1237,10 +1237,12 @@
                                                 updateRecipe(bestGroup.id);
                                                 setRatio(bestRatio);
                                                 setRecipeRatios(prev => ({ ...prev, [bestGroup.id]: bestRatio }));
+                                                setBrewStep('suggestion');
+                                                if (contentRef.current) contentRef.current.scrollTop = 0;
                                             }}
-                                            className="w-full py-2.5 bg-amber-600 text-white text-xs font-bold rounded-xl cursor-pointer touch-none active:scale-[0.98] transition-all hover:bg-amber-700"
+                                            className="w-full py-2.5 bg-amber-600 text-white text-xs font-bold rounded-xl cursor-pointer touch-none active:scale-[0.98] transition-all hover:bg-amber-700 flex items-center justify-center gap-1.5"
                                         >
-                                            套用這個建議
+                                            套用這個建議 <ChevronRight className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
                                 </div>
