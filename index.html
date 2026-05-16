@@ -511,6 +511,7 @@
             const sheetRoastDateInputRef = useRef(null);
             const activeSheetRef = useRef(null);
             const sheetOpenedRef = useRef(false); // track if opening anim is done
+            const modalPanelRef = useRef(null);
 
             const springBack = () => {
                 const el = activeSheetRef.current;
@@ -655,6 +656,14 @@
                 }
                 prevTimeRef.current = now;
             }, [currentTime, timerStatus, recipe]);
+
+            useEffect(() => {
+                if (!showSaveModal) return;
+                const prev = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+                const id = setTimeout(() => modalPanelRef.current?.focus(), 10);
+                return () => { document.body.style.overflow = prev; clearTimeout(id); };
+            }, [showSaveModal]);
 
             useEffect(() => {
                 if (!saveFeedback) return;
@@ -2134,11 +2143,11 @@
                     )}
 
                     {showSaveModal && (
-                        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-                            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
+                        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-end sm:items-center justify-center sm:p-4 backdrop-blur-sm animate-in fade-in">
+                            <div ref={modalPanelRef} tabIndex={-1} className="outline-none bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 max-h-[82vh] overflow-y-auto overscroll-contain">
 
                                 {/* Header */}
-                                <div className="flex items-center justify-between px-5 py-2">
+                                <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-100">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-base font-bold text-neutral-800">{editingLogId ? '編輯紀錄' : '紀錄這杯'}</h3>
                                         {!editingLogId && (
@@ -2156,10 +2165,10 @@
                                     </button>
                                 </div>
 
-                                <div className="px-5 pb-6 space-y-4">
+                                <div className="px-4 pb-4 space-y-3">
                                     {/* 評分 — 最重要，放最上方 */}
-                                    <div className="flex flex-col items-center py-3 gap-1">
-                                        <div className="flex gap-2">
+                                    <div className="flex flex-col items-center py-1.5 gap-1">
+                                        <div className="flex gap-1.5">
                                             {[1, 2, 3, 4, 5].map(star => (
                                                 <button
                                                     key={star}
@@ -2169,7 +2178,7 @@
                                                     onClick={() => setRating(star)}
                                                     className={`p-1 transition-transform active:scale-110 cursor-pointer ${rating >= star ? 'text-amber-400' : 'text-neutral-200'}`}
                                                 >
-                                                    <Star className="w-8 h-8 fill-current" />
+                                                    <Star className="w-7 h-7 fill-current" />
                                                 </button>
                                             ))}
                                         </div>
@@ -2228,7 +2237,7 @@
                                         placeholder="備註（選填）"
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
-                                        className="w-full p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-16"
+                                        className="w-full p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-12"
                                     />
 
                                     {/* 按鈕 */}
