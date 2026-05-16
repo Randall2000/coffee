@@ -869,21 +869,26 @@
                     <div className="flex flex-col h-full select-none">
 
                         {isNewUser ? (
-                            /* ── 新用戶佈局：三個獨立 zone，各自有呼吸空間 ── */
+                            /* ── 新用戶佈局：插圖置中，底部錨定 CTA ── */
                             <>
-                                {/* Zone A: 插圖 — 固定高度，不壓縮 */}
-                                <div className="flex items-center justify-center" style={{height:'180px', flexShrink:0}}>
+                                {/* 上方彈性空白 — 把插圖往下推到視覺中心 */}
+                                <div className="flex-1" />
+
+                                {/* Zone A: 插圖 — 置中區段 */}
+                                <div className="flex flex-col items-center gap-4">
                                     <PourOverIllustration />
+                                    {/* Zone B: 標題文字 */}
+                                    <div className="text-center px-6">
+                                        <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">手沖咖啡，一步一步</h1>
+                                        <p className="text-sm text-neutral-400 mt-1.5">選豆、調參數、跟著計時器完成每一注</p>
+                                    </div>
                                 </div>
 
-                                {/* Zone B: 標題文字 — 與插圖分隔清楚 */}
-                                <div className="text-center px-6 pb-1" style={{flexShrink:0}}>
-                                    <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">手沖咖啡，一步一步</h1>
-                                    <p className="text-sm text-neutral-400 mt-1.5">選豆、調參數、跟著計時器完成每一注</p>
-                                </div>
+                                {/* 下方彈性空白 — 在插圖和 chips 之間留空 */}
+                                <div className="flex-1" />
 
-                                {/* Zone C: Feature chips — flex 撐開剩餘空間，內容底部對齊 CTA */}
-                                <div className="flex-1 flex flex-col justify-end gap-3 pb-2">
+                                {/* Zone C: Feature chips + CTA — 固定在底部 */}
+                                <div className="flex flex-col gap-3 pb-2">
                                     <div className="grid grid-cols-3 gap-2.5">
                                         {[
                                             { icon: <Droplet className="w-5 h-5 text-amber-500" />, label: '選風味', desc: '明亮 · 平衡 · 醇厚' },
@@ -909,15 +914,21 @@
                                 </div>
                             </>
                         ) : (
-                            /* ── 回訪用戶佈局：插圖居中 + 上次沖煮卡 + 單一主 CTA ── */
+                            /* ── 回訪用戶佈局：插圖置中 + 底部 CTA ── */
                             <>
-                                {/* 插圖 */}
-                                <div className="flex items-center justify-center" style={{flex:'0 1 220px', minHeight:'150px'}}>
+                                {/* 上方彈性空白 */}
+                                <div className="flex-1" />
+
+                                {/* 插圖 — 視覺中心 */}
+                                <div className="flex items-center justify-center">
                                     <PourOverIllustration />
                                 </div>
 
-                                {/* 底部操作區 */}
-                                <div className="flex-1 flex flex-col justify-end gap-3 pb-2">
+                                {/* 下方彈性空白 */}
+                                <div className="flex-1" />
+
+                                {/* 底部操作區 — 固定高度，不參與 flex 空白分配 */}
+                                <div className="flex flex-col gap-3 pb-2" style={{flexShrink:0}}>
 
                                     {/* 上次沖煮卡 — 「再沖一次」內嵌為 header 右側 pill，卡片整體可點 */}
                                     {lastLog && (
