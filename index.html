@@ -191,13 +191,13 @@
             v60: {
                 id: 'v60',
                 name: '究極 V60 (James Hoffmann)',
-                description: '強調高萃取率與乾淨度，適合淺焙豆。',
+                description: '口感乾淨，香氣完整，適合淺焙豆。',
                 ratio: 16.7,
                 steps: [
-                    { name: '悶蒸 (Bloom)', desc: '以咖啡粉重量 2 倍的水量充分潤濕，悶蒸 45 秒', endTime: 45, waterTargetCoffeeMultiple: 2 },
-                    { name: '主注水', desc: '在 1:15 前穩定注到總水量 60%，維持水位與熱量', endTime: 75, waterTargetPercentage: 0.6 },
-                    { name: '補足總水量', desc: '在 1:45 前續注到 100%，完成主體萃取', endTime: 105, waterTargetPercentage: 1.0 },
-                    { name: '攪拌與濾乾', desc: '輕攪兩下再小幅繞圈整平粉床，目標總時長約 3:00', endTime: 180, waterTargetPercentage: 1.0 }
+                    { name: '悶蒸 (Bloom)', desc: '注入咖啡粉 2 倍的熱水，等 45 秒讓粉排氣膨脹', endTime: 45, waterTargetCoffeeMultiple: 2 },
+                    { name: '主注水', desc: '以繞圈方式穩定注水，在 1:15 前注到總水量 60%', endTime: 75, waterTargetPercentage: 0.6 },
+                    { name: '補足總水量', desc: '繼續注到 100% 總水量，約 1:45 前完成', endTime: 105, waterTargetPercentage: 1.0 },
+                    { name: '攪拌與濾乾', desc: '輕攪兩下，小繞圈整平咖啡粉，靜待濾乾，目標 3:00 完成', endTime: 180, waterTargetPercentage: 1.0 }
                 ]
             },
             fourSix: {
@@ -207,7 +207,7 @@
                 ratio: 15,
                 steps: [
                     { name: '第1注', desc: '第 1 注 20%，建立前段風味；與第 2 注合計為前 40%', endTime: 45, waterTargetPercentage: 0.2 },
-                    { name: '第2注', desc: '第 2 注補到 40%，平衡酸值與甜感', endTime: 90, waterTargetPercentage: 0.4 },
+                    { name: '第2注', desc: '補到總量 40%，平衡酸感與甜味', endTime: 90, waterTargetPercentage: 0.4 },
                     { name: '第3注', desc: '第 3 注補到 60%，開始建立醇厚與強度', endTime: 135, waterTargetPercentage: 0.6 },
                     { name: '第4注', desc: '第 4 注補到 80%，維持每 45 秒一次的節奏', endTime: 180, waterTargetPercentage: 0.8 },
                     { name: '第5注', desc: '第 5 注補到 100%，等候濾乾；總時長約 3:30', endTime: 210, waterTargetPercentage: 1.0 }
@@ -227,10 +227,10 @@
 
 
         const FLOW_OPTIONS      = [{ id: 'fast', label: '太快' }, { id: 'good', label: '剛好' }, { id: 'clog', label: '堵塞' }];
-        const STABILITY_OPTIONS = [{ id: 'shaky', label: '手抖' }, { id: 'stable', label: '穩定' }, { id: 'bypass', label: '穿流' }];
+        const STABILITY_OPTIONS = [{ id: 'shaky', label: '手抖' }, { id: 'stable', label: '穩定' }, { id: 'bypass', label: '水道不均' }];
 
         const SENSORY_ATTRIBUTES = [
-            { key: 'acidity', label: '酸值', color: 'bg-amber-400' },
+            { key: 'acidity', label: '酸感', color: 'bg-amber-400' },
             { key: 'sweetness', label: '甜感', color: 'bg-amber-400' },
             { key: 'bitterness', label: '苦味', color: 'bg-amber-400' },
             { key: 'body', label: '醇厚', color: 'bg-amber-400' },
@@ -1599,17 +1599,17 @@
                 const recipeMeta = {
                     v60: {
                         label: '乾淨明亮',
-                        cue: '分段拉高萃取',
+                        cue: '分批注水，留住香氣',
                         bestFor: '淺焙、花果香',
                         accent: 'bg-amber-600',
-                        reason: '能拉出較清楚的香氣與乾淨度'
+                        reason: '口感乾淨，花果香氣更突出'
                     },
                     fourSix: {
                         label: '酸甜可控',
                         cue: '五注調整風味',
                         bestFor: '想調甜感與厚度',
                         accent: 'bg-orange-500',
-                        reason: '用分注比例調整酸甜與醇厚'
+                        reason: '透過五次分注，自由調整酸甜比例'
                     },
                     onePour: {
                         label: '簡潔穩定',
