@@ -1069,7 +1069,7 @@
                 return (
                     <div className="pb-24 select-none space-y-3">
                         {/* Header */}
-                        <div className="flex items-center gap-3 mb-1">
+                        <div className="flex items-center gap-3">
                             <button
                                 onPointerDown={(e) => { e.preventDefault(); setBrewStep('home'); }}
                                 aria-label="返回首頁"
@@ -1186,14 +1186,15 @@
                             const allAvg = beanLogs.reduce((s, l) => s + l.rating, 0) / beanLogs.length;
 
                             return (
-                                <div className="rounded-2xl border border-amber-200 bg-amber-50 overflow-hidden">
+                                <div className="rounded-2xl border border-neutral-100 bg-white shadow-sm overflow-hidden">
+                                    <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-300" />
                                     {/* Header */}
                                     <div className="px-4 pt-3 pb-2 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-amber-700 uppercase tracking-widest">
+                                            <span className="text-xs font-semibold text-amber-600 uppercase tracking-widest">
                                                 {isMulti ? '沖煮建議' : '上次紀錄'}
                                             </span>
-                                            <span className="text-xs text-amber-600">{beanLogs.length} 次</span>
+                                            <span className="text-xs text-neutral-400">{beanLogs.length} 次</span>
                                         </div>
                                         <div className="flex items-center gap-0.5">
                                             {[1,2,3,4,5].map(s => (
@@ -1228,7 +1229,7 @@
                                         </div>
 
                                         {topBrew?.notes && (
-                                            <p className="text-xs text-amber-800 italic px-1">「{topBrew.notes}」</p>
+                                            <p className="text-xs text-neutral-500 italic px-1">「{topBrew.notes}」</p>
                                         )}
 
                                         <button
@@ -1358,7 +1359,7 @@
                                                         onPointerDown={(e) => { e.preventDefault(); setSheetIsExpanded(true); }}
                                                         className="w-full py-3 text-sm text-amber-600 font-medium text-center cursor-pointer touch-none active:opacity-60 border border-dashed border-amber-200 rounded-2xl"
                                                     >
-                                                        查看全部 {recentBeans.length} 筆 ↑
+                                                        查看全部 {recentBeans.length} 筆 <ChevronUp className="w-3.5 h-3.5 inline-block" />
                                                     </button>
                                                 )}
                                             </>
@@ -1769,7 +1770,7 @@
                                     </div>
                                     <div className="text-left">
                                         <p className={`text-sm font-bold ${showAdjust ? 'text-amber-800' : 'text-neutral-700'}`}>調整沖煮參數</p>
-                                        <p className="text-xs text-neutral-400 mt-0.5">熟練者可自訂粉量、水溫、粉水比</p>
+                                        <p className="text-xs text-neutral-400 mt-0.5">熟練者可自訂粉量、水溫與烘焙度</p>
                                     </div>
                                 </div>
                                 <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${showAdjust ? 'bg-amber-500' : 'bg-amber-100'}`}>
