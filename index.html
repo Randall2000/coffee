@@ -1202,7 +1202,7 @@
                                         </div>
                                         <div className="flex items-center gap-0.5">
                                             {[1,2,3,4,5].map(s => (
-                                                <Star key={s} className={`w-3 h-3 fill-current ${Math.round(allAvg) >= s ? 'text-amber-400' : 'text-amber-200'}`} />
+                                                <Star key={s} className={`w-3 h-3 fill-current ${Math.round(allAvg) >= s ? 'text-amber-400' : 'text-neutral-200'}`} />
                                             ))}
                                             <span className="text-xs text-amber-700 font-bold ml-1 tabular-nums">{allAvg.toFixed(1)}</span>
                                         </div>
@@ -1441,7 +1441,7 @@
                                                         setAddingNewBean(false);
                                                         setTimeout(() => closeBottomSheet('bean', setBeanSheetOpen), 600);
                                                     }}
-                                                    className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-sm cursor-pointer touch-none active:scale-[0.98] transition-all"
+                                                    className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-sm shadow-xl shadow-amber-200/60 hover:bg-amber-700 cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
                                                     儲存
                                                 </button>
@@ -1813,7 +1813,7 @@
                                     {/* 烘焙度 */}
                                     <div>
                                         <span className="text-sm text-neutral-500 block mb-2">烘焙度</span>
-                                        <div className="flex gap-2">
+                                        <div className="flex bg-neutral-100 p-1 rounded-xl h-[44px]">
                                             {ROAST_LEVELS.map(level => (
                                                 <button
                                                     key={level.id}
@@ -1822,14 +1822,10 @@
                                                         setRoastLevel(level.id);
                                                         setWaterTemp(WATER_TEMPS[level.id] || 90);
                                                     }}
-                                                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all cursor-pointer touch-none active:scale-95 ${
+                                                    className={`flex-1 flex items-center justify-center rounded-lg text-sm font-bold transition-all cursor-pointer touch-none ${
                                                         roastLevel === level.id
-                                                        ? level.id === 'dark'
-                                                            ? 'bg-neutral-900 text-white border-neutral-900'
-                                                            : level.id === 'medium'
-                                                                ? 'bg-amber-600 text-white border-amber-600'
-                                                                : 'bg-amber-400 text-white border-amber-400'
-                                                        : 'bg-neutral-50 text-neutral-400 border-neutral-200'
+                                                        ? 'bg-white text-neutral-800 shadow-sm'
+                                                        : 'text-neutral-400 active:bg-neutral-200'
                                                     }`}
                                                 >
                                                     {level.label}
@@ -1948,7 +1944,7 @@
                                     <button
                                         onPointerDown={handleTimerBack}
                                         aria-label="放棄沖煮並返回"
-                                        className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-300 hover:text-neutral-500 cursor-pointer touch-none flex-shrink-0 transition-colors"
+                                        className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0 transition-colors"
                                     >
                                         <ChevronLeft className="w-5 h-5" />
                                     </button>
@@ -2034,7 +2030,7 @@
                                 <button
                                     onPointerDown={handleStartStop}
                                     aria-label="開始計時"
-                                    className="w-full py-4 bg-amber-600 text-white font-bold rounded-xl shadow-xl shadow-amber-200/50 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer touch-none text-lg"
+                                    className="w-full py-4 bg-amber-600 text-white font-bold rounded-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer touch-none text-lg"
                                 >
                                     <Play className="w-5 h-5 fill-current ml-1" /> 開始計時
                                 </button>
@@ -2050,7 +2046,7 @@
                                     <button
                                         onPointerDown={handleStartStop}
                                         aria-label="暫停計時器"
-                                        className="w-24 h-24 rounded-3xl bg-amber-100 text-amber-600 border-2 border-amber-200 flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none"
+                                        className="w-24 h-24 rounded-3xl bg-amber-100 text-amber-600 border-2 border-amber-200 flex items-center justify-center shadow-xl shadow-amber-200/60 cursor-pointer touch-none"
                                     >
                                         <Pause className="w-10 h-10 fill-current" />
                                     </button>
@@ -2083,7 +2079,7 @@
                                     <button
                                         onPointerDown={handleStartStop}
                                         aria-label="繼續計時器"
-                                        className="w-24 h-24 rounded-3xl bg-amber-600 text-white flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none"
+                                        className="w-24 h-24 rounded-3xl bg-amber-600 text-white flex items-center justify-center shadow-xl shadow-amber-200/60 cursor-pointer touch-none"
                                     >
                                         <Play className="w-10 h-10 fill-current ml-1" />
                                     </button>
@@ -2479,7 +2475,7 @@
                         <div className="px-4 pt-2 pb-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent flex-shrink-0">
                             <button
                                 onPointerDown={(e) => { e.preventDefault(); setBrewStep('suggestion'); if (contentRef.current) contentRef.current.scrollTop = 0; }}
-                                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-200/50 hover:bg-amber-700 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-95"
+                                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-95"
                             >
                                 查看沖煮建議 <ChevronRight className="w-5 h-5" />
                             </button>
@@ -2489,7 +2485,7 @@
                         <div className="px-4 pt-2 pb-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent flex-shrink-0">
                             <button
                                 onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setTimerStatus('paused'); if (contentRef.current) contentRef.current.scrollTop = 0; }}
-                                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-200/50 hover:bg-amber-700 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-95"
+                                className="w-full bg-amber-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-95"
                             >
                                 <Play className="w-5 h-5 fill-current ml-1" /> 開始沖煮
                             </button>
@@ -2642,12 +2638,12 @@
                                                 title="刪除紀錄"
                                                 className={`flex-none rounded-xl transition-all cursor-pointer ${confirmDeleteModal ? 'px-4 py-3 bg-red-500 text-white font-bold text-sm' : 'p-3 text-red-500 bg-red-50 hover:bg-red-100'}`}
                                             >
-                                                {confirmDeleteModal ? '確定刪除' : <Trash2 className="w-5 h-5" />}
+                                                {confirmDeleteModal ? '確定刪除' : <Trash2 className="w-4 h-4" />}
                                             </button>
                                         )}
                                         <button
                                             onClick={saveLog}
-                                            className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:bg-amber-700 transition-colors cursor-pointer"
+                                            className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all cursor-pointer"
                                         >
                                             {editingLogId ? '更新紀錄' : '儲存紀錄'}
                                         </button>
@@ -2673,7 +2669,7 @@
                                         onTouchMove={handleSheetTouchMove}
                                         onTouchEnd={handleSheetTouchEnd}
                                     >
-                                        <div className="w-12 h-1.5 bg-neutral-200 rounded-full" />
+                                        <div className="w-10 h-1 rounded-full bg-neutral-200" />
                                     </div>
 
                                     <div className="flex items-start justify-between px-5 pt-3 pb-3">
@@ -2763,7 +2759,7 @@
                                                 title="刪除紀錄"
                                                 className={`flex-none rounded-xl transition-all cursor-pointer ${confirmDeleteView ? 'px-4 py-3 bg-red-500 text-white font-bold text-sm' : 'p-3 text-red-500 bg-red-50 hover:bg-red-100'}`}
                                             >
-                                                {confirmDeleteView ? '確定刪除' : <Trash2 className="w-5 h-5" />}
+                                                {confirmDeleteView ? '確定刪除' : <Trash2 className="w-4 h-4" />}
                                             </button>
                                             <button
                                                 onClick={() => { setViewingLog(null); handleEditLog(vl); }}
