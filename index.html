@@ -286,9 +286,14 @@
 
         const getRelativeDate = (timestamp) => {
             const d = new Date(timestamp);
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${m}/${day}`;
+            const now = new Date();
+            const diffDays = Math.floor((now - d) / 86400000);
+            if (diffDays === 0) return '今天';
+            if (diffDays === 1) return '昨天';
+            if (diffDays < 7) return `${diffDays} 天前`;
+            const m = d.getMonth() + 1;
+            const day = d.getDate();
+            return `${m}月${day}日`;
         };
 
         const formatRoastDate = (dateString) => {
@@ -2016,7 +2021,39 @@
 
                 return (
                     <div className="space-y-4 pb-4">
-                        {!beanDrilldown && (
+                        {/* Page header — journal title or bean detail title */}
+                        {beanDrilldown ? (() => {
+                            const beanLogs = logs.filter(l => (l.beanName || '未命名咖啡豆') === beanDrilldown);
+                            const rated = beanLogs.filter(l => l.rating > 0);
+                            const avgRating = rated.length ? rated.reduce((s, l) => s + l.rating, 0) / rated.length : 0;
+                            const roastInfo = ROAST_LEVELS.find(r => r.id === beanLogs[0]?.roastLevel) || ROAST_LEVELS[0];
+                            return (
+                                <div>
+                                    <button
+                                        onClick={() => { setViewMode('byBean'); setSearchQuery(''); setBeanDrilldown(null); }}
+                                        className="flex items-center gap-1 text-xs text-amber-600 font-semibold cursor-pointer mb-2"
+                                    >
+                                        <ChevronLeft className="w-3.5 h-3.5" /> 所有豆子
+                                    </button>
+                                    <h2 className="text-xl font-bold text-neutral-800 leading-tight truncate">{beanDrilldown}</h2>
+                                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{roastInfo.label}</span>
+                                        {avgRating > 0 && (
+                                            <>
+                                                <div className="flex items-center gap-0.5">
+                                                    {[1,2,3,4,5].map(s => (
+                                                        <Star key={s} className={`w-3 h-3 fill-current ${Math.round(avgRating) >= s ? 'text-amber-400' : 'text-neutral-200'}`} />
+                                                    ))}
+                                                </div>
+                                                <span className="text-xs text-neutral-500 tabular-nums">{avgRating.toFixed(1)}</span>
+                                            </>
+                                        )}
+                                        <span className="text-neutral-300 text-xs">·</span>
+                                        <span className="text-xs text-neutral-400">{beanLogs.length} 次沖煮</span>
+                                    </div>
+                                </div>
+                            );
+                        })() : (
                             <div className="flex items-center justify-between">
                                 <h2 className="text-2xl font-bold text-neutral-800 flex items-center gap-2">
                                     <BookOpen className="w-6 h-6 text-amber-600" /> 沖煮日誌
@@ -2059,38 +2096,26 @@
                             </div>
                         )}
 
-                        {logs.length > 0 && (
+                        {logs.length > 0 && !beanDrilldown && (
                             <div className="space-y-2">
-                                {/* View toggle / breadcrumb */}
-                                {beanDrilldown ? (
+                                {/* View toggle */}
+                                <div className="flex bg-neutral-100 rounded-xl p-0.5">
+                                    <button
+                                        onClick={() => { setViewMode('timeline'); setSearchQuery(''); setBeanDrilldown(null); }}
+                                        className={`flex-1 py-1.5 rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${viewMode === 'timeline' ? 'bg-white shadow-sm text-neutral-800' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                    >
+                                        時間軸
+                                    </button>
                                     <button
                                         onClick={() => { setViewMode('byBean'); setSearchQuery(''); setBeanDrilldown(null); }}
-                                        className="flex items-center gap-1.5 text-sm font-semibold text-amber-600 cursor-pointer py-1"
+                                        className={`flex-1 py-1.5 rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${viewMode === 'byBean' ? 'bg-white shadow-sm text-neutral-800' : 'text-neutral-400 hover:text-neutral-600'}`}
                                     >
-                                        <ChevronLeft className="w-4 h-4" />
-                                        <span>所有豆子</span>
-                                        <span className="text-neutral-300 font-normal">/</span>
-                                        <span className="text-neutral-700 truncate max-w-[180px]">{beanDrilldown}</span>
+                                        按豆子
                                     </button>
-                                ) : (
-                                    <div className="flex bg-neutral-100 rounded-xl p-0.5">
-                                        <button
-                                            onClick={() => { setViewMode('timeline'); setSearchQuery(''); setBeanDrilldown(null); }}
-                                            className={`flex-1 py-1.5 rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${viewMode === 'timeline' ? 'bg-white shadow-sm text-neutral-800' : 'text-neutral-400 hover:text-neutral-600'}`}
-                                        >
-                                            時間軸
-                                        </button>
-                                        <button
-                                            onClick={() => { setViewMode('byBean'); setSearchQuery(''); setBeanDrilldown(null); }}
-                                            className={`flex-1 py-1.5 rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${viewMode === 'byBean' ? 'bg-white shadow-sm text-neutral-800' : 'text-neutral-400 hover:text-neutral-600'}`}
-                                        >
-                                            按豆子
-                                        </button>
-                                    </div>
-                                )}
+                                </div>
 
-                                {/* Search + sort (timeline only, not in bean drilldown) */}
-                                {viewMode === 'timeline' && !beanDrilldown && (
+                                {/* Search + sort (timeline only) */}
+                                {viewMode === 'timeline' && (
                                     <div className="flex gap-2 items-center">
                                         <div className="relative flex-1 min-w-0">
                                             <label htmlFor="journal-search" className="sr-only">搜尋豆子名稱</label>
@@ -2154,30 +2179,6 @@
                                 )}
                             </div>
                         )}
-
-                        {/* Bean drilldown summary strip */}
-                        {beanDrilldown && (() => {
-                            const beanLogs = logs.filter(l => (l.beanName || '未命名咖啡豆') === beanDrilldown);
-                            const rated = beanLogs.filter(l => l.rating > 0);
-                            const avgRating = rated.length ? rated.reduce((s, l) => s + l.rating, 0) / rated.length : 0;
-                            const roastInfo = ROAST_LEVELS.find(r => r.id === beanLogs[0]?.roastLevel) || ROAST_LEVELS[0];
-                            return (
-                                <div className="flex items-center justify-between bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5">
-                                    <div className="flex items-center gap-2.5">
-                                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{roastInfo.label}</span>
-                                        {avgRating > 0 && (
-                                            <div className="flex items-center gap-0.5">
-                                                {[1,2,3,4,5].map(s => (
-                                                    <Star key={s} className={`w-3 h-3 fill-current ${Math.round(avgRating) >= s ? 'text-amber-400' : 'text-amber-200'}`} />
-                                                ))}
-                                                <span className="text-xs text-amber-700 font-bold ml-1 tabular-nums">{avgRating.toFixed(1)}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <span className="text-xs text-amber-600 font-semibold">{beanLogs.length} 次沖煮紀錄</span>
-                                </div>
-                            );
-                        })()}
 
                         {logs.length === 0 ? (
                             <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-neutral-200">
@@ -2266,20 +2267,29 @@
                                     const roastInfo = ROAST_LEVELS.find(r => r.id === log.roastLevel) || ROAST_LEVELS[0];
                                     return (
                                         <div key={log.id} className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden cursor-pointer hover:border-neutral-200 active:opacity-75 transition-all" onClick={() => handleViewLog(log)}>
-                                            {/* 主要資訊：豆名 + 星級 */}
                                             <div className="p-4 pb-3">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex-1 min-w-0">
-                                                        <h3 className="font-bold text-neutral-800 text-base leading-tight truncate">
-                                                            {log.beanName || '未命名咖啡豆'}
-                                                        </h3>
-                                                        <div className="flex items-center gap-1.5 mt-1.5">
-                                                            <span className="text-xs text-neutral-500">{getRelativeDate(log.createdAt)}</span>
-                                                            <span className="text-neutral-200 text-xs">·</span>
-                                                            <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{roastInfo.label}</span>
-                                                        </div>
+                                                        {beanDrilldown ? (
+                                                            /* 豆子內頁：日期為主要標識，隱藏重複的豆子名稱 */
+                                                            <h3 className="font-bold text-neutral-800 text-base leading-tight">
+                                                                {getRelativeDate(log.createdAt)}
+                                                            </h3>
+                                                        ) : (
+                                                            /* 時間軸：豆子名稱為主要標識 */
+                                                            <>
+                                                                <h3 className="font-bold text-neutral-800 text-base leading-tight truncate">
+                                                                    {log.beanName || '未命名咖啡豆'}
+                                                                </h3>
+                                                                <div className="flex items-center gap-1.5 mt-1.5">
+                                                                    <span className="text-xs text-neutral-500">{getRelativeDate(log.createdAt)}</span>
+                                                                    <span className="text-neutral-200 text-xs">·</span>
+                                                                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{roastInfo.label}</span>
+                                                                </div>
+                                                            </>
+                                                        )}
                                                     </div>
-                                                    {/* 星級視覺化 */}
+                                                    {/* 星級 */}
                                                     {log.rating > 0 ? (
                                                         <div className="flex items-center gap-0.5 flex-shrink-0 pt-0.5">
                                                             {[1,2,3,4,5].map(s => (
