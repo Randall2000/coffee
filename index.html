@@ -688,10 +688,9 @@
             const handleReset = (e) => {
                 if(e) e.preventDefault();
                 if (timerStatus === 'idle') return;
-                // Reset restarts the timer from 0
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
-                setTimerStatus('running');
+                setTimerStatus('paused');
                 playBeep(600, 'triangle', 0.1);
             };
 
@@ -1774,38 +1773,40 @@
                 const strokeDashoffset = circumference - (progress / 100) * circumference;
                 const centerContentWidth = Math.floor((normalizedRadius - 10) * Math.sqrt(2));
 
+                const isReady   = timerStatus === 'paused' && currentTime === 0;
+                const isRunning = timerStatus === 'running';
+                const isPaused  = timerStatus === 'paused' && currentTime > 0;
+                const arcColor  = isRunning ? '#d97706' : isPaused ? '#fcd34d' : '#d97706';
+
                 return (
                     <div className="flex flex-col h-full items-center py-4 relative select-none">
-                        {/* 返回按鈕列 */}
+
+                        {/* ── Header: 返回 + 配方參數 + 步驟進度 ── */}
                         {!isFinished && (
-                            <div className="w-full px-4 flex items-center mb-1">
-                                <button
-                                    onPointerDown={handleTimerBack}
-                                    aria-label="放棄沖煮並返回"
-                                    className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                            </div>
-                        )}
-                        {/* 步驟進度條 */}
-                        {!isFinished && (
-                            <div className="w-full px-6 mb-2 z-10">
-                                {/* Row 1: 沖法 · 濾杯 / 參數 — 全壓一行 */}
-                                <div className="flex items-center justify-center gap-1.5 text-[11px] mb-2.5 flex-wrap">
-                                    <span className="font-semibold text-neutral-600">{recipe.name.split('(')[0].trim()}</span>
-                                    <span className="text-neutral-200">·</span>
-                                    <span className="text-neutral-400">{selectedDripper.name}</span>
-                                    <span className="text-neutral-200 mx-0.5">/</span>
-                                    <span className="font-mono text-neutral-400">{coffeeGrams}g</span>
-                                    <span className="text-neutral-200">·</span>
-                                    <span className="font-mono text-neutral-400">{waterTotal}ml</span>
-                                    <span className="text-neutral-200">·</span>
-                                    <span className="font-mono text-neutral-400">{waterTemp}°C</span>
-                                    <span className="text-neutral-200">·</span>
-                                    <span className="font-mono text-neutral-400">{formatTimerDisplay(totalTime)}</span>
+                            <div className="w-full px-4 mb-1 z-10">
+                                {/* Row 0: 返回 ← + 配方一行 */}
+                                <div className="flex items-center gap-2 mb-2.5">
+                                    <button
+                                        onPointerDown={handleTimerBack}
+                                        aria-label="放棄沖煮並返回"
+                                        className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+                                    <div className="flex-1 flex items-center justify-center gap-1.5 text-[11px] flex-wrap min-w-0">
+                                        <span className="font-semibold text-neutral-600">{recipe.name.split('(')[0].trim()}</span>
+                                        <span className="text-neutral-200">·</span>
+                                        <span className="text-neutral-400">{selectedDripper.name}</span>
+                                        <span className="text-neutral-200 mx-0.5">/</span>
+                                        <span className="font-mono text-neutral-400">{coffeeGrams}g</span>
+                                        <span className="text-neutral-200">·</span>
+                                        <span className="font-mono text-neutral-400">{waterTotal}ml</span>
+                                        <span className="text-neutral-200">·</span>
+                                        <span className="font-mono text-neutral-400">{waterTemp}°C</span>
+                                    </div>
+                                    <div className="w-9 flex-shrink-0" />
                                 </div>
-                                {/* Row 2: 進度條 — 加粗 */}
+                                {/* Row 1: 步驟進度條 */}
                                 <div className="flex gap-1 items-center mb-2">
                                     {recipe.steps.map((s, idx) => {
                                         const completed = currentTime >= s.endTime;
@@ -1813,13 +1814,13 @@
                                         return (
                                             <div key={idx} className={`h-2 flex-1 rounded-full transition-all duration-300 ${
                                                 completed ? 'bg-amber-500' :
-                                                isCurrent ? 'bg-amber-300' :
+                                                isCurrent ? (isRunning ? 'bg-amber-300' : 'bg-amber-200') :
                                                 'bg-neutral-200'
                                             }`} />
                                         );
                                     })}
                                 </div>
-                                {/* Row 3: 步驟序號 — 當前以圓點標示 */}
+                                {/* Row 2: 步驟序號 */}
                                 <div className="flex items-center">
                                     {recipe.steps.map((s, idx) => {
                                         const completed = currentTime >= s.endTime;
@@ -1837,33 +1838,40 @@
                             </div>
                         )}
 
-                        <div className="flex-1 flex items-center justify-center relative w-full z-0">
+                        {/* ── Timer Circle ── */}
+                        <div className={`flex-1 flex items-center justify-center relative w-full z-0 transition-opacity duration-300 ${isPaused ? 'opacity-70' : 'opacity-100'}`}>
                             <div className="relative">
                                 <svg height={radius * 2} width={radius * 2} className="rotate-[-90deg]">
                                     <circle stroke="#e7e5e4" strokeWidth={stroke} fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
-                                    <circle stroke="#d97706" strokeWidth={stroke} strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }} strokeLinecap="round" fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
+                                    <circle stroke={arcColor} strokeWidth={stroke} strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear, stroke 0.3s' }} strokeLinecap="round" fill="transparent" r={normalizedRadius} cx={radius} cy={radius} />
                                 </svg>
-                                
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 py-6 pointer-events-none">
                                     {!isFinished ? (
                                         <div className="flex flex-col items-center space-y-1.5" style={{ width: `${centerContentWidth}px`, maxWidth: `${centerContentWidth}px` }}>
                                             <div className="w-full text-center text-[13px] font-bold leading-tight tracking-wide text-amber-600 break-words">
-                                                {step.name.split('(')[0].trim()}
+                                                {isReady ? recipe.name.split('(')[0].trim() : step.name.split('(')[0].trim()}
                                             </div>
                                             <div className="text-[42px] font-bold text-neutral-800 tabular-nums tracking-tighter leading-none">
                                                 {formatTimerDisplay(currentTime)}
                                             </div>
-                                            <div className="text-sm font-mono text-neutral-400">
-                                                到 {formatTimerDisplay(step.endTime)}
-                                            </div>
-                                            <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-xl border border-amber-100 bg-amber-50 px-2.5 py-1 text-xs font-bold leading-tight text-amber-700">
-                                                <Droplet className="w-3.5 h-3.5 fill-amber-700" />
-                                                <span>{index > 0 ? `${getStepTargetWater(recipe.steps[index - 1], waterTotal, coffeeGrams)} → ` : ''}{targetWater} ml</span>
-                                            </div>
-                                            {step.desc && (
-                                                <div className="w-full text-center text-[11px] leading-snug text-neutral-500 break-words">
-                                                    {step.desc}
-                                                </div>
+                                            {!isReady && (
+                                                <>
+                                                    <div className="text-sm font-mono text-neutral-400">
+                                                        到 {formatTimerDisplay(step.endTime)}
+                                                    </div>
+                                                    <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-xl border border-amber-100 bg-amber-50 px-2.5 py-1 text-xs font-bold leading-tight text-amber-700">
+                                                        <Droplet className="w-3.5 h-3.5 fill-amber-700" />
+                                                        <span>{index > 0 ? `${getStepTargetWater(recipe.steps[index - 1], waterTotal, coffeeGrams)} → ` : ''}{targetWater} ml</span>
+                                                    </div>
+                                                    {step.desc && (
+                                                        <div className="w-full text-center text-[11px] leading-snug text-neutral-500 break-words">
+                                                            {step.desc}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+                                            {isReady && (
+                                                <div className="text-xs text-neutral-400 mt-1">準備好就按開始</div>
                                             )}
                                         </div>
                                     ) : (
@@ -1879,18 +1887,73 @@
                             </div>
                         </div>
 
-                        <div className="w-full grid grid-cols-3 gap-5 items-center justify-items-center mt-auto pb-6 relative z-[999]">
-                            <button onPointerDown={handleReset} disabled={timerStatus === 'idle'} aria-label="重設計時器" className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
-                                <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm"><RotateCcw className="w-5 h-5" /></div>
-                                <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Reset</span>
-                            </button>
-                            <button onPointerDown={handleStartStop} aria-label={timerStatus === 'running' ? '暫停計時器' : '開始計時器'} className={`w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none ${timerStatus === 'running' ? 'bg-amber-100 text-amber-600 border-2 border-amber-200' : 'bg-amber-600 text-white'}`}>
-                                {timerStatus === 'running' ? <Pause className="w-10 h-10 fill-current" /> : <Play className="w-10 h-10 fill-current ml-1" />}
-                            </button>
-                            <button onPointerDown={handleFinish} disabled={timerStatus === 'idle' || currentTime === 0} aria-label="完成並儲存沖煮" className="group flex flex-col items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer touch-none">
-                                <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm"><Save className="w-5 h-5" /></div>
-                                <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">完成</span>
-                            </button>
+                        {/* ── 三態控制區 ── */}
+                        <div className="w-full px-6 mt-auto pb-6 relative z-[999]">
+                            {/* ready: 全寬開始按鈕 */}
+                            {isReady && (
+                                <button
+                                    onPointerDown={handleStartStop}
+                                    aria-label="開始計時"
+                                    className="w-full py-4 bg-amber-600 text-white font-bold rounded-2xl shadow-xl shadow-amber-200/50 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer touch-none text-lg"
+                                >
+                                    <Play className="w-5 h-5 fill-current ml-1" /> 開始計時
+                                </button>
+                            )}
+
+                            {/* running: Pause (主) + 完成 (次) */}
+                            {isRunning && (
+                                <div className="flex items-center justify-center gap-5">
+                                    <div className="w-14 h-14" />
+                                    <button
+                                        onPointerDown={handleStartStop}
+                                        aria-label="暫停計時器"
+                                        className="w-24 h-24 rounded-3xl bg-amber-100 text-amber-600 border-2 border-amber-200 flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none"
+                                    >
+                                        <Pause className="w-10 h-10 fill-current" />
+                                    </button>
+                                    <button
+                                        onPointerDown={handleFinish}
+                                        aria-label="結束沖煮"
+                                        className="group w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:text-neutral-600 shadow-sm cursor-pointer touch-none"
+                                        title="結束沖煮"
+                                    >
+                                        <Save className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* paused (mid-brew): 重設 + 繼續 + 完成 */}
+                            {isPaused && (
+                                <div className="flex items-center justify-center gap-5">
+                                    <button
+                                        onPointerDown={handleReset}
+                                        aria-label="重設計時器"
+                                        className="group flex flex-col items-center gap-2 cursor-pointer touch-none"
+                                    >
+                                        <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm">
+                                            <RotateCcw className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">重設</span>
+                                    </button>
+                                    <button
+                                        onPointerDown={handleStartStop}
+                                        aria-label="繼續計時器"
+                                        className="w-24 h-24 rounded-3xl bg-amber-600 text-white flex items-center justify-center shadow-xl shadow-amber-200/50 cursor-pointer touch-none"
+                                    >
+                                        <Play className="w-10 h-10 fill-current ml-1" />
+                                    </button>
+                                    <button
+                                        onPointerDown={handleFinish}
+                                        aria-label="完成並儲存沖煮"
+                                        className="group flex flex-col items-center gap-2 cursor-pointer touch-none"
+                                    >
+                                        <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm">
+                                            <Save className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">完成</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 );
