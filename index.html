@@ -257,7 +257,10 @@
         const STORAGE_KEY = 'barista_flow_logs';
 
         const getRelativeDate = (timestamp) => {
-            return new Date(timestamp).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
+            const d = new Date(timestamp);
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${m}/${day}`;
         };
 
         const formatRoastDate = (dateString) => {
@@ -648,9 +651,11 @@
             const handleReset = (e) => {
                 if(e) e.preventDefault();
                 if (timerStatus === 'idle') return;
-                setTimerStatus('idle');
+                // Reset restarts the timer from 0
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
+                setTimerStatus('running');
+                playBeep(600, 'triangle', 0.1);
             };
 
             const handleFinish = (e) => {
@@ -833,8 +838,8 @@
                 return (
                     <div className="flex flex-col h-full select-none">
 
-                        {/* Upper section — light, illustration */}
-                        <div className="flex-1 flex items-center justify-center">
+                        {/* Upper section — illustration, vertically centered but capped */}
+                        <div className="flex items-center justify-center" style={{flex:'0 1 260px', minHeight:'180px'}}>
                             <PourOverIllustration />
                         </div>
 
@@ -1984,7 +1989,7 @@
 
                     <div className="bg-white border-t border-neutral-100 flex justify-around items-center pt-4 px-6 w-full flex-shrink-0" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
                         <button
-                            onClick={() => { setActiveTab('brew'); setBrewStep('home'); }}
+                            onClick={() => { setActiveTab('brew'); }}
                             className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <Droplet className="w-6 h-6" />
