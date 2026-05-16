@@ -79,6 +79,12 @@
             from { opacity: 1; }
             to   { opacity: 0; }
         }
+        @keyframes popIn {
+            0%   { transform: scale(0.5); opacity: 0; }
+            70%  { transform: scale(1.12); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
         /* iOS-native bottom sheet — no persistent animation class after open */
         .sheet-panel {
             backface-visibility: hidden;
@@ -494,6 +500,13 @@
                 body: 3
             });
             const [saveFeedback, setSaveFeedback] = useState('');
+            const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
+            const [showEarlyFinishConfirm, setShowEarlyFinishConfirm] = useState(false);
+            const [earlyFinishMessage, setEarlyFinishMessage] = useState('');
+            const [confirmCloseModal, setConfirmCloseModal] = useState(false);
+            const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
+            const [confirmDeleteView, setConfirmDeleteView] = useState(false);
+            const [confirmDeleteBean, setConfirmDeleteBean] = useState(false);
 
             const prevTimeRef = useRef(0);
             const contentRef = useRef(null);
@@ -684,6 +697,10 @@
                 return () => clearTimeout(timeout);
             }, [saveFeedback]);
 
+            useEffect(() => {
+                if (!viewingLog) setConfirmDeleteView(false);
+            }, [viewingLog]);
+
             const handleStartStop = (e) => {
                 if(e) e.preventDefault(); 
                 unlockAudio(); // 關鍵：解鎖音效引擎
@@ -704,6 +721,8 @@
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
                 setTimerStatus('paused');
+                setShowAbandonConfirm(false);
+                setShowEarlyFinishConfirm(false);
                 playBeep(600, 'triangle', 0.1);
             };
 
@@ -713,11 +732,19 @@
                     setTimerStatus('idle');
                     return;
                 }
-                if (window.confirm('放棄目前的沖煮進度？')) {
-                    setCurrentTime(0);
-                    prevTimeRef.current = 0;
-                    setTimerStatus('idle');
-                }
+                setShowAbandonConfirm(true);
+            };
+
+            const doFinish = () => {
+                const totalTime = recipe.steps[recipe.steps.length - 1].endTime;
+                setShowEarlyFinishConfirm(false);
+                setShowAbandonConfirm(false);
+                setFlowRate(currentTime >= totalTime - 5 ? 'good' : 'fast');
+                setTimerStatus('finished');
+                setEditingLogId(null);
+                setShowSaveModal(true);
+                playBeep(440, 'sine', 0.1);
+                setTimeout(() => playBeep(660, 'sine', 0.3), 150);
             };
 
             const handleFinish = (e) => {
@@ -728,14 +755,11 @@
                     const mins = Math.floor(remaining / 60);
                     const secs = remaining % 60;
                     const timeStr = mins > 0 ? `${mins} 分 ${secs} 秒` : `${secs} 秒`;
-                    if (!window.confirm(`還差 ${timeStr}，確定提早結束？`)) return;
+                    setEarlyFinishMessage(`還差 ${timeStr}`);
+                    setShowEarlyFinishConfirm(true);
+                    return;
                 }
-                setFlowRate(currentTime >= totalTime - 5 ? 'good' : 'fast');
-                setTimerStatus('finished');
-                setEditingLogId(null);
-                setShowSaveModal(true);
-                playBeep(440, 'sine', 0.1);
-                setTimeout(() => playBeep(660, 'sine', 0.3), 150);
+                doFinish();
             };
 
             const handleEditLog = (log) => {
@@ -764,11 +788,16 @@
                 setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
                 setFlowRate('good');
                 setStability('stable');
+                setConfirmCloseModal(false);
+                setConfirmDeleteModal(false);
+                setShowAbandonConfirm(false);
+                setShowEarlyFinishConfirm(false);
             };
 
             const handleCloseModalX = () => {
                 if (!editingLogId) {
-                    if (!window.confirm('放棄此次沖煮紀錄？')) return;
+                    setConfirmCloseModal(true);
+                    return;
                 }
                 closeModal();
             };
@@ -842,17 +871,14 @@
 
             const deleteLog = async () => {
                 if (!editingLogId) return;
-                
-                if (confirm('確定要刪除這筆紀錄嗎？')) {
-                    const updatedLogs = logs.filter(l => l.id !== editingLogId);
-                    setLogs(updatedLogs);
-                    try {
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
-                    } catch (e) {
-                        console.error("Failed to update local storage", e);
-                    }
-                    closeModal();
+                const updatedLogs = logs.filter(l => l.id !== editingLogId);
+                setLogs(updatedLogs);
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+                } catch (e) {
+                    console.error("Failed to update local storage", e);
                 }
+                closeModal();
             };
 
             const updateSensory = (key, value) => {
@@ -1239,12 +1265,12 @@
                                 <div className="flex items-center gap-3">
                                     <button
                                         onPointerDown={(e) => { e.preventDefault(); const v = Math.max(10, Math.round(ratio)-1); setRatio(v); setRecipeRatios(prev => ({...prev, [selectedRecipeId]: v})); }}
-                                        className="w-10 h-10 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95"
+                                        className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95"
                                     >−</button>
                                     <span className="w-14 text-center font-bold text-amber-700 text-lg tabular-nums">1:{Math.round(ratio)}</span>
                                     <button
                                         onPointerDown={(e) => { e.preventDefault(); const v = Math.min(20, Math.round(ratio)+1); setRatio(v); setRecipeRatios(prev => ({...prev, [selectedRecipeId]: v})); }}
-                                        className="w-10 h-10 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95"
+                                        className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95"
                                     >+</button>
                                 </div>
                             </div>
@@ -1280,7 +1306,7 @@
                                             </p>
                                             {!addingNewBean && (
                                                 <button
-                                                    onPointerDown={(e) => { e.preventDefault(); setAddingNewBean(true); setIsEditingBean(false); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel('light'); }}
+                                                    onPointerDown={(e) => { e.preventDefault(); setConfirmDeleteBean(false); setAddingNewBean(true); setIsEditingBean(false); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel('light'); }}
                                                     className="flex items-center gap-1 text-sm text-amber-600 font-bold cursor-pointer touch-none active:opacity-60 transition-opacity"
                                                 >
                                                     <Plus className="w-4 h-4" /> 新豆子
@@ -1435,13 +1461,13 @@
                                                     <button
                                                         onPointerDown={(e) => {
                                                             e.preventDefault();
-                                                            if (window.confirm(`刪除「${sheetBeanName}」？`)) {
-                                                                handleDeleteBean(sheetBeanName);
-                                                            }
+                                                            if (!confirmDeleteBean) { setConfirmDeleteBean(true); return; }
+                                                            setConfirmDeleteBean(false);
+                                                            handleDeleteBean(sheetBeanName);
                                                         }}
-                                                        className="w-full flex items-center justify-center gap-2 text-sm text-red-500 py-3 rounded-xl border border-red-100 bg-red-50 cursor-pointer touch-none active:opacity-70 transition-opacity"
+                                                        className={`w-full flex items-center justify-center gap-2 text-sm py-3 rounded-xl cursor-pointer touch-none active:opacity-70 transition-all ${confirmDeleteBean ? 'bg-red-500 text-white font-bold border border-red-500' : 'text-red-500 border border-red-100 bg-red-50'}`}
                                                     >
-                                                        <Trash2 className="w-4 h-4" /> 刪除這個豆子
+                                                        <Trash2 className="w-4 h-4" /> {confirmDeleteBean ? `確定刪除「${sheetBeanName}」？` : '刪除這個豆子'}
                                                     </button>
                                                 )}
                                                 {recentBeans.length > 0 && (
@@ -1764,18 +1790,18 @@
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-neutral-500">粉量</span>
                                         <div className="flex items-center gap-3">
-                                            <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.max(10, g-1)); }} className="w-10 h-10 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
+                                            <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.max(10, g-1)); }} className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
                                             <span className="w-14 text-center font-bold text-amber-700 tabular-nums">{coffeeGrams}g</span>
-                                            <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.min(40, g+1)); }} className="w-10 h-10 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
+                                            <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.min(40, g+1)); }} className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
                                         </div>
                                     </div>
                                     {/* 水溫 */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-neutral-500">水溫</span>
                                         <div className="flex items-center gap-3">
-                                            <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.max(70, t-1)); }} className="w-10 h-10 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
+                                            <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.max(70, t-1)); }} className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
                                             <span className="w-14 text-center font-bold text-amber-700 tabular-nums">{waterTemp}°C</span>
-                                            <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.min(100, t+1)); }} className="w-10 h-10 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
+                                            <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.min(100, t+1)); }} className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
                                         </div>
                                     </div>
                                     {/* 烘焙度 */}
@@ -1912,6 +1938,21 @@
                         {!isFinished && (
                             <div className="w-full px-4 mb-1 z-10">
                                 {/* Row 0: ← (ghost) + recipe · ratio + step X/N badge */}
+                                {showAbandonConfirm ? (
+                                    <div className="flex items-center justify-between mb-3 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                                        <span className="text-sm font-bold text-neutral-700">放棄進度？</span>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onPointerDown={() => setShowAbandonConfirm(false)}
+                                                className="h-9 px-4 text-sm text-neutral-600 bg-white border border-neutral-200 rounded-xl cursor-pointer touch-none active:opacity-70"
+                                            >繼續沖</button>
+                                            <button
+                                                onPointerDown={() => { setShowAbandonConfirm(false); setCurrentTime(0); prevTimeRef.current = 0; setTimerStatus('idle'); }}
+                                                className="h-9 px-4 text-sm text-white bg-red-500 rounded-xl cursor-pointer touch-none active:opacity-70"
+                                            >放棄</button>
+                                        </div>
+                                    </div>
+                                ) : (
                                 <div className="flex items-center justify-between mb-3">
                                     <button
                                         onPointerDown={handleTimerBack}
@@ -1929,6 +1970,7 @@
                                         {index + 1} / {recipe.steps.length}
                                     </span>
                                 </div>
+                                )}
                                 {/* Row 1: 步驟進度條 */}
                                 <div className="flex gap-1 items-center">
                                     {recipe.steps.map((s, idx) => {
@@ -1984,11 +2026,11 @@
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center space-y-1">
-                                            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center animate-bounce">
+                                            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center pop-in">
                                                 <Coffee className="w-6 h-6" />
                                             </div>
-                                            <div className="text-amber-600 font-bold text-lg">完成</div>
-                                            <p className="text-neutral-400 text-xs">享受您的咖啡</p>
+                                            <div className="text-amber-600 font-bold text-lg pop-in" style={{animationDelay:'0.1s'}}>完成</div>
+                                            <p className="text-neutral-400 text-xs pop-in" style={{animationDelay:'0.18s'}}>享受您的咖啡</p>
                                         </div>
                                     )}
                                 </div>
@@ -1997,6 +2039,22 @@
 
                         {/* ── 三態控制區 ── */}
                         <div className="w-full px-6 mt-auto pb-6 relative z-[999]">
+                            {/* 提早結束確認帶 */}
+                            {showEarlyFinishConfirm && (
+                                <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                                    <span className="text-sm font-bold text-amber-800">{earlyFinishMessage}，確定結束？</span>
+                                    <div className="flex gap-2 flex-shrink-0">
+                                        <button
+                                            onPointerDown={() => setShowEarlyFinishConfirm(false)}
+                                            className="h-9 px-3 text-xs text-neutral-600 bg-white border border-neutral-200 rounded-xl cursor-pointer touch-none active:opacity-70"
+                                        >繼續</button>
+                                        <button
+                                            onPointerDown={() => doFinish()}
+                                            className="h-9 px-4 text-xs text-white bg-amber-600 rounded-xl cursor-pointer touch-none active:opacity-70 font-bold"
+                                        >結束</button>
+                                    </div>
+                                </div>
+                            )}
                             {/* ready: 全寬開始按鈕 */}
                             {isReady && (
                                 <button
@@ -2464,7 +2522,7 @@
                         </div>
                     )}
 
-                    <div className="bg-white border-t border-neutral-100 flex justify-around items-center pt-4 px-6 w-full flex-shrink-0" style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+                    <div className="bg-white border-t border-neutral-100 flex justify-around items-center px-6 w-full flex-shrink-0" style={{ paddingTop: '10px', paddingBottom: 'max(18px, env(safe-area-inset-bottom))' }}>
                         <button
                             onClick={() => {
                                 if (activeTab === 'brew' && timerStatus === 'idle') {
@@ -2473,14 +2531,14 @@
                                     setActiveTab('brew');
                                 }
                             }}
-                            className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
+                            className={`flex flex-col items-center gap-1 min-h-[44px] min-w-[60px] justify-center transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <Droplet className="w-6 h-6" />
                             <span className="text-xs font-medium">沖煮</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('journal')}
-                            className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${activeTab === 'journal' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
+                            className={`flex flex-col items-center gap-1 min-h-[44px] min-w-[60px] justify-center transition-colors cursor-pointer ${activeTab === 'journal' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <BookOpen className="w-6 h-6" />
                             <span className="text-xs font-medium">日誌</span>
@@ -2502,6 +2560,15 @@
                             <div ref={modalPanelRef} tabIndex={-1} className="outline-none bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 max-h-[82vh] overflow-y-auto overscroll-contain">
 
                                 {/* Header */}
+                                {confirmCloseModal ? (
+                                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-100 bg-neutral-50">
+                                        <span className="text-sm font-bold text-neutral-700">放棄這次紀錄？</span>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => setConfirmCloseModal(false)} className="h-8 px-3 text-xs text-neutral-600 bg-white border border-neutral-200 rounded-lg cursor-pointer active:opacity-70">繼續填</button>
+                                            <button onClick={() => { setConfirmCloseModal(false); closeModal(); }} className="h-8 px-3 text-xs text-white bg-neutral-800 rounded-lg cursor-pointer active:opacity-70 font-bold">放棄</button>
+                                        </div>
+                                    </div>
+                                ) : (
                                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-100">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-base font-bold text-neutral-800">{editingLogId ? '編輯紀錄' : '紀錄這杯'}</h3>
@@ -2519,6 +2586,7 @@
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>
+                                )}
 
                                 <div className="px-4 pb-4 space-y-3">
                                     {/* 評分 — 最重要，放最上方 */}
@@ -2598,19 +2666,19 @@
                                         placeholder="備註（選填）"
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
-                                        className="w-full p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-12"
+                                        className="w-full p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-20"
                                     />
 
                                     {/* 按鈕 */}
                                     <div className="flex gap-3">
                                         {editingLogId && (
                                             <button
-                                                onClick={deleteLog}
+                                                onClick={() => confirmDeleteModal ? deleteLog() : setConfirmDeleteModal(true)}
                                                 aria-label="刪除紀錄"
-                                                className="flex-none p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors cursor-pointer"
                                                 title="刪除紀錄"
+                                                className={`flex-none rounded-xl transition-all cursor-pointer ${confirmDeleteModal ? 'px-4 py-3 bg-red-500 text-white font-bold text-sm' : 'p-3 text-red-500 bg-red-50 hover:bg-red-100'}`}
                                             >
-                                                <Trash2 className="w-5 h-5" />
+                                                {confirmDeleteModal ? '確定刪除' : <Trash2 className="w-5 h-5" />}
                                             </button>
                                         )}
                                         <button
@@ -2720,18 +2788,18 @@
                                         <div className="flex gap-3 pt-1">
                                             <button
                                                 onClick={() => {
-                                                    if (window.confirm('確定要刪除這筆紀錄嗎？')) {
-                                                        const updatedLogs = logs.filter(l => l.id !== vl.id);
-                                                        setLogs(updatedLogs);
-                                                        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs)); } catch(e) {}
-                                                        setViewingLog(null);
-                                                    }
+                                                    if (!confirmDeleteView) { setConfirmDeleteView(true); return; }
+                                                    const updatedLogs = logs.filter(l => l.id !== vl.id);
+                                                    setLogs(updatedLogs);
+                                                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs)); } catch(e) {}
+                                                    setConfirmDeleteView(false);
+                                                    setViewingLog(null);
                                                 }}
                                                 aria-label="刪除紀錄"
-                                                className="flex-none p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors cursor-pointer"
                                                 title="刪除紀錄"
+                                                className={`flex-none rounded-xl transition-all cursor-pointer ${confirmDeleteView ? 'px-4 py-3 bg-red-500 text-white font-bold text-sm' : 'p-3 text-red-500 bg-red-50 hover:bg-red-100'}`}
                                             >
-                                                <Trash2 className="w-5 h-5" />
+                                                {confirmDeleteView ? '確定刪除' : <Trash2 className="w-5 h-5" />}
                                             </button>
                                             <button
                                                 onClick={() => { setViewingLog(null); handleEditLog(vl); }}
