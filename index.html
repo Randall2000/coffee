@@ -872,10 +872,10 @@
                             /* ── 新用戶佈局：插圖置中，底部錨定 CTA ── */
                             <>
                                 {/* 上方彈性空白 — 把插圖往下推到視覺中心 */}
-                                <div className="flex-1" />
+                                <div className="flex-[1.2]" />
 
                                 {/* Zone A: 插圖 — 置中區段 */}
-                                <div className="flex flex-col items-center gap-4">
+                                <div className="flex flex-col items-center gap-8">
                                     <PourOverIllustration />
                                     {/* Zone B: 標題文字 */}
                                     <div className="text-center px-6">
@@ -917,11 +917,16 @@
                             /* ── 回訪用戶佈局：插圖置中 + 底部 CTA ── */
                             <>
                                 {/* 上方彈性空白 */}
-                                <div className="flex-1" />
+                                <div className="flex-[1.2]" />
 
                                 {/* 插圖 — 視覺中心 */}
-                                <div className="flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-8">
                                     <PourOverIllustration />
+                                    {/* 標題文字 */}
+                                    <div className="text-center px-6">
+                                        <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">手沖咖啡，一步一步</h1>
+                                        <p className="text-sm text-neutral-400 mt-1.5">選豆、調參數、跟著計時器完成每一注</p>
+                                    </div>
                                 </div>
 
                                 {/* 下方彈性空白 */}
