@@ -478,7 +478,7 @@
 
             const [beanName, setBeanName] = useState('');
             const [roastLevel, setRoastLevel] = useState('light');
-            const [rating, setRating] = useState(5);
+            const [rating, setRating] = useState(0);
             const [notes, setNotes] = useState('');
             const [sensory, setSensory] = useState({
                 acidity: 3,
@@ -753,7 +753,7 @@
                 setNotes('');
                 setBeanName('');
                 setRoastLevel('light');
-                setRating(5);
+                setRating(0);
                 setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
                 setFlowRate('good');
                 setStability('stable');
@@ -2297,8 +2297,11 @@
 
                                 <div className="px-4 pb-4 space-y-3">
                                     {/* 評分 — 最重要，放最上方 */}
-                                    <div className="flex flex-col items-center py-1.5 gap-1">
-                                        <div className="flex gap-1.5">
+                                    <div className="rounded-2xl bg-amber-50 border border-amber-100 py-4 px-3 flex flex-col items-center gap-2">
+                                        <p className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">
+                                            {rating === 0 ? '這杯如何？點星評分' : ['', '還要加油', '普通', '不錯喝', '很好喝！', '完美！'][rating]}
+                                        </p>
+                                        <div className="flex gap-1">
                                             {[1, 2, 3, 4, 5].map(star => (
                                                 <button
                                                     key={star}
@@ -2306,13 +2309,16 @@
                                                     aria-label={`評分 ${star} 星`}
                                                     aria-pressed={rating === star}
                                                     onClick={() => setRating(star)}
-                                                    className={`p-1 transition-transform active:scale-110 cursor-pointer ${rating >= star ? 'text-amber-400' : 'text-neutral-200'}`}
+                                                    className={`p-1.5 transition-all duration-150 active:scale-125 cursor-pointer hover:scale-110 ${
+                                                        rating >= star
+                                                            ? 'text-amber-400 drop-shadow-sm'
+                                                            : 'text-neutral-300 hover:text-amber-200'
+                                                    }`}
                                                 >
-                                                    <Star className="w-7 h-7 fill-current" />
+                                                    <Star className="w-8 h-8 fill-current" />
                                                 </button>
                                             ))}
                                         </div>
-                                        <span className="text-xs text-neutral-400 mt-0.5">{rating === 0 ? '點星給評分' : ['', '還要加油', '普通', '不錯喝', '很好喝', '完美！'][rating]}</span>
                                     </div>
 
                                     {/* 豆子 + 焙度 */}
