@@ -415,7 +415,7 @@
                 <svg
                     ref={svgRef}
                     viewBox="-22 -16 244 232"
-                    style={{ width: '100%', maxWidth: '210px', display: 'block', margin: '0 auto',
+                    style={{ width: '100%', maxWidth: '240px', display: 'block', margin: '0 auto',
                              touchAction: onChange ? 'none' : 'auto', cursor: onChange ? 'crosshair' : 'default' }}
                     onPointerDown={onChange ? onDown : undefined}
                     onPointerMove={onChange ? onMove : undefined}
@@ -2591,7 +2591,7 @@
                                                 className="w-full pl-9 pr-4 py-2.5 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
                                             />
                                         </div>
-                                        <div className="flex bg-neutral-100 p-1 rounded-xl h-[44px]" role="radiogroup" aria-label="烘焙程度">
+                                        <div className="flex bg-neutral-100 p-0.5 rounded-lg h-[34px]" role="radiogroup" aria-label="烘焙程度">
                                             {ROAST_LEVELS.map(level => (
                                                 <button
                                                     key={level.id}
@@ -2599,7 +2599,7 @@
                                                     role="radio"
                                                     aria-checked={roastLevel === level.id}
                                                     onClick={() => setRoastLevel(level.id)}
-                                                    className={`flex-1 flex items-center justify-center rounded-lg text-sm font-bold transition-all cursor-pointer ${
+                                                    className={`flex-1 flex items-center justify-center rounded-md text-xs font-bold transition-all cursor-pointer ${
                                                         roastLevel === level.id
                                                         ? 'bg-white text-neutral-800 shadow-sm'
                                                         : 'text-neutral-400'
