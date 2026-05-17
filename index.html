@@ -2527,7 +2527,7 @@
 
                     {showSaveModal && (
                         <div className="fixed inset-0 bg-black/50 z-[2000] flex items-end sm:items-center justify-center sm:p-4 backdrop-blur-sm animate-in fade-in">
-                            <div ref={modalPanelRef} tabIndex={-1} className="outline-none bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 max-h-[82vh] overflow-y-auto overscroll-contain">
+                            <div ref={modalPanelRef} tabIndex={-1} className="outline-none bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 max-h-[82vh] flex flex-col">
 
                                 {/* Header */}
                                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-100">
@@ -2548,7 +2548,7 @@
                                     </button>
                                 </div>
 
-                                <div className="px-4 pb-4 space-y-3">
+                                <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-2 space-y-3">
                                     {/* 評分 — 最重要，放最上方 */}
                                     <div className="rounded-2xl bg-amber-50 border border-amber-100 py-4 px-3 flex flex-col items-center gap-2">
                                         <p className="text-[11px] font-bold text-amber-600 uppercase tracking-widest">
@@ -2629,25 +2629,25 @@
                                         className="w-full p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-20"
                                     />
 
-                                    {/* 按鈕 */}
-                                    <div className="flex gap-3">
-                                        {editingLogId && (
-                                            <button
-                                                onClick={() => confirmDeleteModal ? deleteLog() : setConfirmDeleteModal(true)}
-                                                aria-label="刪除紀錄"
-                                                title="刪除紀錄"
-                                                className={`flex-none rounded-xl transition-all cursor-pointer ${confirmDeleteModal ? 'px-4 py-3 bg-red-500 text-white font-bold text-sm' : 'p-3 text-red-500 bg-red-50 hover:bg-red-100'}`}
-                                            >
-                                                {confirmDeleteModal ? '確定刪除' : <Trash2 className="w-4 h-4" />}
-                                            </button>
-                                        )}
+                                </div>
+                                {/* Sticky footer — always visible, no scroll needed */}
+                                <div className="flex-shrink-0 flex gap-3 px-4 py-3 border-t border-neutral-100">
+                                    {editingLogId && (
                                         <button
-                                            onClick={saveLog}
-                                            className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all cursor-pointer"
+                                            onClick={() => confirmDeleteModal ? deleteLog() : setConfirmDeleteModal(true)}
+                                            aria-label="刪除紀錄"
+                                            title="刪除紀錄"
+                                            className={`flex-none rounded-xl transition-all cursor-pointer ${confirmDeleteModal ? 'px-4 py-3 bg-red-500 text-white font-bold text-sm' : 'p-3 text-red-500 bg-red-50 hover:bg-red-100'}`}
                                         >
-                                            {editingLogId ? '更新紀錄' : '儲存紀錄'}
+                                            {confirmDeleteModal ? '確定刪除' : <Trash2 className="w-4 h-4" />}
                                         </button>
-                                    </div>
+                                    )}
+                                    <button
+                                        onClick={saveLog}
+                                        className="flex-1 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all cursor-pointer"
+                                    >
+                                        {editingLogId ? '更新紀錄' : '儲存紀錄'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
