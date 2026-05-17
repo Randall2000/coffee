@@ -506,8 +506,6 @@
                 body: 3
             });
             const [saveFeedback, setSaveFeedback] = useState('');
-            const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
-            const [confirmDeleteView, setConfirmDeleteView] = useState(false);
             const [confirmDeleteBean, setConfirmDeleteBean] = useState(false);
 
             const prevTimeRef = useRef(0);
@@ -709,9 +707,6 @@
                 return () => clearTimeout(timeout);
             }, [saveFeedback]);
 
-            useEffect(() => {
-                if (!viewingLog) setConfirmDeleteView(false);
-            }, [viewingLog]);
 
             const handleStartStop = (e) => {
                 if(e) e.preventDefault(); 
@@ -833,7 +828,6 @@
                 setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
                 setFlowRate('good');
                 setStability('stable');
-                setConfirmDeleteModal(false);
             };
 
             // X 只關 modal，不改路由 — 讓用戶自行決定下一步
@@ -843,7 +837,6 @@
                 setNotes('');
                 setRating(0);
                 setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
-                setConfirmDeleteModal(false);
             };
 
             const handleCloseModalX = () => {
@@ -2652,12 +2645,12 @@
                                 <div className="flex-shrink-0 flex gap-3 px-4 py-3 border-t border-neutral-100">
                                     {editingLogId && (
                                         <button
-                                            onClick={() => confirmDeleteModal ? deleteLog() : setConfirmDeleteModal(true)}
+                                            onClick={() => { if (window.confirm('確定刪除這筆紀錄？')) deleteLog(); }}
                                             aria-label="刪除紀錄"
                                             title="刪除紀錄"
-                                            className={`flex-none rounded-xl transition-all cursor-pointer ${confirmDeleteModal ? 'px-4 py-3 bg-red-500 text-white font-bold text-sm' : 'p-3 text-red-500 bg-red-50 hover:bg-red-100'}`}
+                                            className="flex-none p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-all cursor-pointer"
                                         >
-                                            {confirmDeleteModal ? '確定刪除' : <Trash2 className="w-4 h-4" />}
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     )}
                                     <button
@@ -2788,18 +2781,17 @@
                                         <div className="flex gap-3 pt-1">
                                             <button
                                                 onClick={() => {
-                                                    if (!confirmDeleteView) { setConfirmDeleteView(true); return; }
+                                                    if (!window.confirm('確定刪除這筆紀錄？')) return;
                                                     const updatedLogs = logs.filter(l => l.id !== vl.id);
                                                     setLogs(updatedLogs);
                                                     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs)); } catch(e) {}
-                                                    setConfirmDeleteView(false);
                                                     setViewingLog(null);
                                                 }}
                                                 aria-label="刪除紀錄"
                                                 title="刪除紀錄"
-                                                className={`flex-none rounded-xl transition-all cursor-pointer ${confirmDeleteView ? 'px-4 py-3 bg-red-500 text-white font-bold text-sm' : 'p-3 text-red-500 bg-red-50 hover:bg-red-100'}`}
+                                                className="flex-none p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-all cursor-pointer"
                                             >
-                                                {confirmDeleteView ? '確定刪除' : <Trash2 className="w-4 h-4" />}
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => { setViewingLog(null); handleEditLog(vl); }}
