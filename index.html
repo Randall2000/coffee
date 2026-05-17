@@ -2577,8 +2577,8 @@
                                     </div>
 
                                     {/* 豆子 + 焙度 */}
-                                    <div className="space-y-2">
-                                        <div className="relative">
+                                    <div className="flex items-center gap-2">
+                                        <div className="relative flex-1 min-w-0">
                                             <label htmlFor="log-bean-name" className="sr-only">咖啡豆名稱</label>
                                             <CoffeeBeanIcon className="absolute left-3 top-2.5 w-4 h-4 text-neutral-400" />
                                             <input
@@ -2588,10 +2588,10 @@
                                                 autoComplete="off"
                                                 value={beanName}
                                                 onChange={(e) => setBeanName(e.target.value)}
-                                                className="w-full pl-9 pr-4 py-2.5 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                                                className="w-full pl-9 pr-3 py-2.5 bg-neutral-50 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
                                             />
                                         </div>
-                                        <div className="flex bg-neutral-100 p-0.5 rounded-lg h-[34px]" role="radiogroup" aria-label="烘焙程度">
+                                        <div className="flex gap-1 flex-shrink-0" role="radiogroup" aria-label="烘焙程度">
                                             {ROAST_LEVELS.map(level => (
                                                 <button
                                                     key={level.id}
@@ -2599,10 +2599,10 @@
                                                     role="radio"
                                                     aria-checked={roastLevel === level.id}
                                                     onClick={() => setRoastLevel(level.id)}
-                                                    className={`flex-1 flex items-center justify-center rounded-md text-xs font-bold transition-all cursor-pointer ${
+                                                    className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                                                         roastLevel === level.id
-                                                        ? 'bg-white text-neutral-800 shadow-sm'
-                                                        : 'text-neutral-400'
+                                                        ? 'bg-neutral-800 text-white'
+                                                        : 'bg-neutral-100 text-neutral-400 hover:bg-neutral-200'
                                                     }`}
                                                 >
                                                     {level.label}
