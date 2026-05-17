@@ -367,8 +367,8 @@
                 const rect = svg.getBoundingClientRect();
                 const src = e.touches ? e.touches[0] : e;
                 return {
-                    x: ((src.clientX - rect.left) / rect.width) * 200,
-                    y: ((src.clientY - rect.top) / rect.height) * 200,
+                    x: ((src.clientX - rect.left) / rect.width) * 244 - 22,
+                    y: ((src.clientY - rect.top) / rect.height) * 232 - 16,
                 };
             };
 
