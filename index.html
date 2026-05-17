@@ -511,6 +511,8 @@
             const [confirmDeleteBean, setConfirmDeleteBean] = useState(false);
 
             const prevTimeRef = useRef(0);
+            const stepTimesRef = useRef([]);  // { planned, actual, name }[]
+            const stepStartRef = useRef(0);   // timer-seconds when current step began
             const contentRef = useRef(null);
             const [sheetDragY, setSheetDragY] = useState(0);
             const sheetDragStartRef = useRef(null);
@@ -680,6 +682,14 @@
                 const nextStepIndex = recipe.steps.findIndex(s => s.endTime > now);
                 
                 if (currentStepIndex !== -1 && nextStepIndex !== -1 && currentStepIndex !== nextStepIndex) {
+                    const completedStep = recipe.steps[currentStepIndex];
+                    const prevEnd = currentStepIndex > 0 ? recipe.steps[currentStepIndex - 1].endTime : 0;
+                    stepTimesRef.current[currentStepIndex] = {
+                        name: completedStep.name.split('(')[0].trim(),
+                        planned: completedStep.endTime - prevEnd,
+                        actual: Math.round(completedStep.endTime - stepStartRef.current),
+                    };
+                    stepStartRef.current = completedStep.endTime;
                     playBeep(880, 'sine', 0.2);
                 }
                 prevTimeRef.current = now;
@@ -708,6 +718,8 @@
                 unlockAudio(); // 關鍵：解鎖音效引擎
                 
                 if (timerStatus === 'idle') {
+                    stepTimesRef.current = [];
+                    stepStartRef.current = 0;
                     playBeep(600, 'triangle', 0.1);
                     setTimerStatus('running');
                 } else if (timerStatus === 'running') {
@@ -720,6 +732,8 @@
             const handleReset = (e) => {
                 if(e) e.preventDefault();
                 if (timerStatus === 'idle') return;
+                stepTimesRef.current = [];
+                stepStartRef.current = 0;
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
                 setTimerStatus('paused');
@@ -728,9 +742,17 @@
 
             const handleSkipStep = (e) => {
                 if (e) e.preventDefault();
+                const { step, index } = currentStepInfo;
+                const prevEnd = index > 0 ? recipe.steps[index - 1].endTime : 0;
+                stepTimesRef.current[index] = {
+                    name: step.name.split('(')[0].trim(),
+                    planned: step.endTime - prevEnd,
+                    actual: Math.round(currentTime - stepStartRef.current),
+                };
                 const totalTime = recipe.steps[recipe.steps.length - 1].endTime;
-                const nextTime = currentStepInfo.step.endTime + 1;
+                const nextTime = step.endTime + 1;
                 if (nextTime > totalTime) { doFinish(); return; }
+                stepStartRef.current = nextTime;
                 setCurrentTime(nextTime);
                 prevTimeRef.current = nextTime;
                 playBeep(880, 'sine', 0.2);
@@ -771,6 +793,15 @@
                     const timeStr = mins > 0 ? `${mins} 分 ${secs} 秒` : `${secs} 秒`;
                     if (!window.confirm(`還差 ${timeStr}，確定提早結束？`)) return;
                 }
+                const si = currentStepInfo;
+                if (si.step) {
+                    const prevEnd = si.index > 0 ? recipe.steps[si.index - 1].endTime : 0;
+                    stepTimesRef.current[si.index] = {
+                        name: si.step.name.split('(')[0].trim(),
+                        planned: si.step.endTime - prevEnd,
+                        actual: Math.round(currentTime - stepStartRef.current),
+                    };
+                }
                 doFinish();
             };
 
@@ -791,6 +822,8 @@
                 setEditingLogId(null);
                 setCurrentTime(0);
                 prevTimeRef.current = 0;
+                stepTimesRef.current = [];
+                stepStartRef.current = 0;
                 setTimerStatus('idle');
                 setBrewStep('home');
                 setNotes('');
@@ -803,11 +836,21 @@
                 setConfirmDeleteModal(false);
             };
 
+            // X 只關 modal，不改路由 — 讓用戶自行決定下一步
+            const dismissModal = () => {
+                setShowSaveModal(false);
+                setEditingLogId(null);
+                setNotes('');
+                setRating(0);
+                setSensory({ acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
+                setConfirmDeleteModal(false);
+            };
+
             const handleCloseModalX = () => {
                 if (!editingLogId) {
                     if (!window.confirm('放棄此次沖煮紀錄？')) return;
                 }
-                closeModal();
+                dismissModal();
             };
 
             const handleDeleteBean = (beanNameToDelete) => {
@@ -859,6 +902,7 @@
                         beanName: beanName || '未命名咖啡豆',
                         roastLevel,
                         notes,
+                        stepTimes: stepTimesRef.current.filter(Boolean),
                         createdAt: Date.now()
                     };
                     updatedLogs = [newLog, ...logs];
@@ -2708,6 +2752,28 @@
                                                 <p className="font-bold text-neutral-800 text-xs truncate">{(vl.recipeName || '').split('(')[0].trim()}</p>
                                             </div>
                                         </div>
+
+                                        {vl.stepTimes && vl.stepTimes.length > 0 && (
+                                            <div className="space-y-1.5">
+                                                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">步驟時間</p>
+                                                {vl.stepTimes.map((st, i) => {
+                                                    const ratio = st.actual / st.planned;
+                                                    const { label, cls } =
+                                                        ratio < 0.60  ? { label: '過快', cls: 'bg-red-50 text-red-500 border-red-100' } :
+                                                        ratio < 0.85  ? { label: '偏快', cls: 'bg-amber-50 text-amber-600 border-amber-100' } :
+                                                        ratio <= 1.20 ? { label: '正常', cls: 'bg-green-50 text-green-600 border-green-100' } :
+                                                        ratio <= 1.50 ? { label: '偏慢', cls: 'bg-blue-50 text-blue-600 border-blue-100' } :
+                                                                        { label: '過慢', cls: 'bg-red-50 text-red-500 border-red-100' };
+                                                    return (
+                                                        <div key={i} className="flex items-center gap-2">
+                                                            <span className="text-xs text-neutral-500 flex-1 truncate">{st.name}</span>
+                                                            <span className="text-xs tabular-nums text-neutral-400">{st.actual}s <span className="text-neutral-300">/ {st.planned}s</span></span>
+                                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${cls}`}>{label}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
 
                                         {vl.notes && (
                                             <div className="bg-amber-50 rounded-xl p-3.5 border border-amber-100">
