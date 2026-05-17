@@ -847,10 +847,14 @@
             };
 
             const handleCloseModalX = () => {
-                if (!editingLogId) {
+                if (editingLogId) {
+                    // 編輯取消：只關 modal，日誌頁維持不動
+                    dismissModal();
+                } else {
+                    // 沖煮後不存：確認後完整重設回 home
                     if (!window.confirm('放棄此次沖煮紀錄？')) return;
+                    closeModal();
                 }
-                dismissModal();
             };
 
             const handleDeleteBean = (beanNameToDelete) => {
