@@ -2048,48 +2048,32 @@
                                 </button>
                             )}
 
-                            {/* running: Pause (主) + 跳過/結束 (次，情境右欄) */}
-                            {isRunning && (() => {
-                                const isLastStep = index === recipe.steps.length - 1;
-                                return (
-                                    <div className="flex items-center justify-center gap-5">
-                                        <div className="flex flex-col items-center gap-2 opacity-0 pointer-events-none" aria-hidden="true">
-                                            <div className="w-14 h-14" />
-                                            <span className="text-xs">x</span>
-                                        </div>
-                                        <button
-                                            onPointerDown={handleStartStop}
-                                            aria-label="暫停計時器"
-                                            className="w-24 h-24 rounded-3xl bg-amber-100 text-amber-600 border-2 border-amber-200 flex items-center justify-center shadow-xl shadow-amber-200/60 cursor-pointer touch-none"
-                                        >
-                                            <Pause className="w-10 h-10 fill-current" />
-                                        </button>
-                                        {isLastStep ? (
-                                            <button
-                                                onPointerDown={handleFinish}
-                                                aria-label="結束沖煮"
-                                                className="group flex flex-col items-center gap-2 cursor-pointer touch-none"
-                                            >
-                                                <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm">
-                                                    <Save className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">結束</span>
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onPointerDown={handleSkipStep}
-                                                aria-label="跳過此步驟"
-                                                className="group flex flex-col items-center gap-2 cursor-pointer touch-none"
-                                            >
-                                                <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-amber-400 group-hover:text-amber-500 shadow-sm transition-colors">
-                                                    <SkipForward className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">跳過</span>
-                                            </button>
-                                        )}
+                            {/* running: Pause (主) + 跳過 (次，所有步驟含最後步驟) */}
+                            {isRunning && (
+                                <div className="flex items-center justify-center gap-5">
+                                    <div className="flex flex-col items-center gap-2 opacity-0 pointer-events-none" aria-hidden="true">
+                                        <div className="w-14 h-14" />
+                                        <span className="text-xs">x</span>
                                     </div>
-                                );
-                            })()}
+                                    <button
+                                        onPointerDown={handleStartStop}
+                                        aria-label="暫停計時器"
+                                        className="w-24 h-24 rounded-3xl bg-amber-100 text-amber-600 border-2 border-amber-200 flex items-center justify-center shadow-xl shadow-amber-200/60 cursor-pointer touch-none"
+                                    >
+                                        <Pause className="w-10 h-10 fill-current" />
+                                    </button>
+                                    <button
+                                        onPointerDown={handleSkipStep}
+                                        aria-label="跳過此步驟"
+                                        className="group flex flex-col items-center gap-2 cursor-pointer touch-none"
+                                    >
+                                        <div className="w-14 h-14 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-amber-400 group-hover:text-amber-500 shadow-sm transition-colors">
+                                            <SkipForward className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">跳過</span>
+                                    </button>
+                                </div>
+                            )}
 
                             {/* paused (mid-brew): 重設 + 繼續 + 完成 */}
                             {isPaused && (
