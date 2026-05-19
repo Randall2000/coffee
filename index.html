@@ -2444,6 +2444,28 @@
                                                     <p className="text-xs text-neutral-500 italic line-clamp-1">"{log.notes}"</p>
                                                 </div>
                                             )}
+                                            <div className="px-3 pb-2 flex justify-end gap-1 border-t border-neutral-50">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleEditLog(log); }}
+                                                    aria-label="編輯紀錄"
+                                                    className="p-2 text-neutral-300 hover:text-amber-500 active:text-amber-600 rounded-lg transition-colors cursor-pointer"
+                                                >
+                                                    <Pencil className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (!window.confirm('確定刪除這筆紀錄？')) return;
+                                                        const updatedLogs = logs.filter(l => l.id !== log.id);
+                                                        setLogs(updatedLogs);
+                                                        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs)); } catch(e) {}
+                                                    }}
+                                                    aria-label="刪除紀錄"
+                                                    className="p-2 text-neutral-300 hover:text-red-400 active:text-red-500 rounded-lg transition-colors cursor-pointer"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })}
