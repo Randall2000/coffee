@@ -1676,27 +1676,46 @@
                             </div>
                         </div>
 
-                        {/* Recipe + Bean compact row */}
-                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm px-4 py-3 flex items-center gap-2 min-w-0">
-                            <button
-                                type="button"
-                                onClick={() => setRecipeSheetOpen(true)}
-                                aria-label="切換手沖法"
-                                className="flex items-center gap-1.5 cursor-pointer touch-none active:scale-[0.98] transition-all shrink-0"
-                            >
-                                <span className="text-sm font-bold text-neutral-800">{rec.name.split('(')[0].trim()}</span>
-                                <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
-                            </button>
-                            {isUsingRecommendation && (
-                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 shrink-0">建議</span>
-                            )}
+                        {/* Brew Summary Card */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm px-4 pt-3 pb-4">
+                            {/* 手沖法名稱列 */}
+                            <div className="flex items-center justify-between mb-0.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setRecipeSheetOpen(true)}
+                                    aria-label="切換手沖法"
+                                    className="flex items-center gap-1.5 cursor-pointer touch-none active:opacity-70 transition-opacity"
+                                >
+                                    <span className="text-base font-bold text-neutral-900">{rec.name.split('(')[0].trim()}</span>
+                                    <ChevronDown className="w-4 h-4 text-neutral-400" />
+                                </button>
+                                {isUsingRecommendation && (
+                                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">建議</span>
+                                )}
+                            </div>
                             {beanName && (
-                                <>
-                                    <span className="text-neutral-200 mx-0.5 shrink-0">·</span>
-                                    <span className="text-sm text-neutral-500 truncate min-w-0">{beanName}</span>
-                                </>
+                                <p className="text-xs text-neutral-400 mb-3">{beanName}</p>
                             )}
-                            <span className="ml-auto text-xs font-mono text-neutral-400 shrink-0">1:{Math.round(ratio)}</span>
+                            {/* 分隔線 */}
+                            <div className="border-t border-neutral-50 mb-3" />
+                            {/* 三大數字 stat row */}
+                            <div className="grid grid-cols-3 gap-2">
+                                {[
+                                    { value: `${coffeeGrams}g`, label: '粉量' },
+                                    { value: `${waterTotal}ml`, label: '水量' },
+                                    { value: `${waterTemp}°C`, label: '水溫' },
+                                ].map(({ value, label }) => (
+                                    <button
+                                        key={label}
+                                        type="button"
+                                        onPointerDown={(e) => { e.preventDefault(); setShowAdjust(s => !s); }}
+                                        className="flex flex-col items-center gap-0.5 bg-neutral-50 rounded-xl py-2.5 cursor-pointer touch-none active:bg-amber-50 transition-colors"
+                                    >
+                                        <span className="text-lg font-bold font-mono tabular-nums text-neutral-900 leading-none">{value}</span>
+                                        <span className="text-[10px] font-medium text-neutral-400 leading-none">{label}</span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* 準備清單 */}
@@ -1725,7 +1744,7 @@
                             {/* 秤豆 */}
                             <div
                                 className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50 cursor-pointer active:bg-neutral-50 transition-colors"
-                                onPointerDown={(e) => { e.preventDefault(); if (e.target.closest('button')) return; setPrepChecked(s => ({ ...s, beans: !s.beans })); setShowAdjust(s => !s); }}
+                                onPointerDown={(e) => { e.preventDefault(); setPrepChecked(s => ({ ...s, beans: !s.beans })); }}
                             >
                                 <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${prepChecked.beans ? 'bg-emerald-50' : 'bg-amber-50'}`}>
                                     <CoffeeBeanIcon className={`w-4 h-4 transition-colors ${prepChecked.beans ? 'text-emerald-600' : 'text-amber-600'}`} />
@@ -1734,7 +1753,6 @@
                                     <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">秤豆</p>
                                     <p className={`text-base font-bold leading-tight transition-colors ${prepChecked.beans ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>{coffeeGrams} g</p>
                                 </div>
-                                <Pencil className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0 mr-1" />
                                 <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${prepChecked.beans ? 'bg-emerald-500' : 'border-2 border-neutral-200'}`}>
                                     {prepChecked.beans && <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>}
                                 </div>
@@ -1743,7 +1761,7 @@
                             {/* 燒水 */}
                             <div
                                 className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50 cursor-pointer active:bg-neutral-50 transition-colors"
-                                onPointerDown={(e) => { e.preventDefault(); if (e.target.closest('button')) return; setPrepChecked(s => ({ ...s, water: !s.water })); setShowAdjust(s => !s); }}
+                                onPointerDown={(e) => { e.preventDefault(); setPrepChecked(s => ({ ...s, water: !s.water })); }}
                             >
                                 <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${prepChecked.water ? 'bg-emerald-50' : 'bg-amber-50'}`}>
                                     <Droplet className={`w-4 h-4 transition-colors ${prepChecked.water ? 'text-emerald-600' : 'text-amber-600'}`} />
@@ -1752,7 +1770,6 @@
                                     <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">燒水</p>
                                     <p className={`text-base font-bold leading-tight transition-colors ${prepChecked.water ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>{waterTotal} ml · {waterTemp}°C</p>
                                 </div>
-                                <Pencil className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0 mr-1" />
                                 <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${prepChecked.water ? 'bg-emerald-500' : 'border-2 border-neutral-200'}`}>
                                     {prepChecked.water && <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>}
                                 </div>
