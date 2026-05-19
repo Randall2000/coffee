@@ -2102,6 +2102,16 @@
             const renderJournalView = () => {
                 const now = new Date();
                 const activeBeanFilter = beanDrilldown;
+                const seenBeans = new Set();
+                const recentBeanRail = logs
+                    .filter(log => {
+                        const bean = log.beanName || '未命名咖啡豆';
+                        if (seenBeans.has(bean)) return false;
+                        seenBeans.add(bean);
+                        return true;
+                    })
+                    .map(log => log.beanName || '未命名咖啡豆')
+                    .slice(0, 6);
                 const filteredLogs = logs
                     .filter(log => !searchQuery || (log.beanName || '').toLowerCase().includes(searchQuery.toLowerCase()))
                     .filter(log => !activeBeanFilter || (log.beanName || '未命名咖啡豆') === activeBeanFilter)
@@ -2238,7 +2248,7 @@
                                     </div>
                                     <div className="-mx-3 px-3 overflow-x-auto scrollbar-hide">
                                         <div className="flex gap-2 w-max min-w-full">
-                                            {[...new Set(logs.map(log => log.beanName || '未命名咖啡豆'))].slice(0, 10).map(bean => (
+                                            {recentBeanRail.map(bean => (
                                                 <button
                                                     key={bean}
                                                     onClick={() => setBeanDrilldown(bean === activeBeanFilter ? null : bean)}
@@ -2249,6 +2259,12 @@
                                                     {bean}
                                                 </button>
                                             ))}
+                                            <button
+                                                onClick={() => { setSearchQuery(''); setBeanSheetOpen(true); }}
+                                                className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-800 cursor-pointer"
+                                            >
+                                                更多豆子
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
