@@ -516,7 +516,6 @@
             const sheetDragStartRef = useRef(null);
 
             const [brewStep, setBrewStep] = useState('home');
-            const [prepChecked, setPrepChecked] = useState({ grind: false, beans: false, water: false });
             const [selectedFlavor, setSelectedFlavor] = useState(null);
             const [selectedGrinder, setSelectedGrinder] = useState(null);
             const [roastDate, setRoastDate] = useState('');
@@ -1661,7 +1660,7 @@
                         {/* Header */}
                         <div className="flex items-center gap-3">
                             <button
-                                onPointerDown={(e) => { e.preventDefault(); setBrewStep('config'); setPrepChecked({ grind: false, beans: false, water: false }); }}
+                                onPointerDown={(e) => { e.preventDefault(); setBrewStep('config'); }}
                                 aria-label="返回沖煮設定"
                                 className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
                             >
@@ -1725,53 +1724,35 @@
                             </div>
 
                             {/* 研磨 */}
-                            <div
-                                className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50 cursor-pointer active:bg-neutral-50 transition-colors"
-                                onPointerDown={(e) => { e.preventDefault(); setPrepChecked(s => ({ ...s, grind: !s.grind })); }}
-                            >
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${prepChecked.grind ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-                                    <Settings className={`w-4 h-4 transition-colors ${prepChecked.grind ? 'text-emerald-600' : 'text-amber-600'}`} />
+                            <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50">
+                                <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                    <Settings className="w-4 h-4 text-amber-600" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">研磨</p>
-                                    <p className={`text-base font-bold leading-tight transition-colors ${prepChecked.grind ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>{grindDisplay}</p>
-                                </div>
-                                <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${prepChecked.grind ? 'bg-emerald-500' : 'border-2 border-neutral-200'}`}>
-                                    {prepChecked.grind && <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>}
+                                    <p className="text-base font-bold text-neutral-900 leading-tight">{grindDisplay}</p>
                                 </div>
                             </div>
 
                             {/* 秤豆 */}
-                            <div
-                                className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50 cursor-pointer active:bg-neutral-50 transition-colors"
-                                onPointerDown={(e) => { e.preventDefault(); setPrepChecked(s => ({ ...s, beans: !s.beans })); }}
-                            >
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${prepChecked.beans ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-                                    <CoffeeBeanIcon className={`w-4 h-4 transition-colors ${prepChecked.beans ? 'text-emerald-600' : 'text-amber-600'}`} />
+                            <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50">
+                                <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                    <CoffeeBeanIcon className="w-4 h-4 text-amber-600" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">秤豆</p>
-                                    <p className={`text-base font-bold leading-tight transition-colors ${prepChecked.beans ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>{coffeeGrams} g</p>
-                                </div>
-                                <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${prepChecked.beans ? 'bg-emerald-500' : 'border-2 border-neutral-200'}`}>
-                                    {prepChecked.beans && <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>}
+                                    <p className="text-base font-bold text-neutral-900 leading-tight">{coffeeGrams} g</p>
                                 </div>
                             </div>
 
                             {/* 燒水 */}
-                            <div
-                                className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50 cursor-pointer active:bg-neutral-50 transition-colors"
-                                onPointerDown={(e) => { e.preventDefault(); setPrepChecked(s => ({ ...s, water: !s.water })); }}
-                            >
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${prepChecked.water ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-                                    <Droplet className={`w-4 h-4 transition-colors ${prepChecked.water ? 'text-emerald-600' : 'text-amber-600'}`} />
+                            <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50">
+                                <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                    <Droplet className="w-4 h-4 text-amber-600" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">燒水</p>
-                                    <p className={`text-base font-bold leading-tight transition-colors ${prepChecked.water ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>{waterTotal} ml · {waterTemp}°C</p>
-                                </div>
-                                <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${prepChecked.water ? 'bg-emerald-500' : 'border-2 border-neutral-200'}`}>
-                                    {prepChecked.water && <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>}
+                                    <p className="text-base font-bold text-neutral-900 leading-tight">{waterTotal} ml · {waterTemp}°C</p>
                                 </div>
                             </div>
 
