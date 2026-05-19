@@ -2236,32 +2236,13 @@
                                             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
                                         </div>
                                     </div>
-                                    <div className="flex gap-2 flex-wrap">
-                                        {[
-                                            ['newest', '最新'],
-                                            ['rating', '高分'],
-                                            ['month', '本月'],
-                                            ['week', '本週'],
-                                        ].map(([value, label]) => (
-                                            <button
-                                                key={value}
-                                                onClick={() => setSortBy(value)}
-                                                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
-                                                    sortBy === value ? 'bg-amber-100 text-amber-700' : 'bg-neutral-100 text-neutral-500 hover:text-neutral-700'
-                                                }`}
-                                            >
-                                                {label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div className="pt-1">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">豆子篩選</p>
-                                        <div className="flex gap-2 flex-wrap">
-                                            {[...new Set(logs.map(log => log.beanName || '未命名咖啡豆'))].slice(0, 8).map(bean => (
+                                    <div className="-mx-3 px-3 overflow-x-auto scrollbar-hide">
+                                        <div className="flex gap-2 w-max min-w-full">
+                                            {[...new Set(logs.map(log => log.beanName || '未命名咖啡豆'))].slice(0, 10).map(bean => (
                                                 <button
                                                     key={bean}
                                                     onClick={() => setBeanDrilldown(bean === activeBeanFilter ? null : bean)}
-                                                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                                                         activeBeanFilter === bean ? 'bg-amber-600 text-white' : 'bg-neutral-100 text-neutral-600 hover:text-neutral-800'
                                                     }`}
                                                 >
