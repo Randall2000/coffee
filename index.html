@@ -1705,17 +1705,13 @@
                                         { value: `${waterTotal}ml`, label: '水量' },
                                         { value: `${waterTemp}°C`, label: '水溫' },
                                     ].map(({ value, label }) => (
-                                        <button
+                                        <div
                                             key={label}
-                                            type="button"
-                                            aria-label={`${label} ${value}，點擊調整`}
-                                            onPointerDown={(e) => { e.preventDefault(); setShowAdjust(s => !s); }}
-                                            className="relative flex flex-col items-center gap-0.5 bg-neutral-50 border border-neutral-200 rounded-xl py-3 cursor-pointer touch-none active:bg-amber-50 active:border-amber-300 transition-colors"
+                                            className="flex flex-col items-center gap-0.5 bg-neutral-50 rounded-xl py-3"
                                         >
-                                            <Pencil className="absolute top-1.5 right-1.5 w-2.5 h-2.5 text-neutral-300" />
                                             <span className="text-lg font-bold font-mono tabular-nums text-neutral-900 leading-none">{value}</span>
                                             <span className="text-[11px] font-medium text-neutral-400 leading-none mt-0.5">{label}</span>
-                                        </button>
+                                        </div>
                                     ))}
                                 </div>
                                 {/* 調整按鈕 - 替換原本 10px 小字 */}
