@@ -1648,6 +1648,8 @@
                 const totalTime = rec.steps[rec.steps.length - 1].endTime;
                 const recommendedRecipeId = getRecommendedRecipeId(selectedFlavor, selectedDripperId);
                 const isUsingRecommendation = selectedRecipeId === recommendedRecipeId;
+                const selectedRoast = ROAST_LEVELS.find(r => r.id === roastLevel);
+                const selectedDripperObj = DRIPPERS.find(d => d.id === selectedDripperId);
 
                 const grinderObj = GRINDERS.find(g => g.id === selectedGrinder);
                 const grinderClicks = selectedGrinder ? GRINDER_CLICKS[selectedGrinder]?.recommend : null;
@@ -1667,7 +1669,7 @@
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                             <div className="flex-1">
-                                <p className="text-base font-bold text-neutral-800">確認沖煮方式</p>
+                                <p className="text-base font-bold text-neutral-800">沖煮前確認</p>
                             </div>
                             <div className="flex items-center gap-1.5 flex-shrink-0">
                                 <div className="w-5 h-1.5 rounded-full bg-amber-500" />
@@ -1703,7 +1705,7 @@
                                     {[
                                         { value: `${coffeeGrams}g`, label: '粉量' },
                                         { value: `${waterTotal}ml`, label: '水量' },
-                                        { value: `${waterTemp}°C`, label: '水溫' },
+                                        { value: `1:${Math.round(ratio)}`, label: '粉水比' },
                                     ].map(({ value, label }) => (
                                         <div
                                             key={label}
@@ -1771,10 +1773,37 @@
                             )}
                         </div>
 
-                        {/* 準備清單 */}
+                        {/* 準備資訊 */}
                         <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
                             <div className="px-4 pt-3 pb-1">
-                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">準備清單</p>
+                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">準備資訊</p>
+                            </div>
+
+                            {/* 豆子 */}
+                            <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50">
+                                <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                    <CoffeeBeanIcon className="w-4 h-4 text-amber-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">豆子</p>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <p className="text-base font-bold text-neutral-900 leading-tight truncate">{beanName || '未選擇咖啡豆'}</p>
+                                        {selectedRoast && (
+                                            <span className={`text-[11px] px-2 py-0.5 rounded-full border shrink-0 ${selectedRoast.color}`}>{selectedRoast.label}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 濾杯 */}
+                            <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50">
+                                <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                    <Filter className="w-4 h-4 text-amber-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">濾杯</p>
+                                    <p className="text-base font-bold text-neutral-900 leading-tight">{selectedDripperObj?.fullName || selectedDripperObj?.name || '未選擇濾杯'}</p>
+                                </div>
                             </div>
 
                             {/* 研磨 */}
@@ -1788,36 +1817,35 @@
                                 </div>
                             </div>
 
-                            {/* 秤豆 */}
-                            <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50">
-                                <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
-                                    <CoffeeBeanIcon className="w-4 h-4 text-amber-600" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">秤豆</p>
-                                    <p className="text-base font-bold text-neutral-900 leading-tight">{coffeeGrams} g</p>
-                                </div>
-                            </div>
-
-                            {/* 燒水 */}
+                            {/* 水溫 */}
                             <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50">
                                 <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
                                     <Droplet className="w-4 h-4 text-amber-600" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">燒水</p>
-                                    <p className="text-base font-bold text-neutral-900 leading-tight">{waterTotal} ml · {waterTemp}°C</p>
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">水溫</p>
+                                    <p className="text-base font-bold text-neutral-900 leading-tight">{waterTemp}°C</p>
                                 </div>
                             </div>
 
-                            {/* 預計時間 */}
-                            <div className="flex items-center gap-3 px-4 py-3">
+                            {/* 預估總時間 */}
+                            <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50">
                                 <div className="w-9 h-9 rounded-full bg-neutral-50 flex items-center justify-center flex-shrink-0">
                                     <Timer className="w-4 h-4 text-neutral-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">預計時間</p>
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">預估總時間</p>
                                     <p className="text-base font-bold text-neutral-600 leading-tight">{formatTimerDisplay(totalTime)}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 px-4 py-3">
+                                <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                    <Droplet className="w-4 h-4 text-amber-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">注水準備</p>
+                                    <p className="text-base font-bold text-neutral-900 leading-tight">{waterTotal} ml · 分段注水 {rec.steps.length} 段</p>
                                 </div>
                             </div>
 
