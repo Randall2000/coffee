@@ -516,6 +516,7 @@
             const sheetDragStartRef = useRef(null);
 
             const [brewStep, setBrewStep] = useState('home');
+            const [prepChecked, setPrepChecked] = useState({ grind: false, beans: false, water: false });
             const [selectedFlavor, setSelectedFlavor] = useState(null);
             const [selectedGrinder, setSelectedGrinder] = useState(null);
             const [roastDate, setRoastDate] = useState('');
@@ -1646,44 +1647,21 @@
             const renderSuggestionView = () => {
                 const rec = RECIPES[selectedRecipeId];
                 const totalTime = rec.steps[rec.steps.length - 1].endTime;
-                const grindSetting = getGrindSetting(selectedGrinder);
-                const flavor = FLAVOR_OPTIONS.find(f => f.id === selectedFlavor);
-                const selectedBeanLabel = beanName || '尚未選擇豆子';
-                const recipeMeta = {
-                    v60: {
-                        label: '乾淨明亮',
-                        cue: '分批注水，留住香氣',
-                        bestFor: '淺焙、花果香',
-                        accent: 'bg-amber-600',
-                        reason: '口感乾淨，花果香氣更突出'
-                    },
-                    fourSix: {
-                        label: '酸甜可控',
-                        cue: '五注調整風味',
-                        bestFor: '想調甜感與厚度',
-                        accent: 'bg-orange-500',
-                        reason: '透過五次分注，自由調整酸甜比例'
-                    },
-                    onePour: {
-                        label: '簡潔穩定',
-                        cue: '一次注到目標',
-                        bestFor: '日常快速複製',
-                        accent: 'bg-neutral-800',
-                        reason: '步驟少，容易維持穩定節奏'
-                    }
-                };
-                const currentMeta = recipeMeta[selectedRecipeId];
                 const recommendedRecipeId = getRecommendedRecipeId(selectedFlavor, selectedDripperId);
-                const recommendedRecipe = RECIPES[recommendedRecipeId];
-                const recommendedMeta = recipeMeta[recommendedRecipeId];
                 const isUsingRecommendation = selectedRecipeId === recommendedRecipeId;
+
+                const grinderObj = GRINDERS.find(g => g.id === selectedGrinder);
+                const grinderClicks = selectedGrinder ? GRINDER_CLICKS[selectedGrinder]?.recommend : null;
+                const grindDisplay = grinderObj
+                    ? `${grinderObj.short}${grinderClicks ? ` · ${grinderClicks} 格` : ''}`
+                    : '—';
 
                 return (
                     <div className="pb-24 select-none space-y-3">
                         {/* Header */}
                         <div className="flex items-center gap-3">
                             <button
-                                onPointerDown={(e) => { e.preventDefault(); setBrewStep('config'); }}
+                                onPointerDown={(e) => { e.preventDefault(); setBrewStep('config'); setPrepChecked({ grind: false, beans: false, water: false }); }}
                                 aria-label="返回沖煮設定"
                                 className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
                             >
@@ -1698,175 +1676,121 @@
                             </div>
                         </div>
 
-                        {/* Brew summary — 三層資訊階層：主軸 → 關鍵數字 → 輔助設定 */}
-                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
-
-                            {/* ── 層級 1：配方主軸（最大視覺重量）── */}
-                            <div className="px-5 pt-5 pb-4">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0 flex-1">
-                                        {/* 配方選擇器 — 主標題 */}
-                                        <button
-                                            type="button"
-                                            onClick={() => setRecipeSheetOpen(true)}
-                                            className="group flex items-center gap-2 cursor-pointer touch-none active:scale-[0.98] transition-all"
-                                            aria-label="切換手沖法"
-                                        >
-                                            <span className="text-2xl font-black text-neutral-900 leading-tight tracking-tight">
-                                                {rec.name.split('(')[0].trim()}
-                                            </span>
-                                            <span className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-neutral-100 group-hover:bg-amber-50 transition-colors">
-                                                <ChevronDown className="w-3.5 h-3.5 text-neutral-400 group-hover:text-amber-600 transition-colors" />
-                                            </span>
-                                        </button>
-                                        {/* 配方說明 — 輔助文字 */}
-                                        <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">{rec.description}</p>
-                                    </div>
-                                    {isUsingRecommendation && (
-                                        <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700 mt-1">
-                                            建議
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* ── 層級 2：關鍵數字（4 個 KPI）── */}
-                            <div className="mx-4 mb-4 grid grid-cols-4 gap-1.5 bg-neutral-50 rounded-2xl p-1.5">
-                                {[
-                                    { label: '粉量', value: `${coffeeGrams}g`, highlight: true },
-                                    { label: '水量', value: `${waterTotal}ml`, highlight: true },
-                                    { label: '水溫', value: `${waterTemp}°C`, highlight: false },
-                                    { label: '時間', value: formatTimerDisplay(totalTime), highlight: false }
-                                ].map(item => (
-                                    <div key={item.label} className={`rounded-xl px-2 py-2.5 text-center ${item.highlight ? 'bg-white shadow-sm' : ''}`}>
-                                        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wide">{item.label}</p>
-                                        <p className={`text-sm font-bold tabular-nums mt-1 ${item.highlight ? 'text-amber-700' : 'text-neutral-600'}`}>{item.value}</p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* ── 層級 3：輔助設定（豆子 / 比例 / 磨豆）── */}
-                            <div className="border-t border-neutral-50">
-                                {/* 豆子 — 最重要的輔助資訊，獨佔一行 */}
-                                <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-50">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-                                        <span className="text-xs font-medium text-neutral-400">豆子</span>
-                                    </div>
-                                    <span className={`text-sm font-semibold shrink-0 truncate max-w-[65%] text-right ${selectedBeanLabel === '尚未選擇豆子' ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                        {selectedBeanLabel}
-                                    </span>
-                                </div>
-                                {/* 粉水比 + 磨豆 — 次要，橫排對比 */}
-                                <div className="grid grid-cols-2 divide-x divide-neutral-50">
-                                    <div className="flex items-center justify-between px-5 py-3">
-                                        <span className="text-xs font-medium text-neutral-400">粉水比</span>
-                                        <span className="text-sm font-bold text-neutral-700 tabular-nums">1:{Math.round(ratio)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between px-5 py-3">
-                                        <span className="text-xs font-medium text-neutral-400">磨豆</span>
-                                        <span className="text-sm font-bold text-neutral-700 tabular-nums">{grindSetting}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Steps */}
-                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
-                            <div className="px-5 py-3 border-b border-neutral-50">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">注水時間線</p>
-                                        <p className="text-xs text-neutral-400 mt-1">照順序注水，計時器會用同一組節奏</p>
-                                    </div>
-                                    <span className="text-xs font-mono text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1 shrink-0">
-                                        {rec.steps.length} 段
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="px-4 py-4 space-y-2">
-                                {rec.steps.map((step, idx) => {
-                                    const tw = getStepTargetWater(step, waterTotal, coffeeGrams);
-                                    const prevTw = idx > 0 ? getStepTargetWater(rec.steps[idx - 1], waterTotal, coffeeGrams) : 0;
-                                    const pourAmount = tw - prevTw;
-                                    const isPour = pourAmount > 0;
-                                    return (
-                                        <div key={idx} className="rounded-2xl bg-neutral-50 overflow-hidden">
-                                            {/* Step name row */}
-                                            <div className="flex items-center gap-3 px-4 pt-3.5 pb-1.5">
-                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 ${
-                                                    isPour ? 'bg-amber-500 text-white' : 'bg-neutral-200 text-neutral-500'
-                                                }`}>
-                                                    {idx + 1}
-                                                </div>
-                                                <span className="text-sm font-bold text-neutral-800">{step.name.split('(')[0].trim()}</span>
-                                            </div>
-                                            {/* Description — what to do */}
-                                            <p className="text-xs text-neutral-500 leading-relaxed px-4 pb-3">{step.desc}</p>
-                                            {/* Key numbers footer — left-aligned inline, consistent with header/desc */}
-                                            <div className="flex items-center gap-4 border-t border-neutral-100 px-4 py-2.5">
-                                                {isPour && (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className="text-[10px] text-neutral-400 font-medium">注水量</span>
-                                                        <span className="text-sm font-bold text-amber-700 tabular-nums">+{pourAmount}ml</span>
-                                                    </div>
-                                                )}
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className="text-[10px] text-neutral-400 font-medium">完成時間</span>
-                                                    <span className="text-sm font-bold text-neutral-700 tabular-nums">{formatTimerDisplay(step.endTime)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Adjust panel */}
-                        <div className={`rounded-2xl shadow-sm overflow-hidden transition-colors ${showAdjust ? 'bg-amber-50 border-2 border-amber-400' : 'bg-white border-2 border-amber-200'}`}>
+                        {/* Recipe + Bean compact row */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm px-4 py-3 flex items-center gap-2 min-w-0">
                             <button
-                                onClick={() => setShowAdjust(!showAdjust)}
-                                className="w-full px-5 py-4 flex items-center justify-between cursor-pointer active:opacity-80"
+                                type="button"
+                                onClick={() => setRecipeSheetOpen(true)}
+                                aria-label="切換手沖法"
+                                className="flex items-center gap-1.5 cursor-pointer touch-none active:scale-[0.98] transition-all shrink-0"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${showAdjust ? 'bg-amber-500' : 'bg-amber-100'}`}>
-                                        <Settings className={`w-4 h-4 ${showAdjust ? 'text-white' : 'text-amber-600'}`} />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className={`text-sm font-bold ${showAdjust ? 'text-amber-800' : 'text-neutral-700'}`}>調整沖煮參數</p>
-                                        <p className="text-xs text-neutral-400 mt-0.5">熟練者可自訂粉量、水溫與烘焙度</p>
-                                    </div>
-                                </div>
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${showAdjust ? 'bg-amber-500' : 'bg-amber-100'}`}>
-                                    {showAdjust
-                                        ? <ChevronUp className="w-4 h-4 text-white" />
-                                        : <ChevronDown className="w-4 h-4 text-amber-600" />}
-                                </div>
+                                <span className="text-sm font-bold text-neutral-800">{rec.name.split('(')[0].trim()}</span>
+                                <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
                             </button>
+                            {isUsingRecommendation && (
+                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 shrink-0">建議</span>
+                            )}
+                            {beanName && (
+                                <>
+                                    <span className="text-neutral-200 mx-0.5 shrink-0">·</span>
+                                    <span className="text-sm text-neutral-500 truncate min-w-0">{beanName}</span>
+                                </>
+                            )}
+                            <span className="ml-auto text-xs font-mono text-neutral-400 shrink-0">1:{Math.round(ratio)}</span>
+                        </div>
+
+                        {/* 準備清單 */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+                            <div className="px-4 pt-3 pb-1">
+                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">準備清單</p>
+                            </div>
+
+                            {/* 研磨 */}
+                            <div
+                                className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50 cursor-pointer active:bg-neutral-50 transition-colors"
+                                onPointerDown={(e) => { e.preventDefault(); setPrepChecked(s => ({ ...s, grind: !s.grind })); }}
+                            >
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${prepChecked.grind ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+                                    <Settings className={`w-4 h-4 transition-colors ${prepChecked.grind ? 'text-emerald-600' : 'text-amber-600'}`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">研磨</p>
+                                    <p className={`text-base font-bold leading-tight transition-colors ${prepChecked.grind ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>{grindDisplay}</p>
+                                </div>
+                                <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${prepChecked.grind ? 'bg-emerald-500' : 'border-2 border-neutral-200'}`}>
+                                    {prepChecked.grind && <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>}
+                                </div>
+                            </div>
+
+                            {/* 秤豆 */}
+                            <div
+                                className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50 cursor-pointer active:bg-neutral-50 transition-colors"
+                                onPointerDown={(e) => { e.preventDefault(); if (e.target.closest('button')) return; setPrepChecked(s => ({ ...s, beans: !s.beans })); setShowAdjust(s => !s); }}
+                            >
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${prepChecked.beans ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+                                    <CoffeeBeanIcon className={`w-4 h-4 transition-colors ${prepChecked.beans ? 'text-emerald-600' : 'text-amber-600'}`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">秤豆</p>
+                                    <p className={`text-base font-bold leading-tight transition-colors ${prepChecked.beans ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>{coffeeGrams} g</p>
+                                </div>
+                                <Pencil className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0 mr-1" />
+                                <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${prepChecked.beans ? 'bg-emerald-500' : 'border-2 border-neutral-200'}`}>
+                                    {prepChecked.beans && <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>}
+                                </div>
+                            </div>
+
+                            {/* 燒水 */}
+                            <div
+                                className="flex items-center gap-3 px-4 py-3 border-b border-neutral-50 cursor-pointer active:bg-neutral-50 transition-colors"
+                                onPointerDown={(e) => { e.preventDefault(); if (e.target.closest('button')) return; setPrepChecked(s => ({ ...s, water: !s.water })); setShowAdjust(s => !s); }}
+                            >
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${prepChecked.water ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+                                    <Droplet className={`w-4 h-4 transition-colors ${prepChecked.water ? 'text-emerald-600' : 'text-amber-600'}`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">燒水</p>
+                                    <p className={`text-base font-bold leading-tight transition-colors ${prepChecked.water ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>{waterTotal} ml · {waterTemp}°C</p>
+                                </div>
+                                <Pencil className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0 mr-1" />
+                                <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${prepChecked.water ? 'bg-emerald-500' : 'border-2 border-neutral-200'}`}>
+                                    {prepChecked.water && <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>}
+                                </div>
+                            </div>
+
+                            {/* 預計時間 */}
+                            <div className="flex items-center gap-3 px-4 py-3">
+                                <div className="w-9 h-9 rounded-full bg-neutral-50 flex items-center justify-center flex-shrink-0">
+                                    <Timer className="w-4 h-4 text-neutral-400" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] text-neutral-400 font-medium leading-none mb-0.5">預計時間</p>
+                                    <p className="text-base font-bold text-neutral-600 leading-tight">{formatTimerDisplay(totalTime)}</p>
+                                </div>
+                            </div>
+
+                            {/* Inline Adjusters */}
                             {showAdjust && (
-                                <div className="px-5 pb-5 space-y-4 border-t border-neutral-100 pt-4">
-                                    {/* 粉量 */}
+                                <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-4 space-y-3">
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-neutral-500">粉量</span>
-                                        <div className="flex items-center gap-3">
-                                            <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.max(10, g-1)); }} className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
-                                            <span className="w-14 text-center font-bold text-amber-700 tabular-nums">{coffeeGrams}g</span>
-                                            <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.min(40, g+1)); }} className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
+                                        <div className="flex items-center gap-2">
+                                            <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.max(10, g-1)); }} className="w-9 h-9 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-bold flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
+                                            <span className="w-12 text-center font-bold text-amber-700 tabular-nums text-sm">{coffeeGrams}g</span>
+                                            <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.min(40, g+1)); }} className="w-9 h-9 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-bold flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
                                         </div>
                                     </div>
-                                    {/* 水溫 */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-neutral-500">水溫</span>
-                                        <div className="flex items-center gap-3">
-                                            <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.max(70, t-1)); }} className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
-                                            <span className="w-14 text-center font-bold text-amber-700 tabular-nums">{waterTemp}°C</span>
-                                            <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.min(100, t+1)); }} className="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-600 font-bold text-xl flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
+                                        <div className="flex items-center gap-2">
+                                            <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.max(70, t-1)); }} className="w-9 h-9 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-bold flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
+                                            <span className="w-12 text-center font-bold text-amber-700 tabular-nums text-sm">{waterTemp}°C</span>
+                                            <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.min(100, t+1)); }} className="w-9 h-9 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-bold flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
                                         </div>
                                     </div>
-                                    {/* 烘焙度 */}
                                     <div>
                                         <span className="text-sm text-neutral-500 block mb-2">烘焙度</span>
-                                        <div className="flex bg-neutral-100 p-1 rounded-xl h-[44px]">
+                                        <div className="flex bg-white border border-neutral-100 p-1 rounded-xl h-[44px]">
                                             {ROAST_LEVELS.map(level => (
                                                 <button
                                                     key={level.id}
@@ -1877,8 +1801,8 @@
                                                     }}
                                                     className={`flex-1 flex items-center justify-center rounded-lg text-sm font-bold transition-all cursor-pointer touch-none ${
                                                         roastLevel === level.id
-                                                        ? 'bg-white text-neutral-800 shadow-sm'
-                                                        : 'text-neutral-400 active:bg-neutral-200'
+                                                        ? 'bg-amber-500 text-white'
+                                                        : 'text-neutral-400 active:bg-neutral-100'
                                                     }`}
                                                 >
                                                     {level.label}
@@ -1888,6 +1812,40 @@
                                     </div>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Steps - compact list */}
+                        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+                            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-50">
+                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">注水時間線</p>
+                                <span className="text-xs font-mono text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1 shrink-0">
+                                    {rec.steps.length} 段
+                                </span>
+                            </div>
+                            <div className="relative px-4 py-1">
+                                {/* 垂直連線 rail */}
+                                <div className="absolute left-[27px] top-7 bottom-7 w-0.5 bg-neutral-100" />
+                                {rec.steps.map((step, idx) => {
+                                    const tw = getStepTargetWater(step, waterTotal, coffeeGrams);
+                                    const prevTw = idx > 0 ? getStepTargetWater(rec.steps[idx - 1], waterTotal, coffeeGrams) : 0;
+                                    const pourAmount = tw - prevTw;
+                                    const isPour = pourAmount > 0;
+                                    return (
+                                        <div key={idx} className="flex items-start gap-3 py-2.5 relative">
+                                            <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] flex-shrink-0 z-10 ${isPour ? 'bg-amber-500 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
+                                                {idx + 1}
+                                            </div>
+                                            <div className="flex-1 min-w-0 pt-0.5">
+                                                <span className="text-sm font-medium text-neutral-700">{step.name.split('(')[0].trim()}</span>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    {isPour && <span className="text-xs font-bold text-amber-600 tabular-nums">+{pourAmount}ml</span>}
+                                                    <span className="text-xs text-neutral-400 font-mono tabular-nums">{formatTimerDisplay(step.endTime)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         {recipeSheetOpen && (
