@@ -2444,14 +2444,7 @@
                                                     <p className="text-xs text-neutral-500 italic line-clamp-1">"{log.notes}"</p>
                                                 </div>
                                             )}
-                                            <div className="px-2 flex justify-end gap-2 border-t border-neutral-50">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleEditLog(log); }}
-                                                    aria-label="編輯紀錄"
-                                                    className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400 hover:text-amber-500 hover:bg-amber-50 active:text-amber-600 rounded-xl transition-colors cursor-pointer"
-                                                >
-                                                    <Pencil className="w-4 h-4" />
-                                                </button>
+                                            <div className="px-2 flex justify-end border-t border-neutral-50">
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
