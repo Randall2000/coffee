@@ -2769,13 +2769,8 @@
                                                 setRating(vl.rating);
                                                 setSensory(vl.sensory || { acidity: 3, sweetness: 3, bitterness: 3, body: 3 });
                                                 setFlowRate(vl.flowRate);
+                                                setStability(vl.stability || 'stable');
                                                 setNotes(vl.notes);
-                                                setEditingTime(vl.time);
-                                                setEditingStepTimes(vl.stepTimes || []);
-                                                setEditingCoffeeGrams(vl.coffeeGrams);
-                                                setEditingWaterTotal(vl.waterTotal);
-                                                setEditingRatio(vl.ratio);
-                                                setEditingRecipeName(vl.recipeName);
                                                 setViewingLog(null);
                                                 setShowSaveModal(true);
                                             }}
