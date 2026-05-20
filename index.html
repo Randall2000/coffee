@@ -2237,13 +2237,8 @@
                                                                     onPointerDown={(e) => {
                                                                         e.preventDefault();
                                                                         e.stopPropagation();
-                                                                        sparkPressTimer.current = setTimeout(() => {
-                                                                            setActiveSparkPoint({ log: l, idx: i, px: cx / SW });
-                                                                        }, 400);
+                                                                        setActiveSparkPoint(activeSparkPoint?.idx === i ? null : { log: l, idx: i, px: cx / SW });
                                                                     }}
-                                                                    onPointerUp={() => clearTimeout(sparkPressTimer.current)}
-                                                                    onPointerLeave={() => clearTimeout(sparkPressTimer.current)}
-                                                                    onPointerCancel={() => clearTimeout(sparkPressTimer.current)}
                                                                 />
                                                             </g>
                                                         );
