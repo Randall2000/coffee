@@ -559,6 +559,8 @@
             const activeSheetRef = useRef(null);
             const sheetOpenedRef = useRef(false); // track if opening anim is done
             const modalPanelRef = useRef(null);
+            const sparkPressTimer = useRef(null);
+            const [activeSparkPoint, setActiveSparkPoint] = useState(null);
 
             const springBack = () => {
                 const el = activeSheetRef.current;
@@ -2213,17 +2215,57 @@
                                             {trendLabel && <span className={`text-xs ${trendCls}`}>{trendLabel}</span>}
                                         </div>
                                         {sparkData.length >= 2 ? (
-                                            <svg viewBox={`0 0 ${SW} ${SH}`} className="w-full mt-2" style={{overflow:'visible'}}>
-                                                {areaPts && <polygon points={areaPts} fill="rgba(217,119,6,0.08)" />}
-                                                <polyline points={sparkPts} fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                                {allSparkData.map((l, i) => (
-                                                    l.rating ? (
-                                                        <circle key={i} cx={sx(i)} cy={sy(l.rating)} r="3" fill="#d97706" />
-                                                    ) : (
-                                                        <circle key={i} cx={sx(i)} cy={sy(0)} r="3" fill="none" stroke="#d97706" strokeWidth="1.8" />
-                                                    )
-                                                ))}
-                                            </svg>
+                                            <div className="relative mt-2" onClick={() => setActiveSparkPoint(null)}>
+                                                <svg viewBox={`0 0 ${SW} ${SH}`} className="w-full" style={{overflow:'visible'}}>
+                                                    {areaPts && <polygon points={areaPts} fill="rgba(217,119,6,0.08)" />}
+                                                    <polyline points={sparkPts} fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                                    {allSparkData.map((l, i) => {
+                                                        const cx = sx(i);
+                                                        const cy = l.rating ? sy(l.rating) : sy(0);
+                                                        const isActive = activeSparkPoint?.idx === i;
+                                                        return (
+                                                            <g key={i}>
+                                                                {l.rating ? (
+                                                                    <circle cx={cx} cy={cy} r={isActive ? 4.5 : 3} fill="#d97706" style={{transition:'r 0.15s'}} />
+                                                                ) : (
+                                                                    <circle cx={cx} cy={cy} r="3" fill="none" stroke="#d97706" strokeWidth="1.8" />
+                                                                )}
+                                                                <circle
+                                                                    cx={cx} cy={cy} r="16"
+                                                                    fill="transparent"
+                                                                    className="touch-none cursor-pointer"
+                                                                    onPointerDown={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        sparkPressTimer.current = setTimeout(() => {
+                                                                            setActiveSparkPoint({ log: l, idx: i, px: cx / SW });
+                                                                        }, 400);
+                                                                    }}
+                                                                    onPointerUp={() => clearTimeout(sparkPressTimer.current)}
+                                                                    onPointerLeave={() => clearTimeout(sparkPressTimer.current)}
+                                                                    onPointerCancel={() => clearTimeout(sparkPressTimer.current)}
+                                                                />
+                                                            </g>
+                                                        );
+                                                    })}
+                                                </svg>
+                                                {activeSparkPoint && (() => {
+                                                    const l = activeSparkPoint.log;
+                                                    const date = l.createdAt ? new Date(l.createdAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }) : '—';
+                                                    const stars = l.rating ? '★'.repeat(l.rating) + '☆'.repeat(5 - l.rating) : '未評分';
+                                                    const leftPct = Math.min(Math.max(activeSparkPoint.px * 100, 10), 80);
+                                                    return (
+                                                        <div
+                                                            className="absolute bottom-full mb-2 bg-neutral-800 text-white text-xs radius-md px-2.5 py-1.5 shadow-lg pointer-events-none whitespace-nowrap"
+                                                            style={{ left: `${leftPct}%`, transform: 'translateX(-50%)', zIndex: 10 }}
+                                                        >
+                                                            <div className="font-bold text-amber-300">{l.beanName || '未命名'}</div>
+                                                            <div className="text-neutral-300 mt-0.5">{date} · {stars}</div>
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-800" />
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
                                         ) : (
                                             <div className="py-3 text-center">
                                                 <span className="text-xs text-neutral-300">多沖幾杯後顯示</span>
