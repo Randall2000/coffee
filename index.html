@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -113,6 +113,18 @@
         .sheet-dragging { transition: none !important; }
         .backdrop-enter { animation: fadeIn 0.28s ease-out forwards; }
         .backdrop-exit  { animation: fadeOut 0.28s ease-in  forwards; }
+        /* ── Accessibility: prefers-reduced-motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            .sheet-opening, .sheet-panel, .pop-in,
+            .backdrop-enter, .backdrop-exit {
+                animation: none !important;
+                transition: none !important;
+            }
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900">
@@ -1156,7 +1168,7 @@
                             <div className="flex-1">
                                 <p className="text-base font-bold text-neutral-800">沖煮設定</p>
                             </div>
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <div className="flex items-center gap-1.5 flex-shrink-0" aria-hidden="true">
                                 <div className="w-5 h-1.5 radius-full bg-amber-500" />
                                 <div className="w-5 h-1.5 radius-full bg-neutral-200" />
                             </div>
@@ -1704,7 +1716,7 @@
                             <div className="flex-1">
                                 <p className="text-base font-bold text-neutral-800">沖煮前確認</p>
                             </div>
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <div className="flex items-center gap-1.5 flex-shrink-0" aria-hidden="true">
                                 <div className="w-5 h-1.5 radius-full bg-amber-500" />
                                 <div className="w-5 h-1.5 radius-full bg-amber-500" />
                             </div>
@@ -2133,13 +2145,20 @@
                     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
                 }).length;
 
-                const sparkData = [...logs].sort((a, b) => a.createdAt - b.createdAt).filter(l => l.rating).slice(-14);
+                const allSparkData = [...logs].sort((a, b) => a.createdAt - b.createdAt).slice(-14);
+                const sparkData = allSparkData.filter(l => l.rating);
                 const SW = 130, SH = 46;
-                const sy = (r) => SH - 5 - ((r - 1) / 4) * (SH - 14);
-                const sx = (i) => sparkData.length < 2 ? SW / 2 : (i / (sparkData.length - 1)) * (SW - 10) + 5;
-                const sparkPts = sparkData.map((l, i) => `${sx(i)},${sy(l.rating)}`).join(' ');
+                const sy = (r) => r === 0 ? SH - 2 : SH - 5 - ((r - 1) / 4) * (SH - 14);
+                const sx = (i) => allSparkData.length < 2 ? SW / 2 : (i / (allSparkData.length - 1)) * (SW - 10) + 5;
+                const sparkPts = sparkData.map((l) => {
+                    const idx = allSparkData.indexOf(l);
+                    return `${sx(idx)},${sy(l.rating)}`;
+                }).join(' ');
                 const areaPts = sparkData.length > 1
-                    ? [`${sx(0)},${SH}`, ...sparkData.map((l, i) => `${sx(i)},${sy(l.rating)}`), `${sx(sparkData.length-1)},${SH}`].join(' ')
+                    ? [`${sx(allSparkData.indexOf(sparkData[0]))},${SH}`, ...sparkData.map((l) => {
+                        const idx = allSparkData.indexOf(l);
+                        return `${sx(idx)},${sy(l.rating)}`;
+                    }), `${sx(allSparkData.indexOf(sparkData[sparkData.length-1]))},${SH}`].join(' ')
                     : '';
 
                 let trendLabel = '', trendCls = '';
@@ -2199,10 +2218,13 @@
                                             <svg viewBox={`0 0 ${SW} ${SH}`} className="w-full mt-2" style={{overflow:'visible'}}>
                                                 {areaPts && <polygon points={areaPts} fill="rgba(217,119,6,0.08)" />}
                                                 <polyline points={sparkPts} fill="none" stroke="#d97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                                {(() => {
-                                                    const last = sparkData[sparkData.length - 1];
-                                                    return <circle cx={sx(sparkData.length-1)} cy={sy(last.rating)} r="3" fill="#d97706" />;
-                                                })()}
+                                                {allSparkData.map((l, i) => (
+                                                    l.rating ? (
+                                                        <circle key={i} cx={sx(i)} cy={sy(l.rating)} r="3" fill="#d97706" />
+                                                    ) : (
+                                                        <circle key={i} cx={sx(i)} cy={sy(0)} r="3" fill="none" stroke="#d97706" strokeWidth="1.8" />
+                                                    )
+                                                ))}
                                             </svg>
                                         ) : (
                                             <div className="py-3 text-center">
@@ -2262,7 +2284,7 @@
                                                 <button
                                                     key={bean}
                                                     onClick={() => setSelectedJournalBeans(prev => prev.includes(bean) ? prev.filter(b => b !== bean) : [...prev, bean])}
-                                                    className="px-3 py-1.5 radius-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer bg-neutral-100 text-neutral-600 hover:text-neutral-800"
+                                                    className={`px-3 py-1.5 radius-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${activeBeanFilter.includes(bean) ? 'bg-amber-100 text-amber-700' : 'bg-neutral-100 text-neutral-600 hover:text-neutral-800'}`}
                                                 >
                                                     {bean}
                                                 </button>
@@ -2288,6 +2310,7 @@
                             </div>
                         ) : filteredLogs.length === 0 ? (
                             <div className="text-center py-12 bg-white radius-lg border border-dashed border-neutral-200">
+                                <div className="mb-3 flex justify-center"><Coffee className="w-10 h-10 text-neutral-200" /></div>
                                 <p className="text-neutral-400 text-sm">
                                     {searchQuery || activeBeanFilter.length > 0 ? '找不到符合目前條件的紀錄' : '這個時間範圍沒有紀錄'}
                                 </p>
