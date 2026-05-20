@@ -1033,6 +1033,7 @@
                                     {/* Zone B: 標題文字 */}
                                     <div className="text-center px-6">
                                         <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">手沖咖啡，一步一步</h1>
+                                        <p className="text-sm text-neutral-400 mt-1.5">選豆、調參數、跟著計時器完成每一注</p>
                                     </div>
                                 </div>
 
@@ -1076,6 +1077,7 @@
                                     {/* 標題文字 */}
                                     <div className="text-center px-6">
                                         <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">手沖咖啡，一步一步</h1>
+                                        <p className="text-sm text-neutral-400 mt-1.5">選豆、調參數、跟著計時器完成每一注</p>
                                     </div>
                                 </div>
 
@@ -2745,7 +2747,7 @@
                                         )}
                                     </div>
 
-                                    <div className="border-t border-neutral-100 px-5 py-4 flex gap-3">
+                                    <div className="border-t border-neutral-100 px-5 pt-4 pb-5 flex flex-col gap-1">
                                         <button
                                             onPointerDown={(e) => {
                                                 e.preventDefault();
@@ -2765,9 +2767,9 @@
                                                 setViewingLog(null);
                                                 setBrewStep('journal-edit');
                                             }}
-                                            className="flex-1 bg-amber-600 text-white py-3 radius-md font-bold text-base shadow-md hover:bg-amber-700 transition-all cursor-pointer touch-none active:scale-95"
+                                            className="w-full bg-amber-600 text-white py-3.5 radius-md font-bold text-base shadow-sm hover:bg-amber-700 transition-all cursor-pointer touch-none active:scale-95"
                                         >
-                                            編輯
+                                            編輯紀錄
                                         </button>
                                         <button
                                             onPointerDown={(e) => {
@@ -2777,9 +2779,9 @@
                                                     setViewingLog(null);
                                                 }
                                             }}
-                                            className="flex-1 bg-neutral-100 text-neutral-600 py-3 radius-md font-bold text-base hover:bg-neutral-200 transition-all cursor-pointer touch-none active:scale-95"
+                                            className="w-full py-2.5 text-sm text-neutral-400 hover:text-red-500 transition-colors cursor-pointer touch-none"
                                         >
-                                            刪除
+                                            刪除此紀錄
                                         </button>
                                     </div>
                                 </div>
