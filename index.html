@@ -562,6 +562,19 @@
             });
         };
 
+        const getLogRecipeName = (storedName, lang) => {
+            if (!storedName) return storedName || '';
+            const rec = Object.values(RECIPES).find(r => r.name === storedName);
+            return (lang === 'en' ? (rec?.nameEn || storedName) : storedName).split('(')[0].trim();
+        };
+
+        const getLogStepName = (storedStepName, storedRecipeName, lang) => {
+            if (!storedStepName || lang !== 'en') return storedStepName || '';
+            const rec = Object.values(RECIPES).find(r => r.name === storedRecipeName);
+            const step = rec?.steps.find(s => s.name.split('(')[0].trim() === storedStepName || s.name === storedStepName);
+            return step?.nameEn || storedStepName;
+        };
+
         const formatTimerDisplay = (seconds) => {
             const totalSeconds = Math.max(0, Math.floor(seconds || 0));
             const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
@@ -1496,7 +1509,7 @@
                             const byRecipe = {};
                             beanLogs.forEach(l => {
                                 const rid = Object.values(RECIPES).find(r => r.name === l.recipeName)?.id || 'v60';
-                                if (!byRecipe[rid]) byRecipe[rid] = { id: rid, displayName: (l.recipeName || '').split('(')[0].trim(), logs: [] };
+                                if (!byRecipe[rid]) byRecipe[rid] = { id: rid, displayName: getLogRecipeName(l.recipeName, lang), logs: [] };
                                 byRecipe[rid].logs.push(l);
                             });
                             const recipeGroups = Object.values(byRecipe).map(g => ({
@@ -2624,7 +2637,7 @@
 
                                             <div className="px-4 pb-3 flex gap-2 flex-wrap">
                                                 <span className="radius-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                                                    {(log.recipeName || 'V60').split('(')[0].trim()}
+                                                    {getLogRecipeName(log.recipeName || 'V60', lang)}
                                                 </span>
                                                 <span className="radius-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
                                                     1:{log.ratio}
@@ -2901,11 +2914,10 @@
                                     {editingLogId && (
                                         <button
                                             onClick={() => { if (window.confirm(t('modal.deleteConfirm'))) deleteLog(); }}
-                                            aria-label={t('log.delete')}
-                                            title={t('log.delete')}
-                                            className="flex-none p-3 text-red-500 bg-red-50 hover:bg-red-100 radius-md transition-all cursor-pointer"
+                                            className="flex-none px-4 py-3 radius-md border border-neutral-200 text-neutral-500 font-semibold text-sm hover:border-red-300 hover:text-red-500 transition-colors cursor-pointer flex items-center gap-1.5"
                                         >
                                             <Trash2 className="w-4 h-4" />
+                                            {t('log.delete')}
                                         </button>
                                     )}
                                     <button
@@ -2942,7 +2954,7 @@
                                         <div className="flex-1 min-w-0 pr-3">
                                             <h3 className="text-xl font-bold text-neutral-800 truncate">{vl.beanName || t('bean.unnamed')}</h3>
                                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                                <span className={`text-xs px-2 py-0.5 radius-full border font-medium ${vlRoast.color}`}>{vlRoast.label}</span>
+                                                <span className={`text-xs px-2 py-0.5 radius-full border font-medium ${vlRoast.color}`}>{t('roast.' + vlRoast.id)}</span>
                                                 <span className="text-xs text-neutral-400">{vl.dripperName || 'V60'}</span>
                                                 <span className="text-xs text-neutral-300">·</span>
                                                 <span className="text-xs text-neutral-400">{getRelativeDate(vl.createdAt, lang)}</span>
@@ -3001,7 +3013,7 @@
                                             <div className="w-px h-8 bg-neutral-200"/>
                                             <div className="max-w-[60px]">
                                                 <p className="text-xs text-neutral-400 mb-0.5">{t('log.recipe')}</p>
-                                                <p className="font-bold text-neutral-800 text-xs truncate">{(vl.recipeName || '').split('(')[0].trim()}</p>
+                                                <p className="font-bold text-neutral-800 text-xs truncate">{getLogRecipeName(vl.recipeName, lang)}</p>
                                             </div>
                                         </div>
 
@@ -3018,7 +3030,7 @@
                                                                         { label: t('log.tooSlow'), cls: 'bg-red-50 text-red-500 border-red-100' };
                                                     return (
                                                         <div key={i} className="flex items-center gap-2">
-                                                            <span className="text-xs text-neutral-500 flex-1 truncate">{st.name}</span>
+                                                            <span className="text-xs text-neutral-500 flex-1 truncate">{getLogStepName(st.name, vl.recipeName, lang)}</span>
                                                             <span className="text-xs tabular-nums text-neutral-400">{st.actual}s <span className="text-neutral-300">/ {st.planned}s</span></span>
                                                             <span className={`text-[10px] font-bold px-1.5 py-0.5 radius-full border ${cls}`}>{label}</span>
                                                         </div>
