@@ -2747,7 +2747,19 @@
                                         )}
                                     </div>
 
-                                    <div className="border-t border-neutral-100 px-5 pt-4 pb-5 flex flex-col gap-1">
+                                    <div className="border-t border-neutral-100 px-5 py-4 flex gap-3">
+                                        <button
+                                            onPointerDown={(e) => {
+                                                e.preventDefault();
+                                                if (window.confirm('確定要刪除這筆紀錄嗎？')) {
+                                                    setLogs(logs.filter(l => l.id !== vl.id));
+                                                    setViewingLog(null);
+                                                }
+                                            }}
+                                            className="px-5 py-3.5 radius-md border border-neutral-200 text-neutral-500 font-semibold text-sm hover:border-red-300 hover:text-red-500 transition-colors cursor-pointer touch-none active:scale-95"
+                                        >
+                                            刪除
+                                        </button>
                                         <button
                                             onPointerDown={(e) => {
                                                 e.preventDefault();
@@ -2767,21 +2779,9 @@
                                                 setViewingLog(null);
                                                 setBrewStep('journal-edit');
                                             }}
-                                            className="w-full bg-amber-600 text-white py-3.5 radius-md font-bold text-base shadow-sm hover:bg-amber-700 transition-all cursor-pointer touch-none active:scale-95"
+                                            className="flex-1 bg-amber-600 text-white py-3.5 radius-md font-bold text-base shadow-sm hover:bg-amber-700 transition-all cursor-pointer touch-none active:scale-95"
                                         >
                                             編輯紀錄
-                                        </button>
-                                        <button
-                                            onPointerDown={(e) => {
-                                                e.preventDefault();
-                                                if (window.confirm('確定要刪除這筆紀錄嗎？')) {
-                                                    setLogs(logs.filter(l => l.id !== vl.id));
-                                                    setViewingLog(null);
-                                                }
-                                            }}
-                                            className="w-full py-2.5 text-sm text-neutral-400 hover:text-red-500 transition-colors cursor-pointer touch-none"
-                                        >
-                                            刪除此紀錄
                                         </button>
                                     </div>
                                 </div>
