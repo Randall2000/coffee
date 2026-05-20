@@ -2346,6 +2346,21 @@
                                                     <p className="text-xs text-neutral-500 italic line-clamp-1">"{log.notes}"</p>
                                                 </div>
                                             )}
+                                            <div className="px-2 flex justify-end border-t border-neutral-50">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (!window.confirm('確定刪除這筆紀錄？')) return;
+                                                        const updatedLogs = logs.filter(l => l.id !== log.id);
+                                                        setLogs(updatedLogs);
+                                                        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs)); } catch(e) {}
+                                                    }}
+                                                    aria-label="刪除紀錄"
+                                                    className="min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-400 hover:text-red-400 hover:bg-red-50 active:text-red-500 rounded-xl transition-colors cursor-pointer"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })}
