@@ -13,34 +13,38 @@
   2. comparing beans through filtering
 
 ## Journal UX State
-- Journal no longer uses `timeline / byBean` dual-mode navigation.
-- Journal is now a single main flow:
-  1. trend summary
+- Journal is a single main flow:
+  1. trend summary (hidden when bean filter active)
   2. search + sort
-  3. recent bean rail
+  3. recent bean rail (hidden when bean filter active)
   4. filtered recent log list
 
-## Journal Bean Filtering
-- State:
-  - `selectedJournalBeans`: multi-select bean filters
-  - `journalBeanSheetOpen`: journal-only bean filter sheet
-  - `journalBeanSearch`: search input inside journal bean sheet
-- Filtering behavior:
-  - multi-select
-  - OR logic
-  - logs are shown if they match any selected bean
-- UX behavior:
-  - clear filter action lives inside the journal tool card, not header
-  - recent beans appear as a horizontal rail
-  - `更多豆子` opens a dedicated journal bean filter bottom sheet
-  - this sheet is separate from the brew-config bean sheet
+## Journal Bean Filtering — Sub-page Navigation Pattern
+- Tapping a bean chip on the rail triggers **sub-page navigation**, NOT in-place filtering.
+- When `selectedJournalBeans.length > 0`:
+  - Page title changes from "沖煮日誌" (with BookOpen icon) to a `← [bean name]` back button
+  - If multiple beans selected: title shows `← X 種豆子`
+  - Subtitle changes from static hint text to `找到 N 筆紀錄`
+  - Bean rail is hidden (user is already inside the filtered view)
+  - Trend stats section is hidden
+  - Search bar and sort dropdown remain visible
+  - Clicking the title/back button calls `setSelectedJournalBeans([])` to return to full view
+- This pattern was chosen to prevent the "lost in filter" UX problem.
+  - Do NOT revert to in-place filter with a small "清除" button — that caused the original confusion.
+  - Do NOT add a separate filter chips row below the search bar — the header back button is the exit.
+
+## Journal Bean Filtering — State
+- `selectedJournalBeans`: multi-select bean filters
+- `journalBeanSheetOpen`: journal-only bean filter sheet
+- `journalBeanSearch`: search input inside journal bean sheet
+- Filtering behavior: multi-select, OR logic, logs shown if they match any selected bean
+- `更多豆子` opens a dedicated journal bean filter bottom sheet (separate from the brew-config bean sheet)
 
 ## Important UX Decisions
 - Do not reuse brew configuration bean selection UX for journal filtering.
-- For many beans:
-  - recent bean rail is only a shortcut
-  - full bean filtering should happen in the journal-specific sheet
-- Avoid page states where users get trapped in a filtered sub-view with no visible exit.
+- Recent bean rail is only a shortcut for quick single-bean drill-down.
+- Full multi-bean filtering should happen in the journal-specific sheet (`journalBeanSheetOpen`).
+- The "sub-page navigation" pattern is intentional — users understand ← as "go back", not "clear filter".
 
 ## Pre-Brew Confirmation Page — Quick Adjust Panel
 - Triggered by: `showAdjust` state, toggled via 快速調整 button below the Start Brew button
@@ -65,9 +69,10 @@
 - Added × close button to dripper / grinder / recipe sheets.
 - Added cancel/back exit to bean sheet when no beans exist.
 - Removed 烘焙度 from quick adjust panel (pre-brew confirmation page).
+- **Journal bean filter changed to sub-page navigation**: clicking a bean now changes the header to `← [bean name]` with a back button, instead of in-place silent filter.
 
 ## Notes For Future Agents
 - If you update journal filtering UX, also update this file.
 - If you update the quick adjust panel items, also update this file.
 - Keep interactions aligned with mobile thumb-friendly usage.
-- Prefer local, contextual actions over header-level actions for list filters.
+- The journal page header is dynamic: it shows "沖煮日誌" normally, and `← [bean]` when filtered. Do not change this without understanding the sub-page navigation design decision above.
