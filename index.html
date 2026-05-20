@@ -209,36 +209,42 @@
             v60: {
                 id: 'v60',
                 name: '究極 V60 (James Hoffmann)',
+                nameEn: 'Ultimate V60 (James Hoffmann)',
                 description: '口感乾淨，香氣完整，適合淺焙豆。',
+                descriptionEn: 'Clean cup, full aroma, ideal for light roasts.',
                 ratio: 16.7,
                 steps: [
-                    { name: '悶蒸 (Bloom)', desc: '注入咖啡粉 2 倍的熱水，等 45 秒讓粉排氣膨脹', endTime: 45, waterTargetCoffeeMultiple: 2 },
-                    { name: '主注水', desc: '以繞圈方式穩定注水，在 1:15 前注到總水量 60%', endTime: 75, waterTargetPercentage: 0.6 },
-                    { name: '補足總水量', desc: '繼續注到 100% 總水量，約 1:45 前完成', endTime: 105, waterTargetPercentage: 1.0 },
-                    { name: '攪拌與濾乾', desc: '輕攪兩下，小繞圈整平咖啡粉，靜待濾乾，目標 3:00 完成', endTime: 180, waterTargetPercentage: 1.0 }
+                    { name: '悶蒸 (Bloom)', nameEn: 'Bloom', desc: '注入咖啡粉 2 倍的熱水，等 45 秒讓粉排氣膨脹', descEn: 'Pour 2× coffee weight in hot water, wait 45s to bloom', endTime: 45, waterTargetCoffeeMultiple: 2 },
+                    { name: '主注水', nameEn: 'Main Pour', desc: '以繞圈方式穩定注水，在 1:15 前注到總水量 60%', descEn: 'Pour in circles, reach 60% of total water by 1:15', endTime: 75, waterTargetPercentage: 0.6 },
+                    { name: '補足總水量', nameEn: 'Top Up', desc: '繼續注到 100% 總水量，約 1:45 前完成', descEn: 'Continue to 100% total water, finish around 1:45', endTime: 105, waterTargetPercentage: 1.0 },
+                    { name: '攪拌與濾乾', nameEn: 'Stir & Drain', desc: '輕攪兩下，小繞圈整平咖啡粉，靜待濾乾，目標 3:00 完成', descEn: 'Stir twice, swirl to level grounds, let drain by 3:00', endTime: 180, waterTargetPercentage: 1.0 }
                 ]
             },
             fourSix: {
                 id: 'fourSix',
                 name: '4:6 法 (Tetsu Kasuya)',
+                nameEn: '4:6 Method (Tetsu Kasuya)',
                 description: '前40%決定風味，後60%決定醇厚度。',
+                descriptionEn: 'First 40% shapes flavor, last 60% shapes body.',
                 ratio: 15,
                 steps: [
-                    { name: '第1注', desc: '第 1 注 20%，建立前段風味；與第 2 注合計為前 40%', endTime: 45, waterTargetPercentage: 0.2 },
-                    { name: '第2注', desc: '補到總量 40%，平衡酸感與甜味', endTime: 90, waterTargetPercentage: 0.4 },
-                    { name: '第3注', desc: '第 3 注補到 60%，開始建立醇厚與強度', endTime: 135, waterTargetPercentage: 0.6 },
-                    { name: '第4注', desc: '第 4 注補到 80%，維持每 45 秒一次的節奏', endTime: 180, waterTargetPercentage: 0.8 },
-                    { name: '第5注', desc: '第 5 注補到 100%，等候濾乾；總時長約 3:30', endTime: 210, waterTargetPercentage: 1.0 }
+                    { name: '第1注', nameEn: 'Pour 1', desc: '第 1 注 20%，建立前段風味；與第 2 注合計為前 40%', descEn: 'Pour 1 to 20%, builds front flavor; totals 40% with pour 2', endTime: 45, waterTargetPercentage: 0.2 },
+                    { name: '第2注', nameEn: 'Pour 2', desc: '補到總量 40%，平衡酸感與甜味', descEn: 'Top up to 40%, balances acidity and sweetness', endTime: 90, waterTargetPercentage: 0.4 },
+                    { name: '第3注', nameEn: 'Pour 3', desc: '第 3 注補到 60%，開始建立醇厚與強度', descEn: 'Pour 3 to 60%, starts building body and strength', endTime: 135, waterTargetPercentage: 0.6 },
+                    { name: '第4注', nameEn: 'Pour 4', desc: '第 4 注補到 80%，維持每 45 秒一次的節奏', descEn: 'Pour 4 to 80%, maintain 45s intervals', endTime: 180, waterTargetPercentage: 0.8 },
+                    { name: '第5注', nameEn: 'Pour 5', desc: '第 5 注補到 100%，等候濾乾；總時長約 3:30', descEn: 'Pour 5 to 100%, let drain; total ~3:30', endTime: 210, waterTargetPercentage: 1.0 }
                 ]
             },
             onePour: {
                 id: 'onePour',
                 name: 'MUGEN 一次注水',
+                nameEn: 'MUGEN Single Pour',
                 description: 'HARIO MUGEN 的單次注水配方，不另外悶蒸。',
+                descriptionEn: 'HARIO MUGEN single pour — no separate bloom.',
                 ratio: 12,
                 steps: [
-                    { name: '一次注水', desc: '以中心小圈穩定連續注水到總量，不另外悶蒸', endTime: 40, waterTargetPercentage: 1.0 },
-                    { name: '濾乾', desc: '維持單次注水後自然濾乾，完成 20g 對 240mL 的標準流程', endTime: 150, waterTargetPercentage: 1.0 }
+                    { name: '一次注水', nameEn: 'Single Pour', desc: '以中心小圈穩定連續注水到總量，不另外悶蒸', descEn: 'Pour in small circles continuously to total volume, no bloom', endTime: 40, waterTargetPercentage: 1.0 },
+                    { name: '濾乾', nameEn: 'Drain', desc: '維持單次注水後自然濾乾，完成 20g 對 240mL 的標準流程', descEn: 'Let drain naturally after the single pour', endTime: 150, waterTargetPercentage: 1.0 }
                 ]
             }
         };
@@ -312,10 +318,231 @@
 
         const STORAGE_KEY = 'barista_flow_logs';
 
-        const getRelativeDate = (timestamp) => {
+        // ── i18n Translation Table ──
+        const TRANSLATIONS = {
+            // tabs
+            'tab.brew':        { zh: '沖煮', en: 'Brew' },
+            'tab.journal':     { zh: '日誌', en: 'Journal' },
+            // home
+            'home.title':             { zh: '手沖咖啡，一步一步', en: 'Pour Over, Step by Step' },
+            'home.subtitle':          { zh: '選豆、調參數、跟著計時器完成每一注', en: 'Pick beans, set params, pour with the timer' },
+            'home.feature.flavor':    { zh: '選風味', en: 'Pick Flavor' },
+            'home.feature.flavorDesc':{ zh: '明亮 · 平衡 · 醇厚', en: 'Bright · Balanced · Rich' },
+            'home.feature.timer':     { zh: '跟著計時', en: 'Pour with Timer' },
+            'home.feature.timerDesc': { zh: '注水節奏全掌握', en: 'Master every pour' },
+            'home.feature.journal':   { zh: '記錄日誌', en: 'Keep Journal' },
+            'home.feature.journalDesc':{ zh: '每杯都能回顧', en: 'Review every brew' },
+            'home.cta':         { zh: '開始沖煮', en: 'Start Brewing' },
+            'home.lastBrew':    { zh: '上次沖煮', en: 'LAST BREW' },
+            'home.brewAgain':   { zh: '再沖一次', en: 'Brew Again' },
+            // generic
+            'bean.unnamed':  { zh: '未命名咖啡豆', en: 'Unnamed Bean' },
+            'save':          { zh: '儲存', en: 'Save' },
+            'cancel':        { zh: '取消', en: 'Cancel' },
+            'clear':         { zh: '清除', en: 'Clear' },
+            'delete':        { zh: '刪除', en: 'Delete' },
+            // config
+            'config.title':         { zh: '沖煮設定', en: 'Brew Setup' },
+            'config.flavor':        { zh: '風味偏好', en: 'Flavor Profile' },
+            'config.bean':          { zh: '豆子', en: 'Bean' },
+            'config.dripper':       { zh: '濾杯', en: 'Dripper' },
+            'config.grinder':       { zh: '磨豆機', en: 'Grinder' },
+            'config.selectBean':    { zh: '選擇咖啡豆', en: 'Select bean' },
+            'config.selectDripper': { zh: '選擇濾杯', en: 'Select dripper' },
+            'config.selectGrinder': { zh: '選擇磨豆機', en: 'Select grinder' },
+            'config.ratio':         { zh: '粉水比', en: 'Ratio' },
+            'config.totalWater':    { zh: (ml) => `總水量 ${ml} ml`, en: (ml) => `Total ${ml} ml` },
+            'config.brewSuggestion':{ zh: '沖煮建議', en: 'Brew Suggestion' },
+            'config.lastRecord':    { zh: '上次紀錄', en: 'Last Record' },
+            'config.bestRecipe':    { zh: '最佳手沖法', en: 'Best Recipe' },
+            'config.lastRecipe':    { zh: '使用手沖法', en: 'Recipe Used' },
+            'config.bestRatio':     { zh: '建議比例', en: 'Suggested Ratio' },
+            'config.lastRatio':     { zh: '使用比例', en: 'Ratio Used' },
+            'config.applyBrew':     { zh: '套用這個建議', en: 'Apply Suggestion' },
+            'config.viewAll':       { zh: (n) => `查看全部 ${n} 筆`, en: (n) => `View all ${n}` },
+            'config.next':          { zh: '查看沖煮建議', en: 'View Brew Preview' },
+            'config.backHome':      { zh: '返回首頁', en: 'Back to Home' },
+            // roast levels
+            'roast.light':  { zh: '淺焙', en: 'Light' },
+            'roast.medium': { zh: '中焙', en: 'Medium' },
+            'roast.dark':   { zh: '深焙', en: 'Dark' },
+            // flavor options
+            'flavor.bright':       { zh: '明亮', en: 'Bright' },
+            'flavor.bright.desc':  { zh: '突出果酸、清透花香，適合淺焙單品', en: 'Fruity acidity & floral notes, ideal for light roast' },
+            'flavor.balanced':     { zh: '平衡', en: 'Balanced' },
+            'flavor.balanced.desc':{ zh: '酸甜協調、圓潤易飲，日常首選', en: 'Smooth and well-rounded, perfect for everyday brewing' },
+            'flavor.rich':         { zh: '醇厚', en: 'Rich' },
+            'flavor.rich.desc':    { zh: '層次豐富、厚實甘甜，強調尾韻', en: 'Full-bodied sweetness with a lasting finish' },
+            // bean sheet
+            'bean.select':         { zh: '選擇咖啡豆', en: 'Select Bean' },
+            'bean.edit':           { zh: '編輯咖啡豆', en: 'Edit Bean' },
+            'bean.add':            { zh: '新增咖啡豆', en: 'Add Bean' },
+            'bean.new':            { zh: '新豆子', en: 'New Bean' },
+            'bean.namePlaceholder':{ zh: '豆子名稱（選填）', en: 'Bean name (optional)' },
+            'bean.roastLevel':     { zh: '烘焙程度', en: 'Roast Level' },
+            'bean.roastDate':      { zh: '烘豆日期', en: 'Roast Date' },
+            'bean.noDate':         { zh: '未指定', en: 'Not set' },
+            'bean.confirmDelete':  { zh: (name) => `確定刪除「${name}」？`, en: (name) => `Delete "${name}"?` },
+            'bean.deleteBean':     { zh: '刪除這個豆子', en: 'Delete this bean' },
+            'bean.backToList':     { zh: '← 返回選擇', en: '← Back to list' },
+            'bean.empty':          { zh: '尚無紀錄，點右上角新增咖啡豆', en: 'No beans yet. Tap + to add one.' },
+            // dripper / grinder sheets
+            'dripper.title':     { zh: '選擇濾杯', en: 'Select Dripper' },
+            'grinder.title':     { zh: '選擇磨豆機', en: 'Select Grinder' },
+            'grinder.recommend': { zh: (n) => `建議 ${n}`, en: (n) => `Rec. ${n}` },
+            'grinder.clicks':    { zh: (n) => `建議 ${n} 格`, en: (n) => `${n} clicks` },
+            // suggestion view
+            'suggestion.title':       { zh: '沖煮前確認', en: 'Pre-Brew Check' },
+            'suggestion.brewMethod':  { zh: '沖煮方式', en: 'BREW METHOD' },
+            'suggestion.noBean':      { zh: '未選擇咖啡豆', en: 'No bean selected' },
+            'suggestion.noDripper':   { zh: '未選擇濾杯', en: 'No dripper selected' },
+            'suggestion.recRecommended': { zh: '推薦配方，符合你目前偏好的風味方向', en: 'Recommended recipe for your flavor preference.' },
+            'suggestion.coffee':      { zh: '粉量', en: 'Coffee' },
+            'suggestion.water':       { zh: '水量', en: 'Water' },
+            'suggestion.ratio':       { zh: '粉水比', en: 'Ratio' },
+            'suggestion.equipment':   { zh: '器材', en: 'EQUIPMENT' },
+            'suggestion.preparation': { zh: '沖煮準備', en: 'PREPARATION' },
+            'suggestion.hotWater':    { zh: (t) => `${t}°C 熱水`, en: (t) => `${t}°C water` },
+            'suggestion.pourSteps':   { zh: (n) => `${n} 段注水`, en: (n) => `${n} pour steps` },
+            'suggestion.start':       { zh: '開始沖煮', en: 'Start Brewing' },
+            'suggestion.collapseAdj': { zh: '收起快速調整', en: 'Collapse' },
+            'suggestion.quickAdj':    { zh: '快速調整', en: 'Quick Adjust' },
+            'suggestion.coffeeLabel': { zh: '粉量', en: 'Coffee' },
+            'suggestion.tempLabel':   { zh: '水溫', en: 'Temp' },
+            'suggestion.timeline':    { zh: '注水時間線', en: 'POUR TIMELINE' },
+            'suggestion.stepsBadge':  { zh: (n) => `${n} 段`, en: (n) => `${n} steps` },
+            'suggestion.switchRecipe':{ zh: '切換手沖法', en: 'Switch Recipe' },
+            'suggestion.switchNote':  { zh: '選擇後會立即更新摘要、時間線與計時節奏', en: 'Updates summary, timeline, and timer on selection' },
+            'suggestion.recStart':    { zh: '依你的風味偏好，推薦先從這個開始。', en: 'Recommended for your flavor preference.' },
+            'suggestion.backConfig':  { zh: '返回沖煮設定', en: 'Back to Setup' },
+            // timer view
+            'timer.backLabel':   { zh: '放棄沖煮並返回', en: 'Abandon brew and go back' },
+            'timer.ready':       { zh: '準備好就按開始', en: 'Ready? Press Start' },
+            'timer.done':        { zh: '完成', en: 'Done' },
+            'timer.enjoy':       { zh: '享受您的咖啡', en: 'Enjoy your coffee' },
+            'timer.to':          { zh: '到', en: 'to' },
+            'timer.start':       { zh: '開始計時', en: 'Start Timer' },
+            'timer.abandonConfirm':  { zh: '放棄目前的沖煮進度？', en: 'Abandon current brew?' },
+            'timer.earlyFinish': { zh: (s) => `還差 ${s}，確定提早結束？`, en: (s) => `${s} remaining. Finish early?` },
+            'timer.minUnit':     { zh: '分', en: 'min' },
+            'timer.secUnit':     { zh: '秒', en: 's' },
+            'timer.pause':       { zh: '暫停計時器', en: 'Pause timer' },
+            'timer.skip':        { zh: '跳過此步驟', en: 'Skip step' },
+            'timer.reset':       { zh: '重設計時器', en: 'Reset timer' },
+            'timer.resume':      { zh: '繼續計時器', en: 'Resume timer' },
+            'timer.finish':      { zh: '完成並儲存沖煮', en: 'Finish and save' },
+            // journal
+            'journal.title':       { zh: '沖煮日誌', en: 'Brew Journal' },
+            'journal.subtitle':    { zh: '優先查看自己的評分趨勢與最近紀錄', en: 'Track your rating trends and recent brews' },
+            'journal.found':       { zh: (n) => `找到 ${n} 筆紀錄`, en: (n) => `${n} records found` },
+            'journal.beans':       { zh: (n) => `${n} 種豆子`, en: (n) => `${n} beans` },
+            'journal.total':       { zh: '總沖煮', en: 'TOTAL' },
+            'journal.monthly':     { zh: '本月', en: 'THIS MONTH' },
+            'journal.ratingCurve': { zh: '自評成長曲線', en: 'Rating Trend' },
+            'journal.trendUp':     { zh: '↑ 進步中', en: '↑ Improving' },
+            'journal.trendDown':   { zh: '↓ 待加強', en: '↓ Needs work' },
+            'journal.trendFlat':   { zh: '→ 穩定', en: '→ Stable' },
+            'journal.needMore':    { zh: '多沖幾杯後顯示', en: 'Brew more to see trend' },
+            'journal.search':      { zh: '搜尋豆子名稱...', en: 'Search bean name...' },
+            'journal.sortNewest':  { zh: '最新在前', en: 'Newest first' },
+            'journal.sortOldest':  { zh: '最舊在前', en: 'Oldest first' },
+            'journal.sortMonth':   { zh: '本月', en: 'This month' },
+            'journal.sortWeek':    { zh: '本週', en: 'This week' },
+            'journal.sortRating':  { zh: '評分高低', en: 'By rating' },
+            'journal.moreBeans':   { zh: '更多豆子', en: 'More beans' },
+            'journal.empty':       { zh: '還沒有紀錄', en: 'No records yet' },
+            'journal.emptyHint':   { zh: '沖完一杯後儲存，就會出現在這裡', en: 'Save a brew and it will appear here' },
+            'journal.noMatch':     { zh: '找不到符合目前條件的紀錄', en: 'No records match your filters' },
+            'journal.noRange':     { zh: '這個時間範圍沒有紀錄', en: 'No records in this time range' },
+            'journal.unrated':     { zh: '未評分', en: 'Unrated' },
+            // journal bean sheet
+            'jBean.title':    { zh: '更多豆子', en: 'More Beans' },
+            'jBean.subtitle': { zh: '搜尋並複選要一起比較的豆子', en: 'Search and multi-select to compare' },
+            'jBean.search':   { zh: '搜尋豆子...', en: 'Search beans...' },
+            'jBean.noMatch':  { zh: '找不到符合條件的豆子', en: 'No beans found' },
+            'jBean.apply':    { zh: '套用', en: 'Apply' },
+            // save modal
+            'modal.record':        { zh: '紀錄這杯', en: 'Log This Brew' },
+            'modal.edit':          { zh: '編輯紀錄', en: 'Edit Record' },
+            'modal.closeLabel':    { zh: '關閉紀錄視窗', en: 'Close modal' },
+            'modal.flowFast':      { zh: '流速偏快', en: 'Flow fast' },
+            'modal.flowClog':      { zh: '疑似堵塞', en: 'Clogged' },
+            'modal.flowNormal':    { zh: '流速正常', en: 'Flow normal' },
+            'modal.howIsIt':       { zh: '這杯如何？', en: 'How was it?' },
+            'modal.rating1':       { zh: '還要加油', en: 'Keep trying' },
+            'modal.rating2':       { zh: '普通', en: 'Average' },
+            'modal.rating3':       { zh: '不錯喝', en: 'Pretty good' },
+            'modal.rating4':       { zh: '很好喝！', en: 'Great!' },
+            'modal.rating5':       { zh: '完美！', en: 'Perfect!' },
+            'modal.flavorRadar':   { zh: '風味雷達', en: 'Flavor Radar' },
+            'modal.dragAdjust':    { zh: '往各方向拖曳調整', en: 'Drag to adjust' },
+            'modal.notesPlaceholder': { zh: '備註（選填）', en: 'Notes (optional)' },
+            'modal.update':        { zh: '更新紀錄', en: 'Update Record' },
+            'modal.save':          { zh: '儲存紀錄', en: 'Save Record' },
+            'modal.deleteConfirm': { zh: '確定刪除這筆紀錄？', en: 'Delete this record?' },
+            'modal.discardConfirm':{ zh: '放棄此次沖煮紀錄？', en: 'Discard this brew?' },
+            'modal.starLabel':    { zh: (n) => `評分 ${n} 星`, en: (n) => `Rate ${n} star${n > 1 ? 's' : ''}` },
+            // log detail
+            'log.closeLabel':  { zh: '關閉紀錄詳情', en: 'Close log detail' },
+            'log.flavorRadar': { zh: '風味雷達', en: 'Flavor Radar' },
+            'log.flowRate':    { zh: '流速', en: 'Flow Rate' },
+            'log.time':        { zh: '時間', en: 'Time' },
+            'log.coffee':      { zh: '粉量', en: 'Coffee' },
+            'log.water':       { zh: '水量', en: 'Water' },
+            'log.ratio':       { zh: '比例', en: 'Ratio' },
+            'log.recipe':      { zh: '配方', en: 'Recipe' },
+            'log.stepTimes':   { zh: '步驟時間', en: 'STEP TIMES' },
+            'log.tooFast':     { zh: '過快', en: 'Too fast' },
+            'log.fast':        { zh: '偏快', en: 'Fast' },
+            'log.normal':      { zh: '正常', en: 'Normal' },
+            'log.slow':        { zh: '偏慢', en: 'Slow' },
+            'log.tooSlow':     { zh: '過慢', en: 'Too slow' },
+            'log.delete':      { zh: '刪除', en: 'Delete' },
+            'log.edit':        { zh: '編輯紀錄', en: 'Edit' },
+            'log.deleteConfirm':{ zh: '確定要刪除這筆紀錄嗎？', en: 'Delete this record?' },
+            // rating labels
+            'rating.1': { zh: '還要加油', en: 'Keep trying' },
+            'rating.2': { zh: '普通', en: 'Average' },
+            'rating.3': { zh: '不錯喝', en: 'Pretty good' },
+            'rating.4': { zh: '很好喝', en: 'Great' },
+            'rating.5': { zh: '完美', en: 'Perfect' },
+            // sensory
+            'sensory.acidity':   { zh: '酸感', en: 'Acid' },
+            'sensory.sweetness': { zh: '甜感', en: 'Sweet' },
+            'sensory.bitterness':{ zh: '苦味', en: 'Bitter' },
+            'sensory.body':      { zh: '醇厚', en: 'Body' },
+            // flow/stability
+            'flow.fast':  { zh: '太快', en: 'Too fast' },
+            'flow.good':  { zh: '剛好', en: 'Good' },
+            'flow.clog':  { zh: '堵塞', en: 'Clogged' },
+            'stab.shaky': { zh: '手抖', en: 'Shaky' },
+            'stab.stable':{ zh: '穩定', en: 'Stable' },
+            'stab.bypass':{ zh: '水道不均', en: 'Bypass' },
+            // feedback toasts
+            'feedback.saved':   { zh: '紀錄已儲存', en: 'Saved' },
+            'feedback.updated': { zh: '紀錄已更新', en: 'Updated' },
+            'feedback.failed':  { zh: '儲存失敗，請確認瀏覽器儲存空間', en: 'Save failed. Check browser storage.' },
+            // journal bean filter sheet
+            'journal.beanSubtitle': { zh: '搜尋並複選要一起比較的豆子', en: 'Search and select beans to compare' },
+            'journal.beanSearch':   { zh: '搜尋豆子...', en: 'Search beans...' },
+            'journal.beanNoMatch':  { zh: '找不到符合條件的豆子', en: 'No matching beans' },
+            'journal.beanClear':    { zh: '清除', en: 'Clear' },
+            'journal.beanApply':    { zh: (n) => n > 0 ? `套用 (${n})` : '套用', en: (n) => n > 0 ? `Apply (${n})` : 'Apply' },
+            // generic
+            'close':            { zh: '關閉', en: 'Close' },
+            'clearSearch':      { zh: '清除搜尋', en: 'Clear search' },
+        };
+
+        const getRelativeDate = (timestamp, lang) => {
             const d = new Date(timestamp);
             const now = new Date();
             const diffDays = Math.floor((now - d) / 86400000);
+            if (lang === 'en') {
+                if (diffDays === 0) return 'Today';
+                if (diffDays === 1) return 'Yesterday';
+                if (diffDays < 7) return `${diffDays}d ago`;
+                return `${d.getMonth()+1}/${d.getDate()}`;
+            }
             if (diffDays === 0) return '今天';
             if (diffDays === 1) return '昨天';
             if (diffDays < 7) return `${diffDays} 天前`;
@@ -324,11 +551,11 @@
             return `${m}月${day}日`;
         };
 
-        const formatRoastDate = (dateString) => {
+        const formatRoastDate = (dateString, lang) => {
             if (!dateString) return '';
             const [year, month, day] = dateString.split('-').map(Number);
             if (!year || !month || !day) return '';
-            return new Date(year, month - 1, day).toLocaleDateString('zh-TW', {
+            return new Date(year, month - 1, day).toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-TW', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -352,16 +579,17 @@
             return Math.round((step.waterTargetPercentage ?? 0) * waterTotal);
         };
 
-        function RadarChart({ data, onChange }) {
+        function RadarChart({ data, onChange, lang = 'zh' }) {
             const cx = 100, cy = 100, maxR = 68;
             const svgRef = useRef(null);
             const draggingRef = useRef(null);
+            const tl = (key) => { const e = TRANSLATIONS[key]; if (!e) return key; const v = e[lang] ?? e['zh']; return typeof v === 'function' ? v() : v; };
 
             const axes = [
-                { key: 'acidity',    label: '酸感', angle: -Math.PI / 2 },
-                { key: 'sweetness',  label: '甜感', angle: 0 },
-                { key: 'bitterness', label: '苦味', angle: Math.PI / 2 },
-                { key: 'body',       label: '醇厚', angle: Math.PI },
+                { key: 'acidity',    label: tl('sensory.acidity'),    angle: -Math.PI / 2 },
+                { key: 'sweetness',  label: tl('sensory.sweetness'),  angle: 0 },
+                { key: 'bitterness', label: tl('sensory.bitterness'), angle: Math.PI / 2 },
+                { key: 'body',       label: tl('sensory.body'),       angle: Math.PI },
             ];
 
             const pt = (angle, r) => ({
@@ -476,6 +704,14 @@
         );
 
         function BaristaFlow() {
+            const [lang, setLang] = useState(() => localStorage.getItem('barista_flow_lang') || 'zh');
+            const t = (key, ...args) => {
+                const entry = TRANSLATIONS[key];
+                if (!entry) return key;
+                const val = entry[lang] ?? entry['zh'];
+                return typeof val === 'function' ? val(...args) : val;
+            };
+
             const [activeTab, setActiveTab] = useState('brew');
             
             const [selectedRecipeId, setSelectedRecipeId] = useState('v60');
@@ -728,6 +964,11 @@
                 return () => clearTimeout(timeout);
             }, [saveFeedback]);
 
+            useEffect(() => {
+                localStorage.setItem('barista_flow_lang', lang);
+                document.documentElement.lang = lang === 'en' ? 'en' : 'zh-Hant';
+            }, [lang]);
+
 
             const handleStartStop = (e) => {
                 if(e) e.preventDefault(); 
@@ -794,7 +1035,7 @@
                 }
                 // 先暫停（線性狀態），再確認放棄
                 if (timerStatus === 'running') setTimerStatus('paused');
-                if (window.confirm('放棄目前的沖煮進度？')) {
+                if (window.confirm(t('timer.abandonConfirm'))) {
                     setCurrentTime(0);
                     prevTimeRef.current = 0;
                     setTimerStatus('idle');
@@ -818,8 +1059,8 @@
                     const remaining = Math.ceil(totalTime - currentTime);
                     const mins = Math.floor(remaining / 60);
                     const secs = remaining % 60;
-                    const timeStr = mins > 0 ? `${mins} 分 ${secs} 秒` : `${secs} 秒`;
-                    if (!window.confirm(`還差 ${timeStr}，確定提早結束？`)) return;
+                    const timeStr = mins > 0 ? `${mins} ${t('timer.minUnit')} ${secs} ${t('timer.secUnit')}` : `${secs} ${t('timer.secUnit')}`;
+                    if (!window.confirm(t('timer.earlyFinish', timeStr))) return;
                 }
                 const si = currentStepInfo;
                 if (si.step) {
@@ -878,7 +1119,7 @@
                     dismissModal();
                 } else {
                     // 沖煮後不存：確認後完整重設回 home
-                    if (!window.confirm('放棄此次沖煮紀錄？')) return;
+                    if (!window.confirm(t('modal.discardConfirm'))) return;
                     closeModal();
                 }
             };
@@ -941,10 +1182,10 @@
                 setLogs(updatedLogs);
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
-                    setSaveFeedback(editingLogId ? '紀錄已更新' : '紀錄已儲存');
+                    setSaveFeedback(editingLogId ? t('feedback.updated') : t('feedback.saved'));
                 } catch (e) {
                     console.error("Failed to save log", e);
-                    setSaveFeedback('儲存失敗，請確認瀏覽器儲存空間');
+                    setSaveFeedback(t('feedback.failed'));
                 }
 
                 closeModal();
@@ -1034,8 +1275,8 @@
                                     <PourOverIllustration />
                                     {/* Zone B: 標題文字 */}
                                     <div className="text-center px-6">
-                                        <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">手沖咖啡，一步一步</h1>
-                                        <p className="text-sm text-neutral-400 mt-1.5">選豆、調參數、跟著計時器完成每一注</p>
+                                        <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">{t('home.title')}</h1>
+                                        <p className="text-sm text-neutral-400 mt-1.5">{t('home.subtitle')}</p>
                                     </div>
                                 </div>
 
@@ -1046,9 +1287,9 @@
                                 <div className="flex flex-col gap-3 pb-2">
                                     <div className="grid grid-cols-3 gap-2.5">
                                         {[
-                                            { icon: <Droplet className="w-5 h-5 text-amber-500" />, label: '選風味', desc: '明亮 · 平衡 · 醇厚' },
-                                            { icon: <Timer className="w-5 h-5 text-amber-500" />, label: '跟著計時', desc: '注水節奏全掌握' },
-                                            { icon: <BookOpen className="w-5 h-5 text-amber-500" />, label: '記錄日誌', desc: '每杯都能回顧' },
+                                            { icon: <Droplet className="w-5 h-5 text-amber-500" />, label: t('home.feature.flavor'), desc: t('home.feature.flavorDesc') },
+                                            { icon: <Timer className="w-5 h-5 text-amber-500" />, label: t('home.feature.timer'), desc: t('home.feature.timerDesc') },
+                                            { icon: <BookOpen className="w-5 h-5 text-amber-500" />, label: t('home.feature.journal'), desc: t('home.feature.journalDesc') },
                                         ].map(f => (
                                             <div key={f.label} className="bg-white radius-lg border border-neutral-100 px-3 py-3.5 text-center shadow-sm">
                                                 <div className="flex justify-center mb-2">{f.icon}</div>
@@ -1063,7 +1304,7 @@
                                         onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
                                         className="w-full bg-amber-600 text-white py-4 radius-md font-bold text-lg shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
                                     >
-                                        <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
+                                        <Play className="w-6 h-6 fill-current ml-1" /> {t('home.cta')}
                                     </button>
                                 </div>
                             </>
@@ -1078,8 +1319,8 @@
                                     <PourOverIllustration />
                                     {/* 標題文字 */}
                                     <div className="text-center px-6">
-                                        <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">手沖咖啡，一步一步</h1>
-                                        <p className="text-sm text-neutral-400 mt-1.5">選豆、調參數、跟著計時器完成每一注</p>
+                                        <h1 className="text-xl font-black text-neutral-800 tracking-tight leading-tight">{t('home.title')}</h1>
+                                        <p className="text-sm text-neutral-400 mt-1.5">{t('home.subtitle')}</p>
                                     </div>
                                 </div>
 
@@ -1098,7 +1339,7 @@
                                             {/* 卡片 header：標籤 + 「再沖一次」pill */}
                                             <div className="px-4 pt-3 pb-2 flex items-center justify-between">
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">上次沖煮</span>
+                                                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t('home.lastBrew')}</span>
                                                     {lastLog.rating > 0 && (
                                                         <div className="flex items-center gap-0.5 ml-1">
                                                             {[1,2,3,4,5].map(s => (
@@ -1109,12 +1350,12 @@
                                                 </div>
                                                 {/* 右側：再沖一次 pill（視覺輕量，非競爭性） */}
                                                 <span className="flex items-center gap-1.5 px-2.5 py-1 radius-full bg-neutral-100 text-neutral-500 text-xs font-semibold pointer-events-none">
-                                                    <RotateCcw className="w-3 h-3" /> 再沖一次
+                                                    <RotateCcw className="w-3 h-3" /> {t('home.brewAgain')}
                                                 </span>
                                             </div>
                                             {/* 主資訊：豆子名稱 + 參數標籤 */}
                                             <div className="px-4 pb-4">
-                                                <p className="text-base font-bold text-neutral-800 truncate leading-tight">{lastLog.beanName || '未命名咖啡豆'}</p>
+                                                <p className="text-base font-bold text-neutral-800 truncate leading-tight">{lastLog.beanName || t('bean.unnamed')}</p>
                                                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                                     {lastRoast && (
                                                         <span className={`text-[11px] px-2 py-0.5 radius-full border font-medium ${lastRoast.color}`}>{lastRoast.label}</span>
@@ -1132,7 +1373,7 @@
                                         onPointerDown={(e) => { e.preventDefault(); unlockAudio(); setBrewStep('config'); }}
                                         className="w-full bg-amber-600 text-white py-4 radius-md font-bold text-lg shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 cursor-pointer touch-none active:scale-95"
                                     >
-                                        <Play className="w-6 h-6 fill-current ml-1" /> 開始沖煮
+                                        <Play className="w-6 h-6 fill-current ml-1" /> {t('home.cta')}
                                     </button>
                                 </div>
                             </>
@@ -1152,7 +1393,7 @@
                 const selectedRoast = ROAST_LEVELS.find(r => r.id === roastLevel);
                 const selectedDripperObj = DRIPPERS.find(d => d.id === selectedDripperId);
                 const selectedGrinderObj = GRINDERS.find(g => g.id === selectedGrinder);
-                const grindHint = selectedGrinder ? (GRINDER_CLICKS[selectedGrinder]?.recommend ? `建議 ${GRINDER_CLICKS[selectedGrinder].recommend}` : null) : null;
+                const grindHint = selectedGrinder ? (GRINDER_CLICKS[selectedGrinder]?.recommend ? t('grinder.recommend', GRINDER_CLICKS[selectedGrinder].recommend) : null) : null;
 
                 return (
                     <div className="pb-24 select-none space-y-3">
@@ -1160,13 +1401,13 @@
                         <div className="flex items-center gap-3">
                             <button
                                 onPointerDown={(e) => { e.preventDefault(); setBrewStep('home'); }}
-                                aria-label="返回首頁"
+                                aria-label={t('config.backHome')}
                                 className="w-9 h-9 radius-md bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                             <div className="flex-1">
-                                <p className="text-base font-bold text-neutral-800">沖煮設定</p>
+                                <p className="text-base font-bold text-neutral-800">{t('config.title')}</p>
                             </div>
                             <div className="flex items-center gap-1.5 flex-shrink-0" aria-hidden="true">
                                 <div className="w-5 h-1.5 radius-full bg-amber-500" />
@@ -1176,7 +1417,7 @@
 
                         {/* 風味偏好 - vertical cards */}
                         <div className="bg-white radius-lg border border-neutral-100 shadow-sm p-4">
-                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">風味偏好</p>
+                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">{t('config.flavor')}</p>
                             <div className="flex flex-col gap-2">
                                 {FLAVOR_OPTIONS.map(f => {
                                     const isActive = selectedFlavor === f.id;
@@ -1195,8 +1436,8 @@
                                         >
                                             <div className={`w-2 h-2 radius-full shrink-0 ${isActive ? 'bg-amber-500' : 'bg-neutral-300'}`} />
                                             <div className="flex-1 text-left">
-                                                <p className={`text-sm font-bold ${isActive ? 'text-amber-700' : 'text-neutral-800'}`}>{f.label}</p>
-                                                <p className="text-xs text-neutral-400 mt-0.5">{f.desc}</p>
+                                                <p className={`text-sm font-bold ${isActive ? 'text-amber-700' : 'text-neutral-800'}`}>{t('flavor.' + f.id)}</p>
+                                                <p className="text-xs text-neutral-400 mt-0.5">{t('flavor.' + f.id + '.desc')}</p>
                                             </div>
                                             {isActive && <div className="w-4 h-4 radius-full bg-amber-500 flex items-center justify-center shrink-0">
                                                 <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
@@ -1213,12 +1454,12 @@
                                 onClick={() => { setAddingNewBean(recentBeans.length === 0); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel(roastLevel); setBeanSheetOpen(true); }}
                                 className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer active:bg-neutral-50 border-b border-neutral-50"
                             >
-                                <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">豆子</span>
+                                <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">{t('config.bean')}</span>
                                 <span className={`flex-1 text-sm text-left truncate ${beanName ? 'font-medium text-neutral-800' : 'text-neutral-400'}`}>
-                                    {beanName || '選擇咖啡豆'}
+                                    {beanName || t('config.selectBean')}
                                 </span>
                                 {beanName && selectedRoast && (
-                                    <span className={`text-xs px-2 py-0.5 radius-full border shrink-0 ${selectedRoast.color}`}>{selectedRoast.label}</span>
+                                    <span className={`text-xs px-2 py-0.5 radius-full border shrink-0 ${selectedRoast.color}`}>{t('roast.' + selectedRoast.id)}</span>
                                 )}
                                 <ChevronRight className="w-4 h-4 text-neutral-300 shrink-0" />
                             </button>
@@ -1226,9 +1467,9 @@
                                 onClick={() => setDripperSheetOpen(true)}
                                 className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer active:bg-neutral-50 border-b border-neutral-50"
                             >
-                                <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">濾杯</span>
+                                <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">{t('config.dripper')}</span>
                                 <span className={`flex-1 text-sm text-left ${selectedDripperObj ? 'font-medium text-neutral-800' : 'text-neutral-400'}`}>
-                                    {selectedDripperObj?.name || '選擇濾杯'}
+                                    {selectedDripperObj?.name || t('config.selectDripper')}
                                 </span>
                                 <ChevronRight className="w-4 h-4 text-neutral-300 shrink-0" />
                             </button>
@@ -1236,9 +1477,9 @@
                                 onClick={() => setGrinderSheetOpen(true)}
                                 className="w-full flex items-center px-4 py-4 gap-3 cursor-pointer active:bg-neutral-50"
                             >
-                                <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">磨豆機</span>
+                                <span className="text-xs font-bold text-neutral-400 w-12 text-left shrink-0">{t('config.grinder')}</span>
                                 <span className={`flex-1 text-sm text-left ${selectedGrinderObj ? 'font-medium text-neutral-800' : 'text-neutral-400'}`}>
-                                    {selectedGrinderObj?.short || '選擇磨豆機'}
+                                    {selectedGrinderObj?.short || t('config.selectGrinder')}
                                 </span>
                                 {grindHint && <span className="text-xs font-mono text-amber-600 shrink-0">{grindHint}</span>}
                                 <ChevronRight className="w-4 h-4 text-neutral-300 shrink-0" />
@@ -1280,9 +1521,9 @@
                                     <div className="px-4 pt-3 pb-2 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs font-semibold text-amber-600 uppercase tracking-widest">
-                                                {isMulti ? '沖煮建議' : '上次紀錄'}
+                                                {isMulti ? t('config.brewSuggestion') : t('config.lastRecord')}
                                             </span>
-                                            <span className="text-xs text-neutral-400">{beanLogs.length} 次</span>
+                                            <span className="text-xs text-neutral-400">{beanLogs.length}{lang === 'zh' ? ' 次' : 'x'}</span>
                                         </div>
                                         <div className="flex items-center gap-0.5">
                                             {[1,2,3,4,5].map(s => (
@@ -1297,7 +1538,7 @@
                                         <div className="grid grid-cols-2 gap-2">
                                             <div className="bg-white radius-md px-3 py-2.5">
                                                 <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-wide mb-1">
-                                                    {isMulti ? '最佳手沖法' : '使用手沖法'}
+                                                    {isMulti ? t('config.bestRecipe') : t('config.lastRecipe')}
                                                 </p>
                                                 <div className="flex items-center justify-between gap-1">
                                                     <p className="text-xs font-bold text-neutral-800 truncate">{bestGroup.displayName || 'V60'}</p>
@@ -1310,7 +1551,7 @@
                                             </div>
                                             <div className="bg-white radius-md px-3 py-2.5">
                                                 <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-wide mb-1">
-                                                    {isMulti ? '建議比例' : '使用比例'}
+                                                    {isMulti ? t('config.bestRatio') : t('config.lastRatio')}
                                                 </p>
                                                 <p className="text-xs font-bold text-amber-700 tabular-nums">1:{bestRatio}</p>
                                             </div>
@@ -1331,7 +1572,7 @@
                                             }}
                                             className="w-full py-2.5 bg-amber-600 text-white text-xs font-bold radius-md cursor-pointer touch-none active:scale-[0.98] transition-all hover:bg-amber-700 flex items-center justify-center gap-1.5"
                                         >
-                                            套用這個建議 <ChevronRight className="w-3.5 h-3.5" />
+                                            {t('config.applyBrew')} <ChevronRight className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
                                 </div>
@@ -1342,8 +1583,8 @@
                         <div className="bg-white radius-lg border border-neutral-100 shadow-sm p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">粉水比</p>
-                                    <p className="text-xs text-neutral-400 mt-0.5">總水量 {waterTotal} ml</p>
+                                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">{t('config.ratio')}</p>
+                                    <p className="text-xs text-neutral-400 mt-0.5">{t('config.totalWater', waterTotal)}</p>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <button
@@ -1385,14 +1626,14 @@
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <p className="text-base font-bold text-neutral-800">
-                                                {addingNewBean ? (isEditingBean ? '編輯咖啡豆' : '新增咖啡豆') : '選擇咖啡豆'}
+                                                {addingNewBean ? (isEditingBean ? t('bean.edit') : t('bean.add')) : t('bean.select')}
                                             </p>
                                             {!addingNewBean ? (
                                                 <button
                                                     onPointerDown={(e) => { e.preventDefault(); setConfirmDeleteBean(false); setAddingNewBean(true); setIsEditingBean(false); setSheetBeanName(''); setSheetRoastDate(''); setSheetRoastLevel('light'); }}
                                                     className="flex items-center gap-1 text-sm text-amber-600 font-bold cursor-pointer touch-none active:opacity-60 transition-opacity"
                                                 >
-                                                    <Plus className="w-4 h-4" /> 新豆子
+                                                    <Plus className="w-4 h-4" /> {t('bean.new')}
                                                 </button>
                                             ) : (
                                                 <button onPointerDown={(e) => { e.preventDefault(); closeBottomSheet('bean', setBeanSheetOpen); }} className="p-1.5 text-neutral-400 active:text-neutral-600 cursor-pointer touch-none" aria-label="關閉"><X className="w-5 h-5" /></button>
@@ -1404,7 +1645,7 @@
                                         {!addingNewBean ? (
                                             <>
                                                 {recentBeans.length === 0 ? (
-                                                    <p className="text-sm text-neutral-400 text-center py-6">尚無紀錄，點右上角新增咖啡豆</p>
+                                                    <p className="text-sm text-neutral-400 text-center py-6">{t('bean.empty')}</p>
                                                 ) : displayedBeans.map(b => {
                                                     const roast = ROAST_LEVELS.find(r => r.id === b.roastLevel) || ROAST_LEVELS[0];
                                                     const isSelected = beanName === b.beanName;
@@ -1426,7 +1667,7 @@
                                                                 className="flex-1 flex items-center gap-3 px-4 py-3.5 cursor-pointer touch-none active:opacity-70 text-left"
                                                             >
                                                                 <span className="text-sm font-medium text-neutral-800 flex-1">{b.beanName}</span>
-                                                                <span className={`text-xs px-2 py-0.5 radius-full border shrink-0 ${roast.color}`}>{roast.label}</span>
+                                                                <span className={`text-xs px-2 py-0.5 radius-full border shrink-0 ${roast.color}`}>{t('roast.' + roast.id)}</span>
                                                             </button>
                                                             <button
                                                                 onPointerDown={(e) => {
@@ -1449,18 +1690,18 @@
                                                         onPointerDown={(e) => { e.preventDefault(); setSheetIsExpanded(true); }}
                                                         className="w-full py-3 text-sm text-amber-600 font-medium text-center cursor-pointer touch-none active:opacity-60 border border-dashed border-amber-200 radius-lg"
                                                     >
-                                                        查看全部 {recentBeans.length} 筆 <ChevronUp className="w-3.5 h-3.5 inline-block" />
+                                                        {t('config.viewAll', recentBeans.length)} <ChevronUp className="w-3.5 h-3.5 inline-block" />
                                                     </button>
                                                 )}
                                             </>
                                         ) : (
                                             <div className="space-y-3">
-                                                <label htmlFor="sheet-bean-name" className="sr-only">豆子名稱</label>
+                                                <label htmlFor="sheet-bean-name" className="sr-only">{t('bean.namePlaceholder')}</label>
                                                 <input
                                                     id="sheet-bean-name"
                                                     type="text"
-                                                    placeholder="豆子名稱（選填）"
-                                                    aria-label="豆子名稱"
+                                                    placeholder={t('bean.namePlaceholder')}
+                                                    aria-label={t('bean.namePlaceholder')}
                                                     autoComplete="off"
                                                     value={sheetBeanName}
                                                     onChange={(e) => setSheetBeanName(e.target.value)}
@@ -1468,7 +1709,7 @@
                                                 />
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
-                                                        <span className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘焙程度</span>
+                                                        <span className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">{t('bean.roastLevel')}</span>
                                                         <div className="flex bg-neutral-100 p-1 radius-md h-[48px]">
                                                             {ROAST_LEVELS.map(level => (
                                                                 <button
@@ -1480,18 +1721,18 @@
                                                                         : 'text-neutral-400 active:bg-neutral-200'
                                                                     }`}
                                                                 >
-                                                                    {level.label}
+                                                                    {t('roast.' + level.id)}
                                                                 </button>
                                                             ))}
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label htmlFor="sheet-roast-date" className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">烘豆日期</label>
+                                                        <label htmlFor="sheet-roast-date" className="block text-xs text-neutral-400 font-medium mb-1.5 pl-1">{t('bean.roastDate')}</label>
                                                         <div className="relative">
                                                             {/* Visual display — pointer-events-none so tap goes to the real input below */}
                                                             <div className={`w-full h-[48px] px-3 py-2 radius-md border border-neutral-200 bg-neutral-50 flex items-center gap-2 text-neutral-600 pointer-events-none ${sheetRoastDate ? 'pr-9' : ''}`}>
                                                                 <Calendar className="w-4 h-4 shrink-0 text-neutral-400" />
-                                                                <span className="truncate text-sm">{formatRoastDate(sheetRoastDate) || '未指定'}</span>
+                                                                <span className="truncate text-sm">{formatRoastDate(sheetRoastDate, lang) || t('bean.noDate')}</span>
                                                             </div>
                                                             {/* Real date input — full overlay, opacity-0 but interactive, opens native picker on tap */}
                                                             <input
@@ -1501,14 +1742,14 @@
                                                                 value={sheetRoastDate}
                                                                 onChange={(e) => setSheetRoastDate(e.target.value)}
                                                                 className="absolute inset-0 h-full w-full opacity-0 cursor-pointer"
-                                                                aria-label="烘豆日期"
+                                                                aria-label={t('bean.roastDate')}
                                                             />
                                                             {/* Clear button — z-10 above the date input */}
                                                             {sheetRoastDate && (
                                                                 <button
                                                                     type="button"
                                                                     onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); setSheetRoastDate(''); }}
-                                                                    aria-label="清除烘豆日期"
+                                                                    aria-label={t('clearSearch')}
                                                                     className="absolute right-2 top-1/2 z-10 -translate-y-1/2 p-1.5 radius-sm text-neutral-400 active:bg-neutral-200 cursor-pointer touch-none"
                                                                 >
                                                                     <X className="w-4 h-4" />
@@ -1529,7 +1770,7 @@
                                                     }}
                                                     className="w-full bg-amber-600 text-white py-4 radius-md font-bold text-sm shadow-xl shadow-amber-200/60 hover:bg-amber-700 cursor-pointer touch-none active:scale-[0.98] transition-all"
                                                 >
-                                                    儲存
+                                                    {t('save')}
                                                 </button>
                                                 {isEditingBean && (
                                                     <button
@@ -1541,7 +1782,7 @@
                                                         }}
                                                         className={`w-full flex items-center justify-center gap-2 text-sm py-3 radius-md cursor-pointer touch-none active:opacity-70 transition-all ${confirmDeleteBean ? 'bg-red-500 text-white font-bold border border-red-500' : 'text-red-500 border border-red-100 bg-red-50'}`}
                                                     >
-                                                        <Trash2 className="w-4 h-4" /> {confirmDeleteBean ? `確定刪除「${sheetBeanName}」？` : '刪除這個豆子'}
+                                                        <Trash2 className="w-4 h-4" /> {confirmDeleteBean ? t('bean.confirmDelete', sheetBeanName) : t('bean.deleteBean')}
                                                     </button>
                                                 )}
                                                 <button
@@ -1557,7 +1798,7 @@
                                                     }}
                                                     className="w-full text-sm text-neutral-400 text-center py-1 cursor-pointer touch-none"
                                                 >
-                                                    {recentBeans.length > 0 ? '← 返回選擇' : '取消'}
+                                                    {recentBeans.length > 0 ? t('bean.backToList') : t('cancel')}
                                                 </button>
                                             </div>
                                         )}
@@ -1588,7 +1829,7 @@
                                             <div className="w-10 h-1 radius-full bg-neutral-200" />
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <p className="text-base font-bold text-neutral-800">選擇濾杯</p>
+                                            <p className="text-base font-bold text-neutral-800">{t('dripper.title')}</p>
                                             <button onPointerDown={(e) => { e.preventDefault(); closeBottomSheet('dripper', setDripperSheetOpen); }} className="p-1.5 text-neutral-400 active:text-neutral-600 cursor-pointer touch-none" aria-label="關閉"><X className="w-5 h-5" /></button>
                                         </div>
                                     </div>
@@ -1644,7 +1885,7 @@
                                             <div className="w-10 h-1 radius-full bg-neutral-200" />
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <p className="text-base font-bold text-neutral-800">選擇磨豆機</p>
+                                            <p className="text-base font-bold text-neutral-800">{t('grinder.title')}</p>
                                             <button onPointerDown={(e) => { e.preventDefault(); closeBottomSheet('grinder', setGrinderSheetOpen); }} className="p-1.5 text-neutral-400 active:text-neutral-600 cursor-pointer touch-none" aria-label="關閉"><X className="w-5 h-5" /></button>
                                         </div>
                                     </div>
@@ -1668,7 +1909,7 @@
                                                         <p className="text-sm font-bold text-neutral-800">{g.short}</p>
                                                         {clicks?.recommend ? (
                                                             <p className={`text-xs font-mono mt-0.5 ${isActive ? 'text-amber-600 font-semibold' : 'text-neutral-400'}`}>
-                                                                建議 {clicks.recommend}
+                                                                {t('grinder.recommend', clicks.recommend)}
                                                                 <span className={`ml-1 font-normal ${isActive ? 'text-amber-400' : 'text-neutral-300'}`}>/ {clicks.range}</span>
                                                             </p>
                                                         ) : (
@@ -1699,7 +1940,7 @@
                 const grinderObj = GRINDERS.find(g => g.id === selectedGrinder);
                 const grinderClicks = selectedGrinder ? GRINDER_CLICKS[selectedGrinder]?.recommend : null;
                 const grindDisplay = grinderObj
-                    ? `${grinderObj.short}${grinderClicks ? ` · ${grinderClicks} 格` : ''}`
+                    ? `${grinderObj.short}${grinderClicks ? ` · ${grinderClicks}${lang === 'zh' ? ' 格' : ' clicks'}` : ''}`
                     : '—';
 
                 return (
@@ -1708,13 +1949,13 @@
                         <div className="flex items-center gap-3">
                             <button
                                 onPointerDown={(e) => { e.preventDefault(); setBrewStep('config'); }}
-                                aria-label="返回沖煮設定"
+                                aria-label={t('suggestion.backConfig')}
                                 className="w-9 h-9 radius-md bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0"
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                             <div className="flex-1">
-                                <p className="text-base font-bold text-neutral-800">沖煮前確認</p>
+                                <p className="text-base font-bold text-neutral-800">{t('suggestion.title')}</p>
                             </div>
                             <div className="flex items-center gap-1.5 flex-shrink-0" aria-hidden="true">
                                 <div className="w-5 h-1.5 radius-full bg-amber-500" />
@@ -1727,25 +1968,25 @@
                             <div className="px-4 pt-4 pb-4 bg-gradient-to-br from-amber-50 via-white to-neutral-50">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">沖煮方式</p>
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">{t('suggestion.brewMethod')}</p>
                                         <button
                                             type="button"
                                             onPointerDown={(e) => { e.preventDefault(); setRecipeSheetOpen(true); }}
-                                            aria-label="切換手沖法"
+                                            aria-label={t('suggestion.switchRecipe')}
                                             className="flex items-center gap-1.5 cursor-pointer touch-none active:opacity-70 transition-opacity text-left"
                                         >
-                                            <span className="text-xl font-black text-neutral-900 leading-tight">{rec.name.split('(')[0].trim()}</span>
+                                            <span className="text-xl font-black text-neutral-900 leading-tight">{(lang === 'en' ? (rec.nameEn || rec.name) : rec.name).split('(')[0].trim()}</span>
                                             <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
                                         </button>
                                         <div className="flex items-center gap-2 mt-2 min-w-0">
-                                            <p className="text-sm text-neutral-500 truncate">{beanName || '未選擇咖啡豆'}</p>
+                                            <p className="text-sm text-neutral-500 truncate">{beanName || t('suggestion.noBean')}</p>
                                             {selectedRoast && (
-                                                <span className={`text-[11px] px-2 py-0.5 radius-full border shrink-0 ${selectedRoast.color}`}>{selectedRoast.label}</span>
+                                                <span className={`text-[11px] px-2 py-0.5 radius-full border shrink-0 ${selectedRoast.color}`}>{t('roast.' + selectedRoast.id)}</span>
                                             )}
                                         </div>
                                         {isUsingRecommendation && (
                                             <p className="mt-2 text-xs text-amber-700 leading-snug">
-                                                推薦配方，符合你目前偏好的風味方向
+                                                {t('suggestion.recRecommended')}
                                             </p>
                                         )}
                                     </div>
@@ -1758,9 +1999,9 @@
 
                                 <div className="grid grid-cols-3 gap-2 mt-4">
                                     {[
-                                        { value: `${coffeeGrams}g`, label: '粉量' },
-                                        { value: `${waterTotal}ml`, label: '水量' },
-                                        { value: `1:${Math.round(ratio)}`, label: '粉水比' },
+                                        { value: `${coffeeGrams}g`, label: t('suggestion.coffee') },
+                                        { value: `${waterTotal}ml`, label: t('suggestion.water') },
+                                        { value: `1:${Math.round(ratio)}`, label: t('suggestion.ratio') },
                                     ].map(({ value, label }) => (
                                         <div
                                             key={label}
@@ -1774,14 +2015,14 @@
 
                                 <div className="grid grid-cols-2 gap-2 mt-3">
                                     <div className="radius-lg bg-white px-3 py-3 border border-neutral-100">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">器材</p>
-                                        <p className="text-sm font-bold text-neutral-900 leading-tight">{selectedDripperObj?.name || '未選擇濾杯'}</p>
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">{t('suggestion.equipment')}</p>
+                                        <p className="text-sm font-bold text-neutral-900 leading-tight">{selectedDripperObj?.name || t('suggestion.noDripper')}</p>
                                         <p className="text-xs text-neutral-500 mt-1">{grindDisplay}</p>
                                     </div>
                                     <div className="radius-lg bg-white px-3 py-3 border border-neutral-100">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">沖煮準備</p>
-                                        <p className="text-sm font-bold text-neutral-900 leading-tight">{waterTemp}°C 熱水</p>
-                                        <p className="text-xs text-neutral-500 mt-1">{rec.steps.length} 段注水</p>
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">{t('suggestion.preparation')}</p>
+                                        <p className="text-sm font-bold text-neutral-900 leading-tight">{t('suggestion.hotWater', waterTemp)}</p>
+                                        <p className="text-xs text-neutral-500 mt-1">{t('suggestion.pourSteps', rec.steps.length)}</p>
                                     </div>
                                 </div>
 
@@ -1789,7 +2030,7 @@
                                     onPointerDown={enterBrewTimer}
                                     className="mt-4 w-full bg-amber-600 text-white py-4 radius-lg font-bold text-lg shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-[0.98]"
                                 >
-                                    <Play className="w-5 h-5 fill-current ml-1" /> 開始沖煮
+                                    <Play className="w-5 h-5 fill-current ml-1" /> {t('suggestion.start')}
                                 </button>
 
                                 <button
@@ -1798,8 +2039,8 @@
                                     className="mt-2 w-full flex items-center justify-center gap-2 border border-amber-200 bg-amber-50 radius-lg h-11 text-sm font-semibold text-amber-700 cursor-pointer touch-none active:bg-amber-100 transition-colors"
                                 >
                                     {showAdjust
-                                        ? <><ChevronUp className="w-4 h-4" />收起快速調整</>
-                                        : <><SlidersHorizontal className="w-4 h-4" />快速調整</>
+                                        ? <><ChevronUp className="w-4 h-4" />{t('suggestion.collapseAdj')}</>
+                                        : <><SlidersHorizontal className="w-4 h-4" />{t('suggestion.quickAdj')}</>
                                     }
                                 </button>
                             </div>
@@ -1807,7 +2048,7 @@
                             {showAdjust && (
                                 <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-4 space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-neutral-500">粉量</span>
+                                        <span className="text-sm text-neutral-500">{t('suggestion.coffeeLabel')}</span>
                                         <div className="flex items-center gap-2">
                                             <button onPointerDown={(e) => { e.preventDefault(); setCoffeeGrams(g => Math.max(10, g-1)); }} className="w-9 h-9 radius-md bg-white border border-neutral-200 text-neutral-600 font-bold flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
                                             <span className="w-12 text-center font-bold text-amber-700 tabular-nums text-sm">{coffeeGrams}g</span>
@@ -1815,7 +2056,7 @@
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-neutral-500">水溫</span>
+                                        <span className="text-sm text-neutral-500">{t('suggestion.tempLabel')}</span>
                                         <div className="flex items-center gap-2">
                                             <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.max(70, t-1)); }} className="w-9 h-9 radius-md bg-white border border-neutral-200 text-neutral-600 font-bold flex items-center justify-center cursor-pointer touch-none active:scale-95">−</button>
                                             <span className="w-12 text-center font-bold text-amber-700 tabular-nums text-sm">{waterTemp}°C</span>
@@ -1829,9 +2070,9 @@
                         {/* Steps - compact list */}
                         <div className="bg-white radius-lg border border-neutral-100 shadow-sm overflow-hidden">
                             <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-50">
-                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">注水時間線</p>
+                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t('suggestion.timeline')}</p>
                                 <span className="text-xs font-mono text-amber-700 bg-amber-50 border border-amber-100 radius-sm px-2 py-1 shrink-0">
-                                    {rec.steps.length} 段
+                                    {t('suggestion.stepsBadge', rec.steps.length)}
                                 </span>
                             </div>
                             <div className="relative px-4 py-1">
@@ -1848,7 +2089,7 @@
                                                 {idx + 1}
                                             </div>
                                             <div className="flex-1 min-w-0 pt-0.5">
-                                                <span className="text-sm font-medium text-neutral-700">{step.name.split('(')[0].trim()}</span>
+                                                <span className="text-sm font-medium text-neutral-700">{(lang === 'en' ? (step.nameEn || step.name) : step.name).split('(')[0].trim()}</span>
                                                 <div className="flex items-center gap-2 mt-0.5">
                                                     {isPour && <span className="text-xs font-bold text-amber-600 tabular-nums">+{pourAmount}ml</span>}
                                                     <span className="text-xs text-neutral-400 font-mono tabular-nums">{formatTimerDisplay(step.endTime)}</span>
@@ -1880,13 +2121,13 @@
                                             <div className="w-10 h-1 radius-full bg-neutral-200" />
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <p className="text-base font-bold text-neutral-800">切換手沖法</p>
-                                            <button onPointerDown={(e) => { e.preventDefault(); closeBottomSheet('recipe', setRecipeSheetOpen); }} className="p-1.5 text-neutral-400 active:text-neutral-600 cursor-pointer touch-none" aria-label="關閉"><X className="w-5 h-5" /></button>
+                                            <p className="text-base font-bold text-neutral-800">{t('suggestion.switchRecipe')}</p>
+                                            <button onPointerDown={(e) => { e.preventDefault(); closeBottomSheet('recipe', setRecipeSheetOpen); }} className="p-1.5 text-neutral-400 active:text-neutral-600 cursor-pointer touch-none" aria-label={t('close')}><X className="w-5 h-5" /></button>
                                         </div>
-                                        <p className="text-xs text-neutral-400 mt-1">選擇後會立即更新摘要、時間線與計時節奏</p>
+                                        <p className="text-xs text-neutral-400 mt-1">{t('suggestion.switchNote')}</p>
                                     </div>
                                     <div className="px-5 pb-10">
-                                        <div className="mt-2 space-y-2" role="radiogroup" aria-label="切換手沖法">
+                                        <div className="mt-2 space-y-2" role="radiogroup" aria-label={t('suggestion.switchRecipe')}>
                                             {Object.values(RECIPES).map(option => {
                                                 const optionTime = option.steps[option.steps.length - 1].endTime;
                                                 const isActive = selectedRecipeId === option.id;
@@ -1916,13 +2157,13 @@
                                                             <span className="flex-1 min-w-0">
                                                                 <span className="flex items-center justify-between gap-3">
                                                                     <span className={`text-sm font-medium ${isActive ? 'text-amber-900' : 'text-neutral-800'}`}>
-                                                                        {option.name.split('(')[0].trim()}
+                                                                        {(lang === 'en' ? (option.nameEn || option.name) : option.name).split('(')[0].trim()}
                                                                     </span>
                                                                 </span>
                                                                 <span className={`block text-xs mt-1 ${isActive ? 'text-amber-700' : 'text-neutral-500'}`}>
                                                                     {isRecommended
-                                                                        ? `依你的風味偏好，推薦先從這個開始。`
-                                                                        : option.description}
+                                                                        ? t('suggestion.recStart')
+                                                                        : (lang === 'en' ? (option.descriptionEn || option.description) : option.description)}
                                                                 </span>
                                                             </span>
                                                             <span className={`text-sm font-mono font-bold shrink-0 ${isActive ? 'text-amber-700' : 'text-neutral-600'}`}>
@@ -1969,13 +2210,13 @@
                                 <div className="flex items-center justify-between mb-3">
                                     <button
                                         onPointerDown={handleTimerBack}
-                                        aria-label="放棄沖煮並返回"
+                                        aria-label={t('timer.backLabel')}
                                         className="w-9 h-9 radius-md bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-600 cursor-pointer touch-none flex-shrink-0 transition-colors"
                                     >
                                         <ChevronLeft className="w-5 h-5" />
                                     </button>
                                     <span className="text-[12px] text-neutral-400 font-medium tracking-wide">
-                                        {recipe.name.split('(')[0].trim()}
+                                        {(lang === 'en' ? (recipe.nameEn || recipe.name) : recipe.name).split('(')[0].trim()}
                                         <span className="mx-1.5 text-neutral-200">·</span>
                                         1:{ratio}
                                     </span>
@@ -2011,7 +2252,7 @@
                                     {!isFinished ? (
                                         <div className="flex flex-col items-center space-y-1.5" style={{ width: `${centerContentWidth}px`, maxWidth: `${centerContentWidth}px` }}>
                                             <div className="w-full text-center text-[13px] font-bold leading-tight tracking-wide text-amber-600 break-words">
-                                                {isReady ? recipe.name.split('(')[0].trim() : step.name.split('(')[0].trim()}
+                                                {isReady ? (lang === 'en' ? (recipe.nameEn || recipe.name) : recipe.name).split('(')[0].trim() : (lang === 'en' ? (step.nameEn || step.name) : step.name).split('(')[0].trim()}
                                             </div>
                                             <div className="text-[42px] font-bold text-neutral-800 tabular-nums tracking-tighter leading-none">
                                                 {formatTimerDisplay(currentTime)}
@@ -2019,7 +2260,7 @@
                                             {!isReady && (
                                                 <>
                                                     <div className="text-sm font-mono text-neutral-400">
-                                                        到 {formatTimerDisplay(step.endTime)}
+                                                        {t('timer.to')} {formatTimerDisplay(step.endTime)}
                                                     </div>
                                                     <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 radius-md border border-amber-100 bg-amber-50 px-2.5 py-1 text-xs font-bold leading-tight text-amber-700">
                                                         <Droplet className="w-3.5 h-3.5 fill-amber-700" />
@@ -2027,13 +2268,13 @@
                                                     </div>
                                                     {step.desc && (
                                                         <div className="w-full text-center text-[11px] leading-snug text-neutral-500 break-words">
-                                                            {step.desc}
+                                                            {lang === 'en' ? (step.descEn || step.desc) : step.desc}
                                                         </div>
                                                     )}
                                                 </>
                                             )}
                                             {isReady && (
-                                                <div className="text-xs text-neutral-400 mt-1">準備好就按開始</div>
+                                                <div className="text-xs text-neutral-400 mt-1">{t('timer.ready')}</div>
                                             )}
                                         </div>
                                     ) : (
@@ -2041,8 +2282,8 @@
                                             <div className="w-10 h-10 radius-lg bg-amber-100 text-amber-600 flex items-center justify-center pop-in">
                                                 <Coffee className="w-6 h-6" />
                                             </div>
-                                            <div className="text-amber-600 font-bold text-lg pop-in" style={{animationDelay:'0.1s'}}>完成</div>
-                                            <p className="text-neutral-400 text-xs pop-in" style={{animationDelay:'0.18s'}}>享受您的咖啡</p>
+                                            <div className="text-amber-600 font-bold text-lg pop-in" style={{animationDelay:'0.1s'}}>{t('timer.done')}</div>
+                                            <p className="text-neutral-400 text-xs pop-in" style={{animationDelay:'0.18s'}}>{t('timer.enjoy')}</p>
                                         </div>
                                     )}
                                 </div>
@@ -2055,10 +2296,10 @@
                             {isReady && (
                                 <button
                                     onPointerDown={handleStartStop}
-                                    aria-label="開始計時"
+                                    aria-label={t('timer.start')}
                                     className="w-full py-4 bg-amber-600 text-white font-bold radius-md shadow-xl shadow-amber-200/60 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer touch-none text-lg"
                                 >
-                                    <Play className="w-5 h-5 fill-current ml-1" /> 開始計時
+                                    <Play className="w-5 h-5 fill-current ml-1" /> {t('timer.start')}
                                 </button>
                             )}
 
@@ -2068,14 +2309,14 @@
                                     <div className="w-16 h-16 opacity-0 pointer-events-none" aria-hidden="true" />
                                     <button
                                         onPointerDown={handleStartStop}
-                                        aria-label="暫停計時器"
+                                        aria-label={t('timer.pause')}
                                         className="w-24 h-24 radius-lg bg-amber-100 text-amber-600 border-2 border-amber-200 flex items-center justify-center shadow-xl shadow-amber-200/60 cursor-pointer touch-none"
                                     >
                                         <Pause className="w-10 h-10 fill-current" />
                                     </button>
                                     <button
                                         onPointerDown={handleSkipStep}
-                                        aria-label="跳過此步驟"
+                                        aria-label={t('timer.skip')}
                                         className="group w-16 h-16 radius-lg bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-amber-400 group-hover:text-amber-500 shadow-sm transition-colors cursor-pointer touch-none"
                                     >
                                         <SkipForward className="w-6 h-6" />
@@ -2088,21 +2329,21 @@
                                 <div className="flex items-center justify-center gap-5">
                                     <button
                                         onPointerDown={handleReset}
-                                        aria-label="重設計時器"
+                                        aria-label={t('timer.reset')}
                                         className="group w-16 h-16 radius-lg bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm cursor-pointer touch-none"
                                     >
                                         <RotateCcw className="w-6 h-6" />
                                     </button>
                                     <button
                                         onPointerDown={handleStartStop}
-                                        aria-label="繼續計時器"
+                                        aria-label={t('timer.resume')}
                                         className="w-24 h-24 radius-lg bg-amber-600 text-white flex items-center justify-center shadow-xl shadow-amber-200/60 cursor-pointer touch-none"
                                     >
                                         <Play className="w-10 h-10 fill-current ml-1" />
                                     </button>
                                     <button
                                         onPointerDown={handleFinish}
-                                        aria-label="完成並儲存沖煮"
+                                        aria-label={t('timer.finish')}
                                         className="group w-16 h-16 radius-lg bg-white border border-neutral-200 flex items-center justify-center text-neutral-400 group-hover:border-neutral-400 group-hover:text-neutral-600 shadow-sm cursor-pointer touch-none"
                                     >
                                         <CheckCircle className="w-6 h-6" />
@@ -2120,18 +2361,18 @@
                 const seenBeans = new Set();
                 const recentBeanRail = logs
                     .filter(log => {
-                        const bean = log.beanName || '未命名咖啡豆';
+                        const bean = log.beanName || t('bean.unnamed');
                         if (seenBeans.has(bean)) return false;
                         seenBeans.add(bean);
                         return true;
                     })
-                    .map(log => log.beanName || '未命名咖啡豆')
+                    .map(log => log.beanName || t('bean.unnamed'))
                     .slice(0, 6);
-                const allJournalBeans = [...new Set(logs.map(log => log.beanName || '未命名咖啡豆'))];
+                const allJournalBeans = [...new Set(logs.map(log => log.beanName || t('bean.unnamed')))];
                 const filteredJournalBeans = allJournalBeans.filter(bean => bean.toLowerCase().includes(journalBeanSearch.toLowerCase()));
                 const filteredLogs = logs
                     .filter(log => !searchQuery || (log.beanName || '').toLowerCase().includes(searchQuery.toLowerCase()))
-                    .filter(log => activeBeanFilter.length === 0 || activeBeanFilter.includes(log.beanName || '未命名咖啡豆'))
+                    .filter(log => activeBeanFilter.length === 0 || activeBeanFilter.includes(log.beanName || t('bean.unnamed')))
                     .filter(log => {
                         if (sortBy === 'week') return Date.now() - log.createdAt <= 7 * 86400000;
                         if (sortBy === 'month') { const d = new Date(log.createdAt); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }
@@ -2166,9 +2407,9 @@
                     const n = Math.min(3, Math.floor(sparkData.length / 2));
                     const recent = sparkData.slice(-n).reduce((s, l) => s + l.rating, 0) / n;
                     const earlier = sparkData.slice(0, n).reduce((s, l) => s + l.rating, 0) / n;
-                    if (recent - earlier > 0.3) { trendLabel = '↑ 進步中'; trendCls = 'text-amber-600 font-bold'; }
-                    else if (earlier - recent > 0.3) { trendLabel = '↓ 待加強'; trendCls = 'text-neutral-400'; }
-                    else { trendLabel = '→ 穩定'; trendCls = 'text-neutral-400'; }
+                    if (recent - earlier > 0.3) { trendLabel = t('journal.trendUp'); trendCls = 'text-amber-600 font-bold'; }
+                    else if (earlier - recent > 0.3) { trendLabel = t('journal.trendDown'); trendCls = 'text-neutral-400'; }
+                    else { trendLabel = t('journal.trendFlat'); trendCls = 'text-neutral-400'; }
                 }
 
                 return (
@@ -2182,16 +2423,16 @@
                                     >
                                         <ChevronLeft className="w-6 h-6 shrink-0" />
                                         <span className="text-2xl font-bold leading-tight truncate max-w-[220px]">
-                                            {activeBeanFilter.length === 1 ? activeBeanFilter[0] : `${activeBeanFilter.length} 種豆子`}
+                                            {activeBeanFilter.length === 1 ? activeBeanFilter[0] : t('journal.beans', activeBeanFilter.length)}
                                         </span>
                                     </button>
                                 ) : (
                                     <h2 className="text-2xl font-bold text-neutral-800 flex items-center gap-2">
-                                        <BookOpen className="w-6 h-6 text-amber-600" /> 沖煮日誌
+                                        <BookOpen className="w-6 h-6 text-amber-600" /> {t('journal.title')}
                                     </h2>
                                 )}
                                 <p className="text-xs text-neutral-400 mt-1">
-                                    {activeBeanFilter.length > 0 ? `找到 ${filteredLogs.length} 筆紀錄` : '優先查看自己的評分趨勢與最近紀錄'}
+                                    {activeBeanFilter.length > 0 ? t('journal.found', filteredLogs.length) : t('journal.subtitle')}
                                 </p>
                             </div>
                         </div>
@@ -2202,16 +2443,16 @@
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="radius-lg bg-white border border-neutral-100 px-4 py-3">
                                             <div className="text-[28px] font-bold text-neutral-800 leading-none tabular-nums">{logs.length}</div>
-                                            <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">總沖煮</div>
+                                            <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">{t('journal.total')}</div>
                                         </div>
                                         <div className="radius-lg bg-white border border-neutral-100 px-4 py-3">
                                             <div className="text-[28px] font-bold text-neutral-800 leading-none tabular-nums">{monthlyCount}</div>
-                                            <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">本月</div>
+                                            <div className="text-xs text-neutral-400 uppercase tracking-widest mt-1">{t('journal.monthly')}</div>
                                         </div>
                                     </div>
                                     <div className="radius-lg bg-white border border-neutral-100 px-4 py-3">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs text-neutral-400 uppercase tracking-widest">自評成長曲線</span>
+                                            <span className="text-xs text-neutral-400 uppercase tracking-widest">{t('journal.ratingCurve')}</span>
                                             {trendLabel && <span className={`text-xs ${trendCls}`}>{trendLabel}</span>}
                                         </div>
                                         {sparkData.length >= 2 ? (
@@ -2247,14 +2488,14 @@
                                                 {activeSparkPoint && (() => {
                                                     const l = activeSparkPoint.log;
                                                     const date = l.createdAt ? new Date(l.createdAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }) : '—';
-                                                    const stars = l.rating ? '★'.repeat(l.rating) + '☆'.repeat(5 - l.rating) : '未評分';
+                                                    const stars = l.rating ? '★'.repeat(l.rating) + '☆'.repeat(5 - l.rating) : t('journal.unrated');
                                                     const leftPct = Math.min(Math.max(activeSparkPoint.px * 100, 10), 80);
                                                     return (
                                                         <div
                                                             className="absolute bottom-full mb-2 bg-neutral-800 text-white text-xs radius-md px-2.5 py-1.5 shadow-lg pointer-events-none whitespace-nowrap"
                                                             style={{ left: `${leftPct}%`, transform: 'translateX(-50%)', zIndex: 10 }}
                                                         >
-                                                            <div className="font-bold text-amber-300">{l.beanName || '未命名'}</div>
+                                                            <div className="font-bold text-amber-300">{l.beanName || t('bean.unnamed')}</div>
                                                             <div className="text-neutral-300 mt-0.5">{date} · {stars}</div>
                                                             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-800" />
                                                         </div>
@@ -2263,7 +2504,7 @@
                                             </div>
                                         ) : (
                                             <div className="py-3 text-center">
-                                                <span className="text-xs text-neutral-300">多沖幾杯後顯示</span>
+                                                <span className="text-xs text-neutral-300">{t('journal.needMore')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -2276,38 +2517,38 @@
                                 <div className="bg-white radius-lg border border-neutral-100 shadow-sm p-3 space-y-3">
                                     <div className="flex gap-2 items-center">
                                         <div className="relative flex-1 min-w-0">
-                                            <label htmlFor="journal-search" className="sr-only">搜尋豆子名稱</label>
+                                            <label htmlFor="journal-search" className="sr-only">{t('journal.search')}</label>
                                             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                             </svg>
                                             <input
                                                 id="journal-search"
                                                 type="text"
-                                                placeholder="搜尋豆子名稱..."
+                                                placeholder={t('journal.search')}
                                                 autoComplete="off"
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                                 className="w-full pl-9 pr-9 py-2.5 bg-white border border-neutral-200 radius-md text-sm focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-neutral-300"
                                             />
                                             {searchQuery && (
-                                                <button onClick={() => setSearchQuery('')} aria-label="清除搜尋" className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 cursor-pointer">
+                                                <button onClick={() => setSearchQuery('')} aria-label={t('clearSearch')} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 cursor-pointer">
                                                     <X className="w-4 h-4" />
                                                 </button>
                                             )}
                                         </div>
                                         <div className="relative flex-shrink-0">
-                                            <label htmlFor="journal-sort" className="sr-only">排序日誌</label>
+                                            <label htmlFor="journal-sort" className="sr-only">{t('journal.sortNewest')}</label>
                                             <select
                                                 id="journal-sort"
                                                 value={sortBy}
                                                 onChange={(e) => setSortBy(e.target.value)}
                                                 className="appearance-none bg-neutral-50 border border-neutral-200 radius-md pl-3 pr-7 py-2 text-xs font-bold text-neutral-700 cursor-pointer outline-none focus:ring-2 focus:ring-amber-500"
                                             >
-                                                <option value="newest">最新在前</option>
-                                                <option value="oldest">最舊在前</option>
-                                                <option value="month">本月</option>
-                                                <option value="week">本週</option>
-                                                <option value="rating">評分高低</option>
+                                                <option value="newest">{t('journal.sortNewest')}</option>
+                                                <option value="oldest">{t('journal.sortOldest')}</option>
+                                                <option value="month">{t('journal.sortMonth')}</option>
+                                                <option value="week">{t('journal.sortWeek')}</option>
+                                                <option value="rating">{t('journal.sortRating')}</option>
                                             </select>
                                             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
                                         </div>
@@ -2328,7 +2569,7 @@
                                                 onClick={() => { setJournalBeanSearch(''); setJournalBeanSheetOpen(true); }}
                                                 className="px-3 py-1.5 radius-full text-xs font-semibold whitespace-nowrap bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-800 cursor-pointer"
                                             >
-                                                更多豆子
+                                                {t('journal.moreBeans')}
                                             </button>
                                         </div>
                                     </div>
@@ -2340,14 +2581,14 @@
                         {logs.length === 0 ? (
                             <div className="text-center py-16 bg-white radius-lg border border-dashed border-neutral-200">
                                 <div className="mb-3 flex justify-center"><Coffee className="w-12 h-12 text-neutral-200" /></div>
-                                <p className="font-medium text-neutral-600 mb-1">還沒有紀錄</p>
-                                <p className="text-sm text-neutral-400">沖完一杯後儲存，就會出現在這裡</p>
+                                <p className="font-medium text-neutral-600 mb-1">{t('journal.empty')}</p>
+                                <p className="text-sm text-neutral-400">{t('journal.emptyHint')}</p>
                             </div>
                         ) : filteredLogs.length === 0 ? (
                             <div className="text-center py-12 bg-white radius-lg border border-dashed border-neutral-200">
                                 <div className="mb-3 flex justify-center"><Coffee className="w-10 h-10 text-neutral-200" /></div>
                                 <p className="text-neutral-400 text-sm">
-                                    {searchQuery || activeBeanFilter.length > 0 ? '找不到符合目前條件的紀錄' : '這個時間範圍沒有紀錄'}
+                                    {searchQuery || activeBeanFilter.length > 0 ? t('journal.noMatch') : t('journal.noRange')}
                                 </p>
                             </div>
                         ) : (
@@ -2360,12 +2601,12 @@
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="font-bold text-neutral-800 text-base leading-tight truncate">
-                                                            {log.beanName || '未命名咖啡豆'}
+                                                            {log.beanName || t('bean.unnamed')}
                                                         </h3>
                                                         <div className="flex items-center gap-1.5 mt-1.5">
-                                                            <span className="text-xs text-neutral-500">{getRelativeDate(log.createdAt)}</span>
+                                                            <span className="text-xs text-neutral-500">{getRelativeDate(log.createdAt, lang)}</span>
                                                             <span className="text-neutral-200 text-xs">·</span>
-                                                            <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{roastInfo.label}</span>
+                                                            <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${roastInfo.color}`}>{t('roast.' + roastInfo.id)}</span>
                                                         </div>
                                                     </div>
                                                     {/* 星級 */}
@@ -2376,7 +2617,7 @@
                                                             ))}
                                                         </div>
                                                     ) : (
-                                                        <span className="text-[11px] text-neutral-300 flex-shrink-0 pt-1">未評分</span>
+                                                        <span className="text-[11px] text-neutral-300 flex-shrink-0 pt-1">{t('journal.unrated')}</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -2429,15 +2670,15 @@
                                         </div>
                                         <div className="flex items-center justify-between gap-3">
                                             <div>
-                                                <p className="text-base font-bold text-neutral-800">更多豆子</p>
-                                                <p className="text-xs text-neutral-400 mt-1">搜尋並複選要一起比較的豆子</p>
+                                                <p className="text-base font-bold text-neutral-800">{t('journal.moreBeans')}</p>
+                                                <p className="text-xs text-neutral-400 mt-1">{t('journal.beanSubtitle')}</p>
                                             </div>
                                             {selectedJournalBeans.length > 0 && (
                                                 <button
                                                     onPointerDown={(e) => { e.preventDefault(); setSelectedJournalBeans([]); }}
                                                     className="text-xs font-semibold text-amber-600 cursor-pointer touch-none"
                                                 >
-                                                    清除
+                                                    {t('journal.beanClear')}
                                                 </button>
                                             )}
                                         </div>
@@ -2449,14 +2690,14 @@
                                             </svg>
                                             <input
                                                 type="text"
-                                                placeholder="搜尋豆子..."
+                                                placeholder={t('journal.beanSearch')}
                                                 autoComplete="off"
                                                 value={journalBeanSearch}
                                                 onChange={(e) => setJournalBeanSearch(e.target.value)}
                                                 className="w-full pl-9 pr-9 py-3 bg-neutral-50 border border-neutral-200 radius-md text-sm focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-neutral-300"
                                             />
                                             {journalBeanSearch && (
-                                                <button onPointerDown={(e) => { e.preventDefault(); setJournalBeanSearch(''); }} aria-label="清除搜尋" className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 cursor-pointer touch-none">
+                                                <button onPointerDown={(e) => { e.preventDefault(); setJournalBeanSearch(''); }} aria-label={t('clearSearch')} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-neutral-500 cursor-pointer touch-none">
                                                     <X className="w-4 h-4" />
                                                 </button>
                                             )}
@@ -2464,7 +2705,7 @@
 
                                         <div className="space-y-2">
                                             {filteredJournalBeans.length === 0 ? (
-                                                <p className="text-sm text-neutral-400 text-center py-6">找不到符合條件的豆子</p>
+                                                <p className="text-sm text-neutral-400 text-center py-6">{t('journal.beanNoMatch')}</p>
                                             ) : filteredJournalBeans.map(bean => {
                                                 const isSelected = selectedJournalBeans.includes(bean);
                                                 return (
@@ -2492,7 +2733,7 @@
                                             onPointerDown={(e) => { e.preventDefault(); closeBottomSheet('journal-bean', setJournalBeanSheetOpen); }}
                                             className="w-full bg-amber-600 text-white py-4 radius-md font-bold text-sm shadow-xl shadow-amber-200/60 hover:bg-amber-700 cursor-pointer touch-none active:scale-[0.98] transition-all"
                                         >
-                                            套用 {selectedJournalBeans.length > 0 ? `(${selectedJournalBeans.length})` : ''}
+                                            {t('journal.beanApply', selectedJournalBeans.length)}
                                         </button>
                                     </div>
                                 </div>
@@ -2511,7 +2752,15 @@
                             </div>
                             <span className="font-bold text-lg tracking-tight">Barista Flow</span>
                         </div>
-                        <div className="text-xs font-mono text-neutral-400 cursor-help" title="資料儲存在您的裝置，不會上傳至雲端">本地模式</div>
+                        <button
+                            onPointerDown={(e) => { e.preventDefault(); setLang(l => l === 'zh' ? 'en' : 'zh'); }}
+                            className="flex items-center gap-0.5 radius-full border border-neutral-200 px-2.5 py-1 cursor-pointer touch-none active:opacity-60 transition-opacity select-none"
+                            aria-label="Toggle language"
+                        >
+                            <span className={`text-xs font-bold ${lang === 'zh' ? 'text-amber-600' : 'text-neutral-400'}`}>中</span>
+                            <span className="text-neutral-200 mx-0.5 text-xs">/</span>
+                            <span className={`text-xs font-bold ${lang === 'en' ? 'text-amber-600' : 'text-neutral-400'}`}>EN</span>
+                        </button>
                     </div>
 
                     <div ref={contentRef} className={`flex-1 scroll-smooth ${
@@ -2534,7 +2783,7 @@
                                 onPointerDown={(e) => { e.preventDefault(); setBrewStep('suggestion'); if (contentRef.current) contentRef.current.scrollTop = 0; }}
                                 className="w-full bg-amber-600 text-white py-4 radius-md font-bold text-lg shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all flex items-center justify-center gap-2 cursor-pointer touch-none active:scale-95"
                             >
-                                查看沖煮建議 <ChevronRight className="w-5 h-5" />
+                                {t('config.next')} <ChevronRight className="w-5 h-5" />
                             </button>
                         </div>
                     )}
@@ -2550,14 +2799,14 @@
                             className={`flex flex-col items-center gap-1 min-h-[44px] min-w-[60px] justify-center transition-colors cursor-pointer ${activeTab === 'brew' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <Droplet className="w-6 h-6" />
-                            <span className="text-xs font-medium">沖煮</span>
+                            <span className="text-xs font-medium">{t('tab.brew')}</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('journal')}
                             className={`flex flex-col items-center gap-1 min-h-[44px] min-w-[60px] justify-center transition-colors cursor-pointer ${activeTab === 'journal' ? 'text-amber-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
                             <BookOpen className="w-6 h-6" />
-                            <span className="text-xs font-medium">日誌</span>
+                            <span className="text-xs font-medium">{t('tab.journal')}</span>
                         </button>
                     </div>
 
@@ -2578,14 +2827,14 @@
                                 {/* Header */}
                                 <div className="px-4 pt-3 pb-2.5 border-b border-neutral-100">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-base font-bold text-neutral-800">{editingLogId ? '編輯紀錄' : '紀錄這杯'}</h3>
-                                        <button onClick={handleCloseModalX} aria-label="關閉紀錄視窗" className="p-1.5 text-neutral-400 hover:text-neutral-600 radius-sm hover:bg-neutral-100 transition-colors cursor-pointer">
+                                        <h3 className="text-base font-bold text-neutral-800">{editingLogId ? t('modal.edit') : t('modal.record')}</h3>
+                                        <button onClick={handleCloseModalX} aria-label={t('modal.closeLabel')} className="p-1.5 text-neutral-400 hover:text-neutral-600 radius-sm hover:bg-neutral-100 transition-colors cursor-pointer">
                                             <X className="w-5 h-5" />
                                         </button>
                                     </div>
                                     <div className="flex items-center gap-2 mt-0.5">
                                         <span className="text-xs text-neutral-500 font-medium truncate">
-                                            {beanName || '未命名咖啡豆'} · {ROAST_LEVELS.find(r => r.id === roastLevel)?.label || '淺焙'}
+                                            {beanName || t('bean.unnamed')} · {t('roast.' + (roastLevel || 'light'))}
                                         </span>
                                         {!editingLogId && (
                                             <span className={`flex-shrink-0 text-[10px] px-1.5 py-0.5 radius-full font-medium border ${
@@ -2593,7 +2842,7 @@
                                                 flowRate === 'clog' ? 'bg-neutral-100 text-neutral-500 border-neutral-200' :
                                                 'bg-green-50 text-green-600 border-green-100'
                                             }`}>
-                                                {flowRate === 'fast' ? '流速偏快' : flowRate === 'clog' ? '疑似堵塞' : '流速正常'}
+                                                {flowRate === 'fast' ? t('modal.flowFast') : flowRate === 'clog' ? t('modal.flowClog') : t('modal.flowNormal')}
                                             </span>
                                         )}
                                     </div>
@@ -2603,14 +2852,14 @@
                                     {/* 評分 — 最重要，放最上方 */}
                                     <div className="radius-lg bg-amber-50 border border-amber-100 py-2.5 px-3 flex items-center justify-between gap-3">
                                         <p className="text-[11px] font-bold text-amber-600 uppercase tracking-widest whitespace-nowrap">
-                                            {rating === 0 ? '這杯如何？' : ['', '還要加油', '普通', '不錯喝', '很好喝！', '完美！'][rating]}
+                                            {rating === 0 ? t('modal.howIsIt') : [null, t('modal.rating1'), t('modal.rating2'), t('modal.rating3'), t('modal.rating4'), t('modal.rating5')][rating]}
                                         </p>
                                         <div className="flex gap-0.5">
                                             {[1, 2, 3, 4, 5].map(star => (
                                                 <button
                                                     key={star}
                                                     type="button"
-                                                    aria-label={`評分 ${star} 星`}
+                                                    aria-label={t('modal.starLabel', star)}
                                                     aria-pressed={rating === star}
                                                     onClick={() => setRating(star)}
                                                     className={`p-1 transition-all duration-150 active:scale-125 cursor-pointer hover:scale-110 ${
@@ -2627,19 +2876,20 @@
 
                                     {/* 風味雷達 */}
                                     <div className="space-y-1">
-                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">風味雷達</p>
+                                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">{t('modal.flavorRadar')}</p>
                                         <RadarChart
                                             data={sensory}
                                             onChange={(key, val) => setSensory(prev => ({ ...prev, [key]: val }))}
+                                            lang={lang}
                                         />
-                                        <p className="text-center text-xs text-neutral-300">往各方向拖曳調整</p>
+                                        <p className="text-center text-xs text-neutral-300">{t('modal.dragAdjust')}</p>
                                     </div>
 
                                     {/* 備註 */}
-                                    <label htmlFor="log-notes" className="sr-only">沖煮備註</label>
+                                    <label htmlFor="log-notes" className="sr-only">{t('modal.notesPlaceholder')}</label>
                                     <textarea
                                         id="log-notes"
-                                        placeholder="備註（選填）"
+                                        placeholder={t('modal.notesPlaceholder')}
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
                                         className="w-full p-3 bg-neutral-50 radius-md border border-neutral-200 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none h-14"
@@ -2650,9 +2900,9 @@
                                 <div className="flex-shrink-0 flex gap-3 px-4 py-3 border-t border-neutral-100">
                                     {editingLogId && (
                                         <button
-                                            onClick={() => { if (window.confirm('確定刪除這筆紀錄？')) deleteLog(); }}
-                                            aria-label="刪除紀錄"
-                                            title="刪除紀錄"
+                                            onClick={() => { if (window.confirm(t('modal.deleteConfirm'))) deleteLog(); }}
+                                            aria-label={t('log.delete')}
+                                            title={t('log.delete')}
                                             className="flex-none p-3 text-red-500 bg-red-50 hover:bg-red-100 radius-md transition-all cursor-pointer"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -2662,7 +2912,7 @@
                                         onClick={saveLog}
                                         className="flex-1 py-3 bg-amber-600 text-white font-bold radius-md shadow-xl shadow-amber-200/60 hover:bg-amber-700 transition-all cursor-pointer"
                                     >
-                                        {editingLogId ? '更新紀錄' : '儲存紀錄'}
+                                        {editingLogId ? t('modal.update') : t('modal.save')}
                                     </button>
                                 </div>
                             </div>
@@ -2690,15 +2940,15 @@
 
                                     <div className="flex items-start justify-between px-5 pt-3 pb-3">
                                         <div className="flex-1 min-w-0 pr-3">
-                                            <h3 className="text-xl font-bold text-neutral-800 truncate">{vl.beanName || '未命名咖啡豆'}</h3>
+                                            <h3 className="text-xl font-bold text-neutral-800 truncate">{vl.beanName || t('bean.unnamed')}</h3>
                                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                                 <span className={`text-xs px-2 py-0.5 radius-full border font-medium ${vlRoast.color}`}>{vlRoast.label}</span>
                                                 <span className="text-xs text-neutral-400">{vl.dripperName || 'V60'}</span>
                                                 <span className="text-xs text-neutral-300">·</span>
-                                                <span className="text-xs text-neutral-400">{getRelativeDate(vl.createdAt)}</span>
+                                                <span className="text-xs text-neutral-400">{getRelativeDate(vl.createdAt, lang)}</span>
                                             </div>
                                         </div>
-                                        <button onClick={() => setViewingLog(null)} aria-label="關閉紀錄詳情" className="p-1.5 text-neutral-400 hover:text-neutral-600 radius-sm hover:bg-neutral-100 transition-colors cursor-pointer flex-shrink-0">
+                                        <button onClick={() => setViewingLog(null)} aria-label={t('log.closeLabel')} className="p-1.5 text-neutral-400 hover:text-neutral-600 radius-sm hover:bg-neutral-100 transition-colors cursor-pointer flex-shrink-0">
                                             <X className="w-5 h-5" />
                                         </button>
                                     </div>
@@ -2710,62 +2960,62 @@
                                             ))}
                                             {vl.rating > 0 && (
                                                 <span className="ml-1 text-sm text-neutral-400">
-                                                    {['','還要加油','普通','不錯喝','很好喝','完美'][vl.rating]}
+                                                    {[null, t('rating.1'), t('rating.2'), t('rating.3'), t('rating.4'), t('rating.5')][vl.rating]}
                                                 </span>
                                             )}
                                         </div>
 
                                         <div>
-                                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2">風味雷達</p>
-                                            <RadarChart data={vlSensory} onChange={null} />
+                                            <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2">{t('log.flavorRadar')}</p>
+                                            <RadarChart data={vlSensory} onChange={null} lang={lang} />
                                         </div>
 
                                         <div className="flex gap-2">
                                             {vl.flowRate && (
                                                 <div className="flex-1 bg-neutral-50 border border-neutral-100 radius-md p-3 text-center">
-                                                    <p className="text-xs text-neutral-400 font-medium mb-1">流速</p>
-                                                    <p className="text-sm font-bold text-neutral-700">{FLOW_OPTIONS.find(f => f.id === vl.flowRate)?.label || '—'}</p>
+                                                    <p className="text-xs text-neutral-400 font-medium mb-1">{t('log.flowRate')}</p>
+                                                    <p className="text-sm font-bold text-neutral-700">{vl.flowRate ? t('flow.' + vl.flowRate) : '—'}</p>
                                                 </div>
                                             )}
                                             <div className="flex-1 bg-neutral-50 border border-neutral-100 radius-md p-3 text-center">
-                                                <p className="text-xs text-neutral-400 font-medium mb-1">時間</p>
+                                                <p className="text-xs text-neutral-400 font-medium mb-1">{t('log.time')}</p>
                                                 <p className="text-sm font-bold text-neutral-700 font-mono">{formatTimerDisplay(vl.time)}</p>
                                             </div>
                                         </div>
 
                                         <div className="bg-neutral-50 radius-md p-3 flex items-center justify-around text-center">
                                             <div>
-                                                <p className="text-xs text-neutral-400 mb-0.5">粉量</p>
+                                                <p className="text-xs text-neutral-400 mb-0.5">{t('log.coffee')}</p>
                                                 <p className="font-bold text-neutral-800 text-sm">{vl.coffeeGrams}g</p>
                                             </div>
                                             <div className="w-px h-8 bg-neutral-200"/>
                                             <div>
-                                                <p className="text-xs text-neutral-400 mb-0.5">水量</p>
+                                                <p className="text-xs text-neutral-400 mb-0.5">{t('log.water')}</p>
                                                 <p className="font-bold text-neutral-800 text-sm">{vl.waterTotal}ml</p>
                                             </div>
                                             <div className="w-px h-8 bg-neutral-200"/>
                                             <div>
-                                                <p className="text-xs text-neutral-400 mb-0.5">比例</p>
+                                                <p className="text-xs text-neutral-400 mb-0.5">{t('log.ratio')}</p>
                                                 <p className="font-bold text-neutral-800 text-sm">1:{Math.round(vl.ratio)}</p>
                                             </div>
                                             <div className="w-px h-8 bg-neutral-200"/>
                                             <div className="max-w-[60px]">
-                                                <p className="text-xs text-neutral-400 mb-0.5">配方</p>
+                                                <p className="text-xs text-neutral-400 mb-0.5">{t('log.recipe')}</p>
                                                 <p className="font-bold text-neutral-800 text-xs truncate">{(vl.recipeName || '').split('(')[0].trim()}</p>
                                             </div>
                                         </div>
 
                                         {vl.stepTimes && vl.stepTimes.length > 0 && (
                                             <div className="space-y-1.5">
-                                                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">步驟時間</p>
+                                                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">{t('log.stepTimes')}</p>
                                                 {vl.stepTimes.map((st, i) => {
                                                     const ratio = st.actual / st.planned;
                                                     const { label, cls } =
-                                                        ratio < 0.60  ? { label: '過快', cls: 'bg-red-50 text-red-500 border-red-100' } :
-                                                        ratio < 0.85  ? { label: '偏快', cls: 'bg-amber-50 text-amber-600 border-amber-100' } :
-                                                        ratio <= 1.20 ? { label: '正常', cls: 'bg-green-50 text-green-600 border-green-100' } :
-                                                        ratio <= 1.50 ? { label: '偏慢', cls: 'bg-blue-50 text-blue-600 border-blue-100' } :
-                                                                        { label: '過慢', cls: 'bg-red-50 text-red-500 border-red-100' };
+                                                        ratio < 0.60  ? { label: t('log.tooFast'), cls: 'bg-red-50 text-red-500 border-red-100' } :
+                                                        ratio < 0.85  ? { label: t('log.fast'),    cls: 'bg-amber-50 text-amber-600 border-amber-100' } :
+                                                        ratio <= 1.20 ? { label: t('log.normal'),  cls: 'bg-green-50 text-green-600 border-green-100' } :
+                                                        ratio <= 1.50 ? { label: t('log.slow'),    cls: 'bg-blue-50 text-blue-600 border-blue-100' } :
+                                                                        { label: t('log.tooSlow'), cls: 'bg-red-50 text-red-500 border-red-100' };
                                                     return (
                                                         <div key={i} className="flex items-center gap-2">
                                                             <span className="text-xs text-neutral-500 flex-1 truncate">{st.name}</span>
@@ -2788,14 +3038,14 @@
                                         <button
                                             onPointerDown={(e) => {
                                                 e.preventDefault();
-                                                if (window.confirm('確定要刪除這筆紀錄嗎？')) {
+                                                if (window.confirm(t('log.deleteConfirm'))) {
                                                     setLogs(logs.filter(l => l.id !== vl.id));
                                                     setViewingLog(null);
                                                 }
                                             }}
                                             className="px-5 py-3.5 radius-md border border-neutral-200 text-neutral-500 font-semibold text-sm hover:border-red-300 hover:text-red-500 transition-colors cursor-pointer touch-none active:scale-95"
                                         >
-                                            刪除
+                                            {t('log.delete')}
                                         </button>
                                         <button
                                             onPointerDown={(e) => {
@@ -2813,7 +3063,7 @@
                                             }}
                                             className="flex-1 bg-amber-600 text-white py-3.5 radius-md font-bold text-base shadow-sm hover:bg-amber-700 transition-all cursor-pointer touch-none active:scale-95"
                                         >
-                                            編輯紀錄
+                                            {t('log.edit')}
                                         </button>
                                     </div>
                                 </div>

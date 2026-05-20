@@ -60,6 +60,31 @@
 - **磨豆機 sheet** (`grinderSheetOpen`): has × close button in header.
 - **手沖法 sheet** (`recipeSheetOpen`): has × close button in header.
 
+## Bilingual Support (EN / 中)
+
+The app supports full English/Chinese switching via a toggle in the header.
+
+### Architecture
+- `lang` state: `'zh'` (default) or `'en'`, persisted in `localStorage` (`barista_flow_lang`)
+- `t(key, ...args)` helper inside `BaristaFlow` — looks up `TRANSLATIONS[key][lang]`
+- `TRANSLATIONS` constant at the top of `<script>`: 191+ keys covering all visible UI strings
+- `document.documentElement.lang` updates to `'zh-Hant'` or `'en'` on every toggle
+- `RadarChart` component: receives `lang` prop and uses a local `tl()` helper for axis labels
+- `getRelativeDate(ts, lang)` — second param controls locale for relative date display
+- `formatRoastDate(dateString, lang)` — uses `'zh-TW'` or `'en-US'` locale
+
+### Static Data i18n
+Static data constants that are displayed in the UI have bilingual fields:
+- **`RECIPES`**: each recipe has `nameEn` and `descriptionEn`; each step has `nameEn` and `descEn`
+- **`ROAST_LEVELS`**: labels translated via `t('roast.' + id)` at render sites (keys: `roast.light`, `roast.medium`, `roast.dark`)
+- **`FLOW_OPTIONS`**: translated via `t('flow.' + id)` at render sites (keys: `flow.fast`, `flow.good`, `flow.clog`)
+- **`SENSORY_ATTRIBUTES`**: translated via `tl('sensory.' + key)` inside `RadarChart`
+
+### Important Rules
+- Storage sentinel value `'未命名咖啡豆'` is stored as-is; **only display uses `t('bean.unnamed')`**
+- `beanName !== '未命名咖啡豆'` comparisons must keep the fixed Chinese string (not `t()`)
+- Log entries store Chinese recipe/step names (as typed at save time) — display fallback is fine
+
 ## Recent Changes
 - Removed delete button from journal cards.
 - Refocused journal around trends and filtered recents.
@@ -70,9 +95,12 @@
 - Added cancel/back exit to bean sheet when no beans exist.
 - Removed 烘焙度 from quick adjust panel (pre-brew confirmation page).
 - **Journal bean filter changed to sub-page navigation**: clicking a bean now changes the header to `← [bean name]` with a back button, instead of in-place silent filter.
+- **Added EN/中 language toggle**: full bilingual support across all views; system font stays (intentional).
 
 ## Notes For Future Agents
 - If you update journal filtering UX, also update this file.
 - If you update the quick adjust panel items, also update this file.
 - Keep interactions aligned with mobile thumb-friendly usage.
 - The journal page header is dynamic: it shows "沖煮日誌" normally, and `← [bean]` when filtered. Do not change this without understanding the sub-page navigation design decision above.
+- If you add new UI strings, add keys to `TRANSLATIONS` with both `zh` and `en` values.
+- If you add new recipe steps or RECIPES entries, add `nameEn` and `descEn` to every step.
