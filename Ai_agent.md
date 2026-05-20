@@ -42,14 +42,32 @@
   - full bean filtering should happen in the journal-specific sheet
 - Avoid page states where users get trapped in a filtered sub-view with no visible exit.
 
+## Pre-Brew Confirmation Page — Quick Adjust Panel
+- Triggered by: `showAdjust` state, toggled via 快速調整 button below the Start Brew button
+- Current adjustable items:
+  - **粉量** (coffee grams): stepper, range 10–40g
+  - **水溫** (water temp): stepper, range 70–100°C
+- Removed items:
+  - **烘焙度** was removed. Roast level is only set via the bean selection sheet, not inline adjustment.
+
+## Bottom Sheets on Pre-Brew Page
+- **豆子 sheet** (`beanSheetOpen`): select or add/edit beans. When no beans exist and user opens new-bean form, a 取消 button closes the sheet. When beans exist, 返回選擇 navigates back to the list.
+- **濾杯 sheet** (`dripperSheetOpen`): has × close button in header.
+- **磨豆機 sheet** (`grinderSheetOpen`): has × close button in header.
+- **手沖法 sheet** (`recipeSheetOpen`): has × close button in header.
+
 ## Recent Changes
 - Removed delete button from journal cards.
 - Refocused journal around trends and filtered recents.
 - Simplified filter area and changed bean shortcuts to a horizontal rail.
 - Added multi-select journal bean filtering.
 - Added dedicated journal bean filter sheet for `更多豆子`.
+- Added × close button to dripper / grinder / recipe sheets.
+- Added cancel/back exit to bean sheet when no beans exist.
+- Removed 烘焙度 from quick adjust panel (pre-brew confirmation page).
 
 ## Notes For Future Agents
 - If you update journal filtering UX, also update this file.
+- If you update the quick adjust panel items, also update this file.
 - Keep interactions aligned with mobile thumb-friendly usage.
 - Prefer local, contextual actions over header-level actions for list filters.

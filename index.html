@@ -1804,28 +1804,6 @@
                                             <button onPointerDown={(e) => { e.preventDefault(); setWaterTemp(t => Math.min(100, t+1)); }} className="w-9 h-9 rounded-xl bg-white border border-neutral-200 text-neutral-600 font-bold flex items-center justify-center cursor-pointer touch-none active:scale-95">+</button>
                                         </div>
                                     </div>
-                                    <div>
-                                        <span className="text-sm text-neutral-500 block mb-2">烘焙度</span>
-                                        <div className="flex bg-white border border-neutral-100 p-1 rounded-xl h-[44px]">
-                                            {ROAST_LEVELS.map(level => (
-                                                <button
-                                                    key={level.id}
-                                                    onPointerDown={(e) => {
-                                                        e.preventDefault();
-                                                        setRoastLevel(level.id);
-                                                        setWaterTemp(WATER_TEMPS[level.id] || 90);
-                                                    }}
-                                                    className={`flex-1 flex items-center justify-center rounded-lg text-sm font-bold transition-all cursor-pointer touch-none ${
-                                                        roastLevel === level.id
-                                                        ? 'bg-amber-500 text-white'
-                                                        : 'text-neutral-400 active:bg-neutral-100'
-                                                    }`}
-                                                >
-                                                    {level.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
                                 </div>
                             )}
                         </div>
