@@ -51,6 +51,8 @@
                 overflow: hidden;
                 position: relative;
                 flex-shrink: 0;
+                /* Contain position:fixed children within the phone frame */
+                transform: translateZ(0);
             }
         }
         /* 大桌面：稍微放大外框 */
